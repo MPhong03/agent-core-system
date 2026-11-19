@@ -122,6 +122,19 @@ namespace AgentCoreSystem.Api
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
                     ClockSkew = TimeSpan.Zero
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             builder.Services.AddAuthorization();
@@ -134,7 +147,7 @@ namespace AgentCoreSystem.Api
             // 6. Đăng ký các Phân hệ nghiệp vụ (Modular Monolith)
             builder.Services.AddSystemModule(builder.Configuration);
             builder.Services.AddOrganizationModule(builder.Configuration);
-            builder.Services.AddChatInfrastructure(builder.Configuration);
+            builder.Services.AddChatModule(builder.Configuration);
 
             // 7. Cấu hình API Versioning (/api/v1/...)
             builder.Services.AddApiVersioning(options =>
@@ -186,6 +199,7 @@ namespace AgentCoreSystem.Api
             app.UseHangfireDashboard("/hangfire");
 
             app.MapControllers();
+            app.MapChatHub();
 
             // 8. Tự động khởi tạo dữ liệu mẫu (Seeding)
             using (var scope = app.Services.CreateScope())
