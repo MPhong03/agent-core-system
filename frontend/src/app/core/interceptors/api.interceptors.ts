@@ -20,7 +20,8 @@ export const apiVersionInterceptor: HttpInterceptorFn = (req, next) => {
     req.url.startsWith('https://') ||
     req.url.startsWith('/assets') ||
     req.url.startsWith('./assets') ||
-    req.url.startsWith('assets')
+    req.url.startsWith('assets') ||
+    req.url.startsWith(environment.apiUrl)
   ) {
     return next(req);
   }
