@@ -22,9 +22,11 @@ describe('ChatStore', () => {
     messageReceived$: any;
     messageChunkReceived$: any;
     messageCompleted$: any;
+    reconnected$: any;
     messageReceivedSubject: Subject<ChatMessage>;
     messageChunkSubject: Subject<StreamingChunk>;
     messageCompletedSubject: Subject<CompletedMessage>;
+    reconnectedSubject: Subject<void>;
     connect: ReturnType<typeof vi.fn>;
     disconnect: ReturnType<typeof vi.fn>;
     joinChannel: ReturnType<typeof vi.fn>;
@@ -75,6 +77,7 @@ describe('ChatStore', () => {
     const messageReceivedSubject = new Subject<ChatMessage>();
     const messageChunkSubject = new Subject<StreamingChunk>();
     const messageCompletedSubject = new Subject<CompletedMessage>();
+    const reconnectedSubject = new Subject<void>();
 
     const isConnectedSignal = signal(false);
     const connectionStateSignal = signal('disconnected');
@@ -85,9 +88,11 @@ describe('ChatStore', () => {
       messageReceived$: messageReceivedSubject.asObservable(),
       messageChunkReceived$: messageChunkSubject.asObservable(),
       messageCompleted$: messageCompletedSubject.asObservable(),
+      reconnected$: reconnectedSubject.asObservable(),
       messageReceivedSubject,
       messageChunkSubject,
       messageCompletedSubject,
+      reconnectedSubject,
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
       joinChannel: vi.fn().mockResolvedValue(undefined),
@@ -241,6 +246,7 @@ describe('ChatStore', () => {
     const completed: CompletedMessage = {
       messageId: 'agent-msg-stream-1',
       agentMemberId: 'agent-member-1',
+      agentDisplayName: 'Reviewer Agent',
       fullContent: 'Hoàn thành câu trả lời phân tích.',
     };
     mockSignalRService.messageCompletedSubject.next(completed);
@@ -252,7 +258,17 @@ describe('ChatStore', () => {
     const lastMsg = store.messages()[store.messages().length - 1];
     expect(lastMsg.id).toBe('agent-msg-stream-1');
     expect(lastMsg.content).toBe('Hoàn thành câu trả lời phân tích.');
+    expect(lastMsg.senderDisplayName).toBe('Reviewer Agent');
     expect(lastMsg.isAgent).toBe(true);
+  });
+
+  it('should resync history upon reconnected$ signal', async () => {
+    await store.joinChannel(mockChannelId);
+    expect(mockHttpService.getMessages).toHaveBeenCalledTimes(1);
+
+    mockSignalRService.reconnectedSubject.next();
+
+    expect(mockHttpService.getMessages).toHaveBeenCalledTimes(2);
   });
 
   it('should send message via SignalR service', async () => {

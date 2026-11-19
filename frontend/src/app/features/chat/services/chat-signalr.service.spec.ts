@@ -29,10 +29,11 @@ describe('ChatSignalRService', () => {
     expect(service.connectionState()).toBe('disconnected');
   });
 
-  it('should expose event observables for messages, chunks, and completion', () => {
+  it('should expose event observables for messages, chunks, completion, and reconnected', () => {
     expect(service.messageReceived$).toBeDefined();
     expect(service.messageChunkReceived$).toBeDefined();
     expect(service.messageCompleted$).toBeDefined();
+    expect(service.reconnected$).toBeDefined();
   });
 
   it('should dispatch received messages to messageReceived$', async () => {
@@ -79,11 +80,22 @@ describe('ChatSignalRService', () => {
     (service as any).messageCompletedSubject.next({
       messageId: 'msg-comp-1',
       agentMemberId: 'agent-1',
+      agentDisplayName: 'Reviewer Agent',
       fullContent: 'Full Answer',
     });
 
     const completed = await promise;
     expect(completed.messageId).toBe('msg-comp-1');
+    expect(completed.agentMemberId).toBe('agent-1');
+    expect(completed.agentDisplayName).toBe('Reviewer Agent');
     expect(completed.fullContent).toBe('Full Answer');
+  });
+
+  it('should dispatch reconnected event to reconnected$', async () => {
+    const promise = firstValueFrom(service.reconnected$);
+
+    (service as any).reconnectedSubject.next();
+
+    await promise;
   });
 });

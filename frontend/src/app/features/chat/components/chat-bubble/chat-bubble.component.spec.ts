@@ -99,4 +99,22 @@ describe('ChatBubbleComponent', () => {
     expect(compiled.querySelector('.typing-cursor')).toBeTruthy();
     expect(compiled.querySelector('.bubble-text')?.textContent).toContain('Đang sinh nội dung');
   });
+
+  it('bảo toàn nội dung code block nhiều dòng không bị biến đổi bởi formatting markdown khác', () => {
+    const codeMsg: ChatMessage = {
+      ...mockUserMessage,
+      content: 'Trước code:\n```typescript\nconst _private = "*test*";\n@decorator\n```\nSau code.',
+    };
+    fixture.componentRef.setInput('message', codeMsg);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const pre = compiled.querySelector('.chat-code-block');
+    expect(pre).toBeTruthy();
+    expect(pre?.querySelector('em')).toBeNull();
+    expect(pre?.querySelector('strong')).toBeNull();
+    expect(pre?.querySelector('.chat-mention-tag')).toBeNull();
+    expect(pre?.textContent).toContain('const _private = "*test*";');
+    expect(pre?.textContent).toContain('@decorator');
+  });
 });

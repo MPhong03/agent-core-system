@@ -48,16 +48,20 @@ namespace AgentCoreSystem.Module.Chat.Application.Messages.Queries
                         $"Không tìm thấy tin nhắn mốc '{request.BeforeMessageId.Value}' trong kênh '{request.ChannelId}'."));
                 }
 
-                query = query.Where(m => m.CreatedDate < beforeMessage.CreatedDate);
+                query = query.Where(m =>
+                    m.CreatedDate < beforeMessage.CreatedDate ||
+                    (m.CreatedDate == beforeMessage.CreatedDate && m.Id < beforeMessage.Id));
             }
 
             var messages = await query
                 .OrderByDescending(m => m.CreatedDate)
+                .ThenByDescending(m => m.Id)
                 .Take(limit)
                 .ToListAsync(cancellationToken);
 
             var dtoList = messages
                 .OrderBy(m => m.CreatedDate)
+                .ThenBy(m => m.Id)
                 .Select(m => new ChatMessageDto(
                     m.Id,
                     m.ChannelId,

@@ -73,6 +73,7 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
 
   // Scroll tracking
   private isUserScrolledUp = false;
+  private scrollRafId: number | null = null;
   readonly showScrollBottomButton = signal<boolean>(false);
 
   // Vị trí con trỏ bắt đầu của ký tự '@' hiện tại trong ô input
@@ -111,15 +112,20 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
       }
     });
 
-    // 2. Tự động cuộn xuống cuối khi có tin nhắn mới hoặc streaming token
+    // 2. Tự động cuộn xuống cuối khi có tin nhắn mới hoặc streaming token (throttled bằng requestAnimationFrame)
     effect(() => {
       // Đăng ký phụ thuộc tín hiệu
       this.chatStore.messages();
       this.chatStore.activeStreamingEntries();
 
       if (!this.isUserScrolledUp) {
-        // Đặt timeout ngắn để DOM render xong trước khi cuộn
-        setTimeout(() => this.scrollToBottom(), 50);
+        if (this.scrollRafId !== null) {
+          cancelAnimationFrame(this.scrollRafId);
+        }
+        this.scrollRafId = requestAnimationFrame(() => {
+          this.scrollToBottom();
+          this.scrollRafId = null;
+        });
       }
     });
   }
@@ -129,6 +135,10 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.scrollRafId !== null) {
+      cancelAnimationFrame(this.scrollRafId);
+      this.scrollRafId = null;
+    }
     this.chatStore.leaveChannel();
   }
 

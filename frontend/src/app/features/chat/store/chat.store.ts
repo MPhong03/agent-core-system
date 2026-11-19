@@ -211,6 +211,16 @@ export class ChatStore {
       .subscribe((completed) => {
         this.handleMessageCompleted(completed);
       });
+
+    // 4. Lắng nghe sự kiện phục hồi kết nối SignalR để đồng bộ lại lịch sử tin nhắn
+    this.signalrService.reconnected$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        const channelId = this.activeChannelId();
+        if (channelId) {
+          this.loadHistory(channelId);
+        }
+      });
   }
 
   /**
@@ -276,7 +286,7 @@ export class ChatStore {
         id: completed.messageId,
         channelId: this.activeChannelId() ?? '',
         senderMemberId: completed.agentMemberId,
-        senderDisplayName: 'AI Agent',
+        senderDisplayName: completed.agentDisplayName || 'AI Agent',
         isAgent: true,
         content: completed.fullContent,
         callDepth: 1,

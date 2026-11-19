@@ -33,6 +33,7 @@ import {
 export class ChatSignalRService implements OnDestroy {
   private hubConnection: HubConnection | null = null;
   private connectingPromise: Promise<void> | null = null;
+  private currentChannelId: string | null = null;
 
   // Reactive State Signals
   readonly isConnected = signal<boolean>(false);
@@ -42,12 +43,14 @@ export class ChatSignalRService implements OnDestroy {
   private readonly messageReceivedSubject = new Subject<ChatMessage>();
   private readonly messageChunkSubject = new Subject<StreamingChunk>();
   private readonly messageCompletedSubject = new Subject<CompletedMessage>();
+  private readonly reconnectedSubject = new Subject<void>();
 
   readonly messageReceived$: Observable<ChatMessage> = this.messageReceivedSubject.asObservable();
   readonly messageChunkReceived$: Observable<StreamingChunk> =
     this.messageChunkSubject.asObservable();
   readonly messageCompleted$: Observable<CompletedMessage> =
     this.messageCompletedSubject.asObservable();
+  readonly reconnected$: Observable<void> = this.reconnectedSubject.asObservable();
 
   /**
    * Khởi tạo kết nối tới SignalR Chat Hub với cơ chế Auto-Reconnect và Bearer Token.
@@ -126,6 +129,7 @@ export class ChatSignalRService implements OnDestroy {
    * @param channelId Mã định danh kênh làm việc.
    */
   async joinChannel(channelId: string): Promise<void> {
+    this.currentChannelId = channelId;
     await this.ensureConnected();
     await this.hubConnection!.invoke('JoinChannel', channelId);
   }
@@ -136,6 +140,9 @@ export class ChatSignalRService implements OnDestroy {
    * @param channelId Mã định danh kênh làm việc.
    */
   async leaveChannel(channelId: string): Promise<void> {
+    if (this.currentChannelId === channelId) {
+      this.currentChannelId = null;
+    }
     if (this.hubConnection?.state === HubConnectionState.Connected) {
       await this.hubConnection.invoke('LeaveChannel', channelId);
     }
@@ -184,10 +191,11 @@ export class ChatSignalRService implements OnDestroy {
     // 3. Nhận thông báo hoàn tất streaming tin nhắn của AI Agent
     connection.on(
       'ReceiveMessageCompleted',
-      (messageId: string, agentMemberId: string, fullContent: string) => {
+      (messageId: string, agentMemberId: string, agentDisplayName: string, fullContent: string) => {
         this.messageCompletedSubject.next({
           messageId,
           agentMemberId,
+          agentDisplayName,
           fullContent,
         });
       },
@@ -204,6 +212,15 @@ export class ChatSignalRService implements OnDestroy {
       console.info('[ChatSignalRService] Đã kết nối lại SignalR Hub thành công:', connectionId);
       this.isConnected.set(true);
       this.connectionState.set('connected');
+
+      // Tự động tái tham gia group kênh nếu trước đó đang ở trong kênh
+      if (this.currentChannelId) {
+        this.joinChannel(this.currentChannelId).catch((err) =>
+          console.error('[ChatSignalRService] Lỗi khi tái tham gia kênh sau kết nối lại:', err),
+        );
+      }
+
+      this.reconnectedSubject.next();
     });
 
     connection.onclose((error) => {
@@ -219,6 +236,7 @@ export class ChatSignalRService implements OnDestroy {
     this.messageReceivedSubject.complete();
     this.messageChunkSubject.complete();
     this.messageCompletedSubject.complete();
+    this.reconnectedSubject.complete();
     this.disconnect().catch((err) =>
       console.warn('[ChatSignalRService] Lỗi khi hủy kết nối on destroy:', err),
     );

@@ -213,9 +213,109 @@ namespace AgentCoreSystem.UnitTests.Chat
             await clientProxy.Received(1).SendCoreAsync(
                 "ReceiveMessageCompleted",
                 Arg.Is<object[]>(args =>
-                    args.Length == 3 &&
+                    args.Length == 4 &&
                     (Guid)args[1] == agentMemberId &&
-                    (string)args[2] == "Code looks great and clean!"),
+                    (string)args[2] == "Code Reviewer Bot" &&
+                    (string)args[3] == "Code looks great and clean!"),
+                Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task DispatchMessageAsync_ShouldBroadcastErrorAndPersist_WhenStreamFails()
+        {
+            // Arrange
+            await using var dbContext = CreateInMemoryDbContext();
+            var sender = Substitute.For<ISender>();
+            var llmFactory = Substitute.For<ILLMProviderFactory>();
+            var llmClient = Substitute.For<ILLMClient>();
+            var hubContext = Substitute.For<IHubContext<SignalRChatHub>>();
+            var clients = Substitute.For<IHubClients>();
+            var clientProxy = Substitute.For<IClientProxy>();
+
+            hubContext.Clients.Returns(clients);
+            clients.Group(Arg.Any<string>()).Returns(clientProxy);
+
+            var channelId = Guid.NewGuid();
+            var agentMemberId = Guid.NewGuid();
+            var agentProfileId = Guid.NewGuid();
+
+            var memberDto = new MemberDto(
+                Id: agentMemberId,
+                ChannelId: channelId,
+                Type: MemberType.Agent,
+                UserId: null,
+                AgentProfileId: agentProfileId,
+                DisplayName: "Code Reviewer Bot",
+                CreatedDate: DateTimeOffset.UtcNow.AddHours(-1));
+
+            var profileDto = new AgentProfileDto(
+                Id: agentProfileId,
+                Name: "Code Reviewer Bot",
+                AvatarUrl: null,
+                Provider: ModelProviderType.OpenAI,
+                ModelName: "gpt-4o",
+                SystemPrompt: "You are a code review expert.",
+                Temperature: 0.2m,
+                PrivateMemoryNotes: null,
+                CreatedDate: DateTimeOffset.UtcNow.AddHours(-2));
+
+            sender.Send(Arg.Is<GetChannelMembersQuery>(q => q.ChannelId == channelId), Arg.Any<CancellationToken>())
+                .Returns(Result.Success<IReadOnlyList<MemberDto>>(new List<MemberDto> { memberDto }));
+
+            sender.Send(Arg.Any<GetAgentProfilesQuery>(), Arg.Any<CancellationToken>())
+                .Returns(Result.Success<IReadOnlyList<AgentProfileDto>>(new List<AgentProfileDto> { profileDto }));
+
+            llmFactory.GetClient("OpenAI").Returns(llmClient);
+
+            static async IAsyncEnumerable<string> ThrowingStream()
+            {
+                yield return "Starting chunk...";
+                await Task.Yield();
+                throw new InvalidOperationException("AI Gateway connection failed!");
+            }
+
+            llmClient.StreamChatAsync(
+                model: "gpt-4o",
+                messages: Arg.Any<IEnumerable<ChatMessagePayload>>(),
+                temperature: 0.2m,
+                ct: Arg.Any<CancellationToken>())
+                .Returns(ThrowingStream());
+
+            var userMessage = new ChatMessageDto(
+                Id: Guid.NewGuid(),
+                ChannelId: channelId,
+                SenderMemberId: Guid.NewGuid(),
+                SenderDisplayName: "Developer",
+                IsAgent: false,
+                Content: "Can you review this code?",
+                CallDepth: 0,
+                ParentMessageId: null,
+                Mentions: new List<Guid> { agentMemberId },
+                CreatedDate: DateTimeOffset.UtcNow);
+
+            var dispatcher = new MessageDispatcherService(dbContext, sender, llmFactory, hubContext);
+
+            // Act
+            await dispatcher.DispatchMessageAsync(userMessage, new List<Guid> { agentMemberId });
+
+            // Assert
+            // ReceiveMessageCompleted should be called with error message
+            await clientProxy.Received(1).SendCoreAsync(
+                "ReceiveMessageCompleted",
+                Arg.Is<object[]>(args =>
+                    args.Length == 4 &&
+                    (Guid)args[1] == agentMemberId &&
+                    (string)args[2] == "Code Reviewer Bot" &&
+                    ((string)args[3]).Contains("Không thể hoàn tất câu trả lời do sự cố kết nối")),
+                Arg.Any<CancellationToken>());
+
+            // Error message should also be saved to DB
+            await sender.Received(1).Send(
+                Arg.Is<SaveChatMessageCommand>(cmd =>
+                    cmd.ChannelId == channelId &&
+                    cmd.SenderMemberId == agentMemberId &&
+                    cmd.SenderDisplayName == "Code Reviewer Bot" &&
+                    cmd.Content.Contains("Không thể hoàn tất câu trả lời do sự cố kết nối")),
                 Arg.Any<CancellationToken>());
         }
 

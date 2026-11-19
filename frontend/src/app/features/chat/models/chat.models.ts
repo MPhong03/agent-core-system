@@ -34,6 +34,7 @@ export interface StreamingChunk {
 export interface CompletedMessage {
   messageId: string;
   agentMemberId: string;
+  agentDisplayName: string;
   fullContent: string;
 }
 

@@ -203,6 +203,46 @@ namespace AgentCoreSystem.UnitTests.Chat
         }
 
         [Fact]
+        public async Task GetChannelMessagesQuery_WithIdenticalCreatedDates_ShouldBreakTieWithId()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<ChatDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            var channelId = Guid.NewGuid();
+            var senderId = Guid.NewGuid();
+            var sameTime = DateTimeOffset.UtcNow;
+
+            var id1 = Guid.Parse("01934336-7cb4-7a32-8438-e6b3607ba001");
+            var id2 = Guid.Parse("01934336-7cb4-7a32-8438-e6b3607ba002");
+            var id3 = Guid.Parse("01934336-7cb4-7a32-8438-e6b3607ba003");
+
+            await using (var context = new ChatDbContext(options))
+            {
+                var m1 = new AgentCoreSystem.Module.Chat.Domain.Entities.ChatMessage(
+                    channelId, senderId, "User", false, "M1", 0, null, id1) { CreatedDate = sameTime };
+                var m2 = new AgentCoreSystem.Module.Chat.Domain.Entities.ChatMessage(
+                    channelId, senderId, "User", false, "M2", 0, null, id2) { CreatedDate = sameTime };
+                var m3 = new AgentCoreSystem.Module.Chat.Domain.Entities.ChatMessage(
+                    channelId, senderId, "User", false, "M3", 0, null, id3) { CreatedDate = sameTime };
+
+                context.Messages.AddRange(m1, m2, m3);
+                await context.SaveChangesAsync();
+            }
+
+            await using var queryContext = new ChatDbContext(options);
+            var queryHandler = new GetChannelMessagesQueryHandler(queryContext);
+            var query = new GetChannelMessagesQuery(channelId, Limit: 50, BeforeMessageId: id3);
+            var result = await queryHandler.Handle(query, CancellationToken.None);
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal(2, result.Value.Count);
+            Assert.Equal(id1, result.Value[0].Id);
+            Assert.Equal(id2, result.Value[1].Id);
+        }
+
+        [Fact]
         public async Task GetChannelMessagesQuery_WithNonExistentBeforeMessageId_ShouldReturnNotFound()
         {
             // Arrange

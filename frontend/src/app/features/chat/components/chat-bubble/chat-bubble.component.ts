@@ -121,13 +121,21 @@ export class ChatBubbleComponent {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
 
-    // 2. Multi-line code block: ```lang ... ```
+    // 2. Tách và bảo toàn code block nhiều dòng (triple-backtick) vào placeholder array (tránh dùng ký tự '_' làm hỏng italic regex)
+    const codeBlocks: string[] = [];
     escaped = escaped.replace(/```(?:([a-zA-Z0-9_-]+)\r?\n)?([\s\S]*?)```/g, (_match, _lang, code) => {
-      return `<pre class="chat-code-block"><code>${code.trim()}</code></pre>`;
+      const index = codeBlocks.length;
+      codeBlocks.push(`<pre class="chat-code-block"><code>${code.trim()}</code></pre>`);
+      return `%%%CODEBLOCK${index}%%%`;
     });
 
-    // 3. Inline code: `code`
-    escaped = escaped.replace(/`([^`\n]+)`/g, '<code class="chat-inline-code">$1</code>');
+    // 3. Inline code: `code` (bảo toàn bằng placeholder không chứa ký tự '_')
+    const inlineCodes: string[] = [];
+    escaped = escaped.replace(/`([^`\n]+)`/g, (_match, code) => {
+      const index = inlineCodes.length;
+      inlineCodes.push(`<code class="chat-inline-code">${code}</code>`);
+      return `%%%INLINECODE${index}%%%`;
+    });
 
     // 4. Bold: **text** hoặc __text__
     escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -166,10 +174,20 @@ export class ChatBubbleComponent {
       processedLines.push('</ul>');
     }
 
-    // 8. Convert remaining newlines sang <br/> (trừ các thẻ HTML block)
-    return processedLines
-      .join('\n')
-      .replace(/\n/g, '<br/>')
+    // 8. Chuyển đổi newlines sang <br/>
+    let result = processedLines.join('\n').replace(/\n/g, '<br/>');
+
+    // 9. Khôi phục inline code và code blocks từ placeholders
+    result = result.replace(/%%%INLINECODE(\d+)%%%/g, (_match, idx) => {
+      return inlineCodes[Number(idx)] ?? '';
+    });
+
+    result = result.replace(/%%%CODEBLOCK(\d+)%%%/g, (_match, idx) => {
+      return codeBlocks[Number(idx)] ?? '';
+    });
+
+    // 10. Dọn dẹp thẻ <br/> dư thừa quanh block tags
+    return result
       .replace(/<br\/><pre/g, '<pre')
       .replace(/<\/pre><br\/>/g, '</pre>')
       .replace(/<br\/><ul/g, '<ul')

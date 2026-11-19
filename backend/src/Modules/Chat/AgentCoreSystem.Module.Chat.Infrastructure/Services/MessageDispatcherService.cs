@@ -143,75 +143,125 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
             CancellationToken ct)
         {
             var channelGroup = $"channel_{userMessage.ChannelId}";
-
-            // 1. Truy vấn 20 tin nhắn gần nhất làm Sliding Window Context
-            var recentMessages = await dbContext.Messages
-                .AsNoTracking()
-                .Where(m => m.ChannelId == userMessage.ChannelId)
-                .OrderByDescending(m => m.CreatedDate)
-                .ThenByDescending(m => m.Id)
-                .Take(SlidingWindowSize)
-                .ToListAsync(ct);
-
-            var orderedHistory = recentMessages
-                .OrderBy(m => m.CreatedDate)
-                .ThenBy(m => m.Id)
-                .Select(m => new ChatMessagePayload(
-                    Role: m.IsAgent ? "assistant" : "user",
-                    Content: m.Content))
-                .ToList();
-
-            // 2. Ghép SystemPrompt từ AgentProfile tương ứng
-            var payload = new List<ChatMessagePayload>();
-            if (!string.IsNullOrWhiteSpace(profile.SystemPrompt))
-            {
-                payload.Add(new ChatMessagePayload("system", profile.SystemPrompt));
-            }
-            payload.AddRange(orderedHistory);
-
-            // 3. Khởi tạo LLM Client theo cấu hình Provider
-            var providerName = profile.Provider.ToString();
-            var llmClient = llmProviderFactory.GetClient(providerName);
-
             var agentMessageId = Guid.CreateVersion7();
-            var fullContentBuilder = new StringBuilder();
 
-            // 4. Stream từng chunk ra SignalR Group
-            await foreach (var chunk in llmClient.StreamChatAsync(profile.ModelName, payload, profile.Temperature, ct))
+            try
             {
-                fullContentBuilder.Append(chunk);
+                // 1. Truy vấn 20 tin nhắn gần nhất làm Sliding Window Context
+                var recentMessages = await dbContext.Messages
+                    .AsNoTracking()
+                    .Where(m => m.ChannelId == userMessage.ChannelId)
+                    .OrderByDescending(m => m.CreatedDate)
+                    .ThenByDescending(m => m.Id)
+                    .Take(SlidingWindowSize)
+                    .ToListAsync(ct);
 
+                var orderedHistory = recentMessages
+                    .OrderBy(m => m.CreatedDate)
+                    .ThenBy(m => m.Id)
+                    .Select(m => new ChatMessagePayload(
+                        Role: m.IsAgent ? "assistant" : "user",
+                        Content: m.Content))
+                    .ToList();
+
+                // 2. Ghép SystemPrompt từ AgentProfile tương ứng
+                var payload = new List<ChatMessagePayload>();
+                if (!string.IsNullOrWhiteSpace(profile.SystemPrompt))
+                {
+                    payload.Add(new ChatMessagePayload("system", profile.SystemPrompt));
+                }
+                payload.AddRange(orderedHistory);
+
+                // 3. Khởi tạo LLM Client theo cấu hình Provider
+                var providerName = profile.Provider.ToString();
+                var llmClient = llmProviderFactory.GetClient(providerName);
+
+                var fullContentBuilder = new StringBuilder();
+
+                // 4. Stream từng chunk ra SignalR Group
+                await foreach (var chunk in llmClient.StreamChatAsync(profile.ModelName, payload, profile.Temperature, ct))
+                {
+                    fullContentBuilder.Append(chunk);
+
+                    await hubContext.Clients
+                        .Group(channelGroup)
+                        .SendAsync("ReceiveMessageChunk", agentMessageId, member.Id, chunk, ct);
+                }
+
+                var fullContent = fullContentBuilder.ToString();
+
+                // 5. Lưu câu trả lời vào DB với CallDepth = userMessage.CallDepth + 1
+                var saveCommand = new SaveChatMessageCommand(
+                    ChannelId: userMessage.ChannelId,
+                    SenderMemberId: member.Id,
+                    SenderDisplayName: member.DisplayName,
+                    IsAgent: true,
+                    Content: fullContent,
+                    CallDepth: userMessage.CallDepth + 1,
+                    ParentMessageId: userMessage.Id,
+                    MentionIds: null,
+                    MessageId: agentMessageId);
+
+                var saveResult = await sender.Send(saveCommand, ct);
+                if (saveResult.IsFailure)
+                {
+                    logger?.LogError(
+                        "Không thể lưu tin nhắn phản hồi của Agent vào DB: {Error}",
+                        saveResult.Error.Description);
+                }
+
+                // 6. Phát sóng sự kiện hoàn thành phản hồi
                 await hubContext.Clients
                     .Group(channelGroup)
-                    .SendAsync("ReceiveMessageChunk", agentMessageId, member.Id, chunk, ct);
+                    .SendAsync("ReceiveMessageCompleted", agentMessageId, member.Id, member.DisplayName, fullContent, ct);
             }
-
-            var fullContent = fullContentBuilder.ToString();
-
-            // 5. Lưu câu trả lời vào DB với CallDepth = userMessage.CallDepth + 1
-            var saveCommand = new SaveChatMessageCommand(
-                ChannelId: userMessage.ChannelId,
-                SenderMemberId: member.Id,
-                SenderDisplayName: member.DisplayName,
-                IsAgent: true,
-                Content: fullContent,
-                CallDepth: userMessage.CallDepth + 1,
-                ParentMessageId: userMessage.Id,
-                MentionIds: null,
-                MessageId: agentMessageId);
-
-            var saveResult = await sender.Send(saveCommand, ct);
-            if (saveResult.IsFailure)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
             {
                 logger?.LogError(
-                    "Không thể lưu tin nhắn phản hồi của Agent vào DB: {Error}",
-                    saveResult.Error.Description);
-            }
+                    ex,
+                    "Lỗi khi xử lý phản hồi Agent {MemberId} trong kênh {ChannelId}",
+                    member.Id,
+                    userMessage.ChannelId);
 
-            // 6. Phát sóng sự kiện hoàn thành phản hồi
-            await hubContext.Clients
-                .Group(channelGroup)
-                .SendAsync("ReceiveMessageCompleted", agentMessageId, member.Id, fullContent, ct);
+                const string errorMessage = "[Hệ thống: Không thể hoàn tất câu trả lời do sự cố kết nối với AI Gateway.]";
+
+                // Phát sóng sự kiện hoàn thành với thông điệp lỗi để client giải phóng typing state
+                try
+                {
+                    await hubContext.Clients
+                        .Group(channelGroup)
+                        .SendAsync("ReceiveMessageCompleted", agentMessageId, member.Id, member.DisplayName, errorMessage, CancellationToken.None);
+                }
+                catch (Exception sendEx)
+                {
+                    logger?.LogWarning(sendEx, "Không thể gửi ReceiveMessageCompleted khi xử lý lỗi stream");
+                }
+
+                // Lưu lại thông báo lỗi vào database để bảo toàn lịch sử chat
+                try
+                {
+                    var errorSaveCommand = new SaveChatMessageCommand(
+                        ChannelId: userMessage.ChannelId,
+                        SenderMemberId: member.Id,
+                        SenderDisplayName: member.DisplayName,
+                        IsAgent: true,
+                        Content: errorMessage,
+                        CallDepth: userMessage.CallDepth + 1,
+                        ParentMessageId: userMessage.Id,
+                        MentionIds: null,
+                        MessageId: agentMessageId);
+
+                    await sender.Send(errorSaveCommand, CancellationToken.None);
+                }
+                catch (Exception saveEx)
+                {
+                    logger?.LogWarning(saveEx, "Không thể lưu thông điệp lỗi của Agent vào DB");
+                }
+            }
         }
     }
 }
