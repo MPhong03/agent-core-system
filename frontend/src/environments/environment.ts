@@ -5,6 +5,6 @@
 
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:5000/api/v1',
+  apiUrl: '/api/v1',
   defaultPageSize: 10,
 };
