@@ -1,0 +1,72 @@
+﻿{
+  "APP": {
+    "TITLE": "Cổng Quản Trị Doanh Nghiệp",
+    "SUBTITLE": "Hệ thống Quản lý Doanh nghiệp Modular Monolith"
+  },
+  "NAV": {
+    "DASHBOARD": "Bảng Điều Khiển",
+    "SYSTEM_SECTION": "PHÂN HỆ HỆ THỐNG",
+    "USERS": "Quản lý Người dùng",
+    "ROLES": "Quản lý Vai trò",
+    "AUDIT_LOGS": "Nhật ký Kiểm toán",
+    "LOGOUT": "Đăng xuất"
+  },
+  "AUTH": {
+    "LOGIN_TITLE": "Đăng nhập Hệ thống",
+    "LOGIN_SUBTITLE": "Cổng truy cập Doanh nghiệp Modular Monolith",
+    "EMAIL": "Địa chỉ Email",
+    "PASSWORD": "Mật khẩu",
+    "BTN_LOGIN": "Đăng nhập",
+    "BTN_LOGGING_IN": "Đang xác thực...",
+    "INVALID_CREDENTIALS": "Tài khoản hoặc mật khẩu không chính xác."
+  },
+  "DASHBOARD": {
+    "WELCOME_TITLE": "Tổng quan Hệ thống Doanh nghiệp",
+    "WELCOME_SUB": "Kiến trúc Modular Monolith (.NET 9 + Clean Architecture + CQRS MediatR) & Frontend Angular Signals.",
+    "CARD_BACKEND": "Kiến trúc Backend",
+    "CARD_JOBS": "Tác vụ Chạy ngầm",
+    "CARD_API": "Phiên bản API",
+    "CARD_FRONTEND": "Công nghệ Frontend"
+  },
+  "USERS": {
+    "TITLE": "Quản lý Người dùng & Tài khoản",
+    "SUBTITLE": "Phân hệ System - Quản lý định danh, vai trò và phân quyền",
+    "BTN_ADD": "Thêm Người dùng",
+    "SEARCH_PLACEHOLDER": "Tìm kiếm theo tên hoặc email...",
+    "BTN_SEARCH": "Tìm kiếm",
+    "COL_NAME": "HỌ VÀ TÊN",
+    "COL_EMAIL": "EMAIL",
+    "COL_ROLE": "VAI TRÒ",
+    "COL_STATUS": "TRẠNG THÁI",
+    "COL_CREATED": "NGÀY TẠO",
+    "COL_ACTIONS": "THAO TÁC",
+    "STATUS_ACTIVE": "Hoạt động",
+    "STATUS_LOCKED": "Đã khóa",
+    "EMPTY": "Không tìm thấy người dùng nào phù hợp.",
+    "TOTAL": "Tổng cộng:"
+  },
+  "ROLES": {
+    "SUPERADMIN": "Quản trị viên Tối cao",
+    "ADMIN": "Quản trị viên",
+    "EMPLOYEE": "Nhân viên Tác nghiệp"
+  },
+  "MODAL": {
+    "USER_CREATE_TITLE": "Thêm mới Tài khoản Người dùng",
+    "USER_EDIT_TITLE": "Cập nhật Thông tin Tài khoản",
+    "CHANGE_PWD_TITLE": "Đổi Mật khẩu Tài khoản",
+    "FULL_NAME": "Họ và tên",
+    "EMAIL": "Địa chỉ Email",
+    "PASSWORD": "Mật khẩu khởi tạo",
+    "PHONE_NUMBER": "Số điện thoại",
+    "ROLES": "Vai trò (Phân quyền)",
+    "IS_ACTIVE": "Kích hoạt hoạt động",
+    "CURRENT_PASSWORD": "Mật khẩu hiện tại",
+    "NEW_PASSWORD": "Mật khẩu mới",
+    "CONFIRM_PASSWORD": "Xác nhận mật khẩu mới",
+    "BTN_CANCEL": "Hủy bỏ",
+    "BTN_SAVE": "Lưu thay đổi",
+    "BTN_SAVING": "Đang lưu...",
+    "BTN_CONFIRM_PWD": "Xác nhận đổi mật khẩu"
+  }
+}
+

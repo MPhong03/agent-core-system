@@ -1,0 +1,72 @@
+﻿{
+  "APP": {
+    "TITLE": "Agent Core System Management Portal",
+    "SUBTITLE": "Modular Monolith Agent Core System Management System"
+  },
+  "NAV": {
+    "DASHBOARD": "Dashboard",
+    "SYSTEM_SECTION": "SYSTEM MODULE",
+    "USERS": "User Management",
+    "ROLES": "Role Management",
+    "AUDIT_LOGS": "Audit Logs",
+    "LOGOUT": "Log out"
+  },
+  "AUTH": {
+    "LOGIN_TITLE": "System Login",
+    "LOGIN_SUBTITLE": "Modular Monolith Agent Core System Portal",
+    "EMAIL": "Email Address",
+    "PASSWORD": "Password",
+    "BTN_LOGIN": "Sign In",
+    "BTN_LOGGING_IN": "Authenticating...",
+    "INVALID_CREDENTIALS": "Invalid email or password."
+  },
+  "DASHBOARD": {
+    "WELCOME_TITLE": "Agent Core System Overview",
+    "WELCOME_SUB": "Modular Monolith Architecture (.NET 9 + Clean Architecture + CQRS MediatR) & Angular Signals Frontend.",
+    "CARD_BACKEND": "Backend Architecture",
+    "CARD_JOBS": "Background Jobs",
+    "CARD_API": "API Versioning",
+    "CARD_FRONTEND": "Frontend Stack"
+  },
+  "USERS": {
+    "TITLE": "Users & Account Management",
+    "SUBTITLE": "System Module - Identity, Roles and Access Control",
+    "BTN_ADD": "Add New User",
+    "SEARCH_PLACEHOLDER": "Search by name or email...",
+    "BTN_SEARCH": "Search",
+    "COL_NAME": "FULL NAME",
+    "COL_EMAIL": "EMAIL",
+    "COL_ROLE": "ROLES",
+    "COL_STATUS": "STATUS",
+    "COL_CREATED": "CREATED DATE",
+    "COL_ACTIONS": "ACTIONS",
+    "STATUS_ACTIVE": "Active",
+    "STATUS_LOCKED": "Locked",
+    "EMPTY": "No matching users found.",
+    "TOTAL": "Total:"
+  },
+  "ROLES": {
+    "SUPERADMIN": "Super Administrator",
+    "ADMIN": "Administrator",
+    "EMPLOYEE": "Employee"
+  },
+  "MODAL": {
+    "USER_CREATE_TITLE": "Add New User Account",
+    "USER_EDIT_TITLE": "Edit User Account",
+    "CHANGE_PWD_TITLE": "Change Account Password",
+    "FULL_NAME": "Full Name",
+    "EMAIL": "Email Address",
+    "PASSWORD": "Initial Password",
+    "PHONE_NUMBER": "Phone Number",
+    "ROLES": "Roles (Permissions)",
+    "IS_ACTIVE": "Active Status",
+    "CURRENT_PASSWORD": "Current Password",
+    "NEW_PASSWORD": "New Password",
+    "CONFIRM_PASSWORD": "Confirm New Password",
+    "BTN_CANCEL": "Cancel",
+    "BTN_SAVE": "Save Changes",
+    "BTN_SAVING": "Saving...",
+    "BTN_CONFIRM_PWD": "Confirm Password Change"
+  }
+}
+

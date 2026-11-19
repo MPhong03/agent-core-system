@@ -1,0 +1,7 @@
+﻿@AgentCoreSystem.Api_HostAddress = http://localhost:5191
+
+GET {{AgentCoreSystem.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
