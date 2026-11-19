@@ -278,12 +278,12 @@
   - `ChatRoomComponent`: Tích hợp vào Kênh nhóm khi người dùng chọn 1 Channel từ cây phòng ban:
     - Khu vực hiển thị tin nhắn (tự động cuộn xuống cuối khi có tin mới hoặc đang stream)
     - Input nhập tin nhắn kèm xử lý phím `@` và `Enter` để gửi
-- [ ] **Step 1: Xây dựng `ChatBubbleComponent` hiển thị bong bóng chat với cursor nhấp nháy khi stream**
-- [ ] **Step 2: Xây dựng `MentionPopoverComponent` bắt phím `@` và autocomplete tag**
-- [ ] **Step 3: Xây dựng `ChatRoomComponent` tích hợp SignalR store và HTTP history load**
-- [ ] **Step 4: Nhúng `ChatRoomComponent` vào `OrganizationShellComponent` bên cạnh channel detail**
-- [ ] **Step 5: Chạy `npm run build` trong thư mục `frontend` đảm bảo build thành công 0 lỗi**
-- [ ] **Step 6: Commit**
+- [x] **Step 1: Xây dựng `ChatBubbleComponent` hiển thị bong bóng chat với cursor nhấp nháy khi stream**
+- [x] **Step 2: Xây dựng `MentionPopoverComponent` bắt phím `@` và autocomplete tag**
+- [x] **Step 3: Xây dựng `ChatRoomComponent` tích hợp SignalR store và HTTP history load**
+- [x] **Step 4: Nhúng `ChatRoomComponent` vào `OrganizationShellComponent` bên cạnh channel detail**
+- [x] **Step 5: Chạy `npm run build` trong thư mục `frontend` đảm bảo build thành công 0 lỗi**
+- [x] **Step 6: Commit**
   ```bash
   git add frontend/src/app/features/chat/ frontend/src/app/features/organization/
   git commit -m "feat(frontend): implement ChatRoom UI, token streaming bubbles, and @mention autocomplete"
@@ -301,10 +301,10 @@
 - Produces:
   - Kịch bản test E2E kiểm tra: Mở Kênh chat -> Lấy lịch sử tin nhắn -> Gõ `@` hiển thị gợi ý -> Gửi tin nhắn -> Nhận tin nhắn mới và kiểm tra luồng stream.
 
-- [ ] **Step 1: Viết kịch bản kiểm thử Playwright cho Chat Room và @Mention popover**
-- [ ] **Step 2: Thêm lệnh `just test-e2e-chat` vào `justfile`**
-- [ ] **Step 3: Chạy toàn bộ test suite (`just test-all` hoặc `dotnet test` + `npm run build`)**
-- [ ] **Step 4: Commit**
+- [x] **Step 1: Viết kịch bản kiểm thử Playwright cho Chat Room và @Mention popover**
+- [x] **Step 2: Thêm lệnh `just test-e2e-chat` vào `justfile`**
+- [x] **Step 3: Chạy toàn bộ test suite (`just test-all` hoặc `dotnet test` + `npm run build`)**
+- [x] **Step 4: Commit**
   ```bash
   git add frontend/e2e/ justfile
   git commit -m "test: add Playwright E2E chat realtime test suite and justfile command"

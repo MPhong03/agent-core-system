@@ -59,7 +59,7 @@ test-backend:
 
 # Chạy Unit Tests Frontend (Vitest)
 test-ui:
-    cd frontend; npm test -- --run
+    cd frontend; npm test -- --no-watch
 
 # Chạy End-to-End Tests với Playwright (Headless)
 test-e2e:
@@ -68,6 +68,10 @@ test-e2e:
 # Chạy End-to-End Tests với giao diện trực quan Playwright UI Runner
 test-e2e-ui:
     cd frontend; npx playwright test --ui
+
+# Chạy End-to-End Tests cho Chat Realtime
+test-e2e-chat:
+    cd frontend; npx playwright test e2e/specs/sprint-1-chat-realtime.spec.ts
 
 # -----------------------------------------------------------------------------
 # 4. EF Core Migrations (Hỗ trợ Kiến trúc Schema-per-module)

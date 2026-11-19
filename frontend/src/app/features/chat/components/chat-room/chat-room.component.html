@@ -1,4 +1,4 @@
-<div class="chat-room-layout">
+<div class="chat-room-layout chat-room">
   <!-- 1. Header Bar -->
   <header class="chat-header">
     <div class="header-info">
@@ -27,7 +27,7 @@
   <!-- 2. Scrollable Messages History -->
   <main
     #messagesContainer
-    class="messages-container"
+    class="messages-container messages-viewport"
     (scroll)="onScroll()"
   >
     <!-- Nút tải tin nhắn cũ hơn -->
