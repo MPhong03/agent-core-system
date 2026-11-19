@@ -1,0 +1,89 @@
+/**
+ * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
+ * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+import { TestBed } from '@angular/core/testing';
+import { firstValueFrom } from 'rxjs';
+import { ChatSignalRService } from './chat-signalr.service';
+import { ChatMessage } from '../models/chat.models';
+
+describe('ChatSignalRService', () => {
+  let service: ChatSignalRService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [ChatSignalRService],
+    });
+
+    service = TestBed.inject(ChatSignalRService);
+  });
+
+  afterEach(async () => {
+    await service.disconnect();
+  });
+
+  it('should be created with initial disconnected state', () => {
+    expect(service).toBeTruthy();
+    expect(service.isConnected()).toBe(false);
+    expect(service.connectionState()).toBe('disconnected');
+  });
+
+  it('should expose event observables for messages, chunks, and completion', () => {
+    expect(service.messageReceived$).toBeDefined();
+    expect(service.messageChunkReceived$).toBeDefined();
+    expect(service.messageCompleted$).toBeDefined();
+  });
+
+  it('should dispatch received messages to messageReceived$', async () => {
+    const mockMsg: ChatMessage = {
+      id: 'm-1',
+      channelId: 'ch-1',
+      senderMemberId: 'mem-1',
+      senderDisplayName: 'User',
+      isAgent: false,
+      content: 'Testing',
+      callDepth: 0,
+      parentMessageId: null,
+      mentions: [],
+      createdDate: new Date().toISOString(),
+    };
+
+    const promise = firstValueFrom(service.messageReceived$);
+
+    // Simulate internal handler callback
+    (service as any).messageReceivedSubject.next(mockMsg);
+
+    const received = await promise;
+    expect(received.id).toBe('m-1');
+    expect(received.content).toBe('Testing');
+  });
+
+  it('should dispatch received chunks to messageChunkReceived$', async () => {
+    const promise = firstValueFrom(service.messageChunkReceived$);
+
+    (service as any).messageChunkSubject.next({
+      messageId: 'msg-chunk-1',
+      agentMemberId: 'agent-1',
+      deltaText: 'Hello',
+    });
+
+    const chunk = await promise;
+    expect(chunk.messageId).toBe('msg-chunk-1');
+    expect(chunk.deltaText).toBe('Hello');
+  });
+
+  it('should dispatch completed message to messageCompleted$', async () => {
+    const promise = firstValueFrom(service.messageCompleted$);
+
+    (service as any).messageCompletedSubject.next({
+      messageId: 'msg-comp-1',
+      agentMemberId: 'agent-1',
+      fullContent: 'Full Answer',
+    });
+
+    const completed = await promise;
+    expect(completed.messageId).toBe('msg-comp-1');
+    expect(completed.fullContent).toBe('Full Answer');
+  });
+});

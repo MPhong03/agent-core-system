@@ -219,11 +219,11 @@
   - Đăng ký `builder.Services.AddChatModule(builder.Configuration)`
   - Template cấu hình `Llm` trong `appsettings.json`
 
-- [ ] **Step 1: Viết `ChatController` v1 kế thừa `BaseApiController` với đầy đủ `<summary>`, `<remarks>`, `[ProducesResponseType]`**
-- [ ] **Step 2: Viết `ChatModuleExtensions.cs` và ánh xạ Hub trong `Program.cs`**
-- [ ] **Step 3: Thêm cấu hình mẫu `Llm` vào `appsettings.json` với URL và model có thể cấu hình linh hoạt**
-- [ ] **Step 4: Chạy `dotnet build backend/AgentCoreSystem.slnx` và `dotnet test` toàn bộ solution đảm bảo 100% PASS**
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Viết `ChatController` v1 kế thừa `BaseApiController` với đầy đủ `<summary>`, `<remarks>`, `[ProducesResponseType]`**
+- [x] **Step 2: Viết `ChatModuleExtensions.cs` và ánh xạ Hub trong `Program.cs`**
+- [x] **Step 3: Thêm cấu hình mẫu `Llm` vào `appsettings.json` với URL và model có thể cấu hình linh hoạt**
+- [x] **Step 4: Chạy `dotnet build backend/AgentCoreSystem.slnx` và `dotnet test` toàn bộ solution đảm bảo 100% PASS**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Chat/AgentCoreSystem.Module.Chat.Presentation/ backend/src/Host/AgentCoreSystem.Api/
   git commit -m "feat(chat): expose Chat REST API v1, map SignalR Hub, and register module into Host"
@@ -246,11 +246,11 @@
   - `ChatSignalRService`: `connect()`, `joinChannel(channelId)`, `leaveChannel(channelId)`, `sendMessage(channelId, content, mentionIds)`, observables/signals cho incoming messages và chunks
   - `ChatStore`: Signals `messages = signal<ChatMessage[]>([])`, `streamingChunks = signal<Map<string, string>>(new Map())`, `isConnected = signal<boolean>(false)`
 
-- [ ] **Step 1: Định nghĩa TypeScript interfaces cho Chat**
-- [ ] **Step 2: Viết `ChatHttpService` giao tiếp REST API**
-- [ ] **Step 3: Cài đặt `@microsoft/signalr` (nếu chưa có) và viết `ChatSignalRService` với cơ chế auto-reconnect**
-- [ ] **Step 4: Viết `ChatStore` quản lý tin nhắn và ghép nối token streaming mượt mà**
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Định nghĩa TypeScript interfaces cho Chat**
+- [x] **Step 2: Viết `ChatHttpService` giao tiếp REST API**
+- [x] **Step 3: Cài đặt `@microsoft/signalr` (nếu chưa có) và viết `ChatSignalRService` với cơ chế auto-reconnect**
+- [x] **Step 4: Viết `ChatStore` quản lý tin nhắn và ghép nối token streaming mượt mà**
+- [x] **Step 5: Commit**
   ```bash
   git add frontend/src/app/features/chat/
   git commit -m "feat(frontend): create chat models, HTTP service, SignalR realtime service, and signals store"
