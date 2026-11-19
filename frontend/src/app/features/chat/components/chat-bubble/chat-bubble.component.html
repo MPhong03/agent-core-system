@@ -1,0 +1,55 @@
+<div
+  class="chat-bubble-container"
+  [class.agent-row]="isAgent()"
+  [class.user-row]="!isAgent()"
+  [class.streaming]="isStreaming()"
+>
+  <!-- Avatar Block -->
+  <div class="sender-avatar" [class.agent-avatar]="isAgent()">
+    @if (isAgent()) {
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="#0AC27D" stroke-width="2" fill="none">
+        <rect x="3" y="11" width="18" height="10" rx="2"/>
+        <circle cx="12" cy="5" r="2"/>
+        <path d="M12 7v4M8 16h.01M16 16h.01"/>
+      </svg>
+    } @else {
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="#0061FF" stroke-width="2" fill="none">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    }
+  </div>
+
+  <!-- Message Body -->
+  <div class="message-content-wrapper">
+    <!-- Header Meta -->
+    <div class="message-header">
+      <span class="sender-name">{{ senderDisplayName() }}</span>
+
+      @if (isAgent()) {
+        <span class="badge-ai">AI</span>
+      }
+
+      @if (message()?.callDepth && message()!.callDepth > 1) {
+        <span class="badge-depth" title="Độ sâu gọi chuỗi Agent">Lớp {{ message()!.callDepth }}</span>
+      }
+
+      @if (formattedTime()) {
+        <span class="message-time">{{ formattedTime() }}</span>
+      }
+
+      @if (isStreaming()) {
+        <span class="streaming-pill">Đang trả lời...</span>
+      }
+    </div>
+
+    <!-- Bubble Card -->
+    <div class="bubble-card" [class.streaming-card]="isStreaming()">
+      <div class="bubble-text" [innerHTML]="renderedContent()"></div>
+
+      @if (isStreaming()) {
+        <span class="typing-cursor" aria-hidden="true"></span>
+      }
+    </div>
+  </div>
+</div>

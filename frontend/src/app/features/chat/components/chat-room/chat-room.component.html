@@ -1,0 +1,154 @@
+<div class="chat-room-layout">
+  <!-- 1. Header Bar -->
+  <header class="chat-header">
+    <div class="header-info">
+      <div class="channel-title-row">
+        <span class="hash-icon">#</span>
+        <h3 class="channel-title">{{ channelName() || 'Kênh Thảo Luận' }}</h3>
+      </div>
+      <div class="header-meta">
+        <span class="member-count">{{ channelMembers().length }} thành viên</span>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <div
+        class="connection-pill"
+        [class.connected]="chatStore.connectionState() === 'connected'"
+        [class.connecting]="chatStore.connectionState() === 'connecting' || chatStore.connectionState() === 'reconnecting'"
+        [class.disconnected]="chatStore.connectionState() === 'disconnected'"
+      >
+        <span class="status-dot"></span>
+        <span class="status-text">{{ connectionStatusLabel() }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. Scrollable Messages History -->
+  <main
+    #messagesContainer
+    class="messages-container"
+    (scroll)="onScroll()"
+  >
+    <!-- Nút tải tin nhắn cũ hơn -->
+    @if (chatStore.hasMoreHistory() && chatStore.messages().length > 0) {
+      <div class="load-older-wrapper">
+        <button
+          type="button"
+          class="btn-load-older"
+          [disabled]="chatStore.isLoadingHistory()"
+          (click)="loadMoreOlderMessages()"
+        >
+          @if (chatStore.isLoadingHistory()) {
+            <span class="spinner-sm"></span>
+            <span>Đang tải tin cũ...</span>
+          } @else {
+            <span>↑ Tải thêm tin nhắn cũ</span>
+          }
+        </button>
+      </div>
+    }
+
+    <!-- Trạng thái tải lần đầu -->
+    @if (chatStore.isLoadingHistory() && chatStore.messages().length === 0) {
+      <div class="loading-state">
+        <span class="spinner"></span>
+        <p>Đang tải dữ liệu hội thoại kênh...</p>
+      </div>
+    }
+
+    <!-- Trạng thái kênh trống -->
+    @if (!chatStore.isLoadingHistory() && chatStore.messages().length === 0 && chatStore.activeStreamingEntries().length === 0) {
+      <div class="empty-chat-state">
+        <div class="empty-chat-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <h4>Chưa có tin nhắn nào trong kênh</h4>
+        <p>Hãy bắt đầu cuộc trao đổi hoặc gõ <strong>&#64;</strong> để triệu hồi các AI Agent hỗ trợ công việc.</p>
+      </div>
+    }
+
+    <!-- Danh sách tin nhắn chính thức -->
+    @for (msg of chatStore.messages(); track msg.id) {
+      <app-chat-bubble [message]="msg"></app-chat-bubble>
+    }
+
+    <!-- Danh sách các tin nhắn AI Agent đang stream token trực tiếp -->
+    @for (streaming of chatStore.activeStreamingEntries(); track streaming.messageId) {
+      <app-chat-bubble
+        [isStreaming]="true"
+        [streamingText]="streaming.content"
+      ></app-chat-bubble>
+    }
+  </main>
+
+  <!-- Nút cuộn xuống cuối khi có tin mới -->
+  @if (showScrollBottomButton()) {
+    <button
+      type="button"
+      class="btn-scroll-bottom"
+      (click)="scrollToBottom(true)"
+      aria-label="Cuộn xuống tin nhắn mới nhất"
+    >
+      <span>Tin nhắn mới nhất ↓</span>
+    </button>
+  }
+
+  <!-- 3. Message Input Composer -->
+  <footer class="composer-container">
+    <!-- Popover Autocomplete @mention -->
+    <app-mention-popover
+      [members]="channelMembers()"
+      [filterText]="mentionFilterText()"
+      [visible]="isMentionPopoverOpen()"
+      (selectMember)="onSelectMember($event)"
+      (closePopover)="closeMentionPopover()"
+    ></app-mention-popover>
+
+    <!-- Error Alert nếu có lỗi gửi/nhận -->
+    @if (chatStore.error(); as err) {
+      <div class="chat-error-banner">
+        <span>{{ err }}</span>
+      </div>
+    }
+
+    <div class="input-card">
+      <textarea
+        #messageTextarea
+        class="chat-textarea"
+        rows="2"
+        placeholder="Nhập tin nhắn... (gõ @ để nhắc tên AI Agent hoặc đồng nghiệp)"
+        [value]="messageText()"
+        (input)="messageText.set($any($event.target).value); onInputChanged($event)"
+        (keydown)="onKeyDown($event)"
+        [disabled]="isSending()"
+      ></textarea>
+
+      <div class="composer-toolbar">
+        <div class="toolbar-hints">
+          <span class="hint-text"><strong>Enter</strong> để gửi, <strong>Shift + Enter</strong> để xuống dòng</span>
+        </div>
+
+        <button
+          type="button"
+          class="btn-send"
+          [disabled]="!messageText().trim() || isSending()"
+          (click)="submitMessage()"
+          aria-label="Gửi tin nhắn"
+        >
+          @if (isSending()) {
+            <span class="spinner-sm"></span>
+          } @else {
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            <span>Gửi</span>
+          }
+        </button>
+      </div>
+    </div>
+  </footer>
+</div>

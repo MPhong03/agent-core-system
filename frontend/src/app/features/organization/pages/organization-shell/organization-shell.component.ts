@@ -22,6 +22,7 @@ import {
 } from '../../models/organization.models';
 import { OrganizationStore } from '../../store/organization.store';
 import { AgentProfileModalComponent } from '../../components/agent-profile-modal/agent-profile-modal.component';
+import { ChatRoomComponent } from '../../../chat/components/chat-room/chat-room.component';
 
 @Component({
   selector: 'app-organization-shell',
@@ -31,6 +32,7 @@ import { AgentProfileModalComponent } from '../../components/agent-profile-modal
     FormsModule,
     ReactiveFormsModule,
     AgentProfileModalComponent,
+    ChatRoomComponent,
   ],
   templateUrl: './organization-shell.component.html',
   styleUrls: ['./organization-shell.component.scss'],
@@ -41,6 +43,9 @@ export class OrganizationShellComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   readonly MemberType = MemberType;
+
+  // Tab navigation for active channel view ('chat' | 'members')
+  readonly activeChannelTab = signal<'chat' | 'members'>('chat');
 
   // Modal UI states
   readonly isAgentModalOpen = signal<boolean>(false);
@@ -79,6 +84,7 @@ export class OrganizationShellComponent implements OnInit {
   }
 
   onSelectChannel(channel: TeamChannel): void {
+    this.activeChannelTab.set('chat');
     this.store.selectChannel(channel);
   }
 

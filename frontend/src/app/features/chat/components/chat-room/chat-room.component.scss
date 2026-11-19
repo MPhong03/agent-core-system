@@ -1,0 +1,296 @@
+/**
+ * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
+ * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+.chat-room-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: #F7F5F2;
+  position: relative;
+}
+
+.chat-header {
+  height: 52px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #D8D6D3;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.channel-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .hash-icon {
+    font-size: 16px;
+    font-weight: 700;
+    color: #637282;
+  }
+
+  .channel-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1E1919;
+    margin: 0;
+  }
+}
+
+.header-meta .member-count {
+  font-size: 11px;
+  color: #637282;
+  background: #F7F5F2;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #EDECEA;
+}
+
+.connection-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #EDECEA;
+  color: #637282;
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &.connected {
+    background: #E6F9F2;
+    color: #0AC27D;
+  }
+
+  &.connecting {
+    background: #FEF6EB;
+    color: #F5A623;
+  }
+
+  &.disconnected {
+    background: #FDF0EE;
+    color: #C0392B;
+  }
+}
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.load-older-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.btn-load-older {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #0061FF;
+  background: #FFFFFF;
+  border: 1px solid #D8D6D3;
+  padding: 4px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #F0F5FF;
+    border-color: #0061FF;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.loading-state,
+.empty-chat-state {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px;
+  color: #637282;
+
+  .empty-chat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #FFFFFF;
+    border: 1px solid #D8D6D3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1E1919;
+    margin: 0 0 4px;
+  }
+
+  p {
+    font-size: 13px;
+    margin: 0;
+    max-width: 300px;
+    line-height: 18px;
+  }
+}
+
+.btn-scroll-bottom {
+  position: absolute;
+  bottom: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1E1919;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 16px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    background: #0061FF;
+  }
+}
+
+.composer-container {
+  padding: 10px 16px 14px;
+  background: #FFFFFF;
+  border-top: 1px solid #D8D6D3;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chat-error-banner {
+  background: #FDF0EE;
+  border: 1px solid #C0392B;
+  color: #C0392B;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.input-card {
+  border: 1px solid #D8D6D3;
+  border-radius: 6px;
+  background: #FFFFFF;
+  padding: 6px 10px;
+
+  &:focus-within {
+    border-color: #0061FF;
+    box-shadow: 0 0 0 1px #0061FF;
+  }
+}
+
+.chat-textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  color: #1E1919;
+  background: transparent;
+
+  &::placeholder {
+    color: #9EA9B2;
+  }
+}
+
+.composer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid #EDECEA;
+}
+
+.toolbar-hints .hint-text {
+  font-size: 11px;
+  color: #637282;
+
+  strong {
+    color: #1E1919;
+  }
+}
+
+.btn-send {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #0061FF;
+  color: #FFFFFF;
+  border: 1px solid #0061FF;
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #0048BD;
+    border-color: #0048BD;
+  }
+
+  &:disabled {
+    background: #EDECEA;
+    border-color: #EDECEA;
+    color: #9EA9B2;
+    cursor: not-allowed;
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #D8D6D3;
+  border-top-color: #0061FF;
+  border-radius: 50%;
+  animation: globalSpin 0.8s linear infinite;
+}
+
+.spinner-sm {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: globalSpin 0.8s linear infinite;
+}

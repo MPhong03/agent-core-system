@@ -1,0 +1,178 @@
+/**
+ * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
+ * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+import {
+  Component,
+  ChangeDetectionStrategy,
+  computed,
+  input,
+  SecurityContext,
+  inject,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ChatMessage } from '../../models/chat.models';
+
+/**
+ * Hiển thị một bong bóng tin nhắn đơn lẻ trong hội thoại kênh.
+ *
+ * <remarks>
+ * <para><strong>What:</strong> Render nội dung tin nhắn của Người dùng (Human) hoặc AI Agent, hỗ trợ markdown an toàn và streaming cursor.</para>
+ * <para><strong>When:</strong> Được nhúng trong ChatRoomComponent cho từng tin nhắn lịch sử và tin nhắn đang được Agent sinh token.</para>
+ * <para><strong>Why:</strong> Đảm bảo chuẩn giao diện Minimalist UI / Dropbox Pack, phân biệt trực quan giữa con người và AI Agent.</para>
+ * </remarks>
+ */
+@Component({
+  selector: 'app-chat-bubble',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './chat-bubble.component.html',
+  styleUrls: ['./chat-bubble.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class ChatBubbleComponent {
+  private readonly sanitizer = inject(DomSanitizer);
+
+  /**
+   * Tin nhắn cần hiển thị.
+   */
+  readonly message = input<ChatMessage | null>(null);
+
+  /**
+   * Cờ xác định tin nhắn có đang trong quá trình sinh token streaming thời gian thực hay không.
+   */
+  readonly isStreaming = input<boolean>(false);
+
+  /**
+   * Chuỗi token tích lũy tạm thời khi isStreaming = true.
+   */
+  readonly streamingText = input<string>('');
+
+  /**
+   * Xác định người gửi có phải là AI Agent hay không.
+   */
+  readonly isAgent = computed(() => {
+    if (this.isStreaming()) {
+      return true;
+    }
+    return this.message()?.isAgent ?? false;
+  });
+
+  /**
+   * Tên hiển thị của người gửi tin nhắn.
+   */
+  readonly senderDisplayName = computed(() => {
+    if (this.isStreaming()) {
+      return this.message()?.senderDisplayName || 'AI Agent';
+    }
+    return this.message()?.senderDisplayName || (this.isAgent() ? 'AI Agent' : 'Thành viên');
+  });
+
+  /**
+   * Nội dung thô của tin nhắn.
+   */
+  readonly rawText = computed(() => {
+    if (this.isStreaming()) {
+      return this.streamingText() || '';
+    }
+    return this.message()?.content || '';
+  });
+
+  /**
+   * Nội dung tin nhắn đã được parse Markdown và sanitize an toàn chống XSS.
+   */
+  readonly renderedContent = computed<SafeHtml>(() => {
+    const raw = this.rawText();
+    if (!raw) {
+      return '';
+    }
+
+    const html = this.parseSimpleMarkdown(raw);
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  });
+
+  /**
+   * Thời gian gửi tin nhắn định dạng ngắn gọn.
+   */
+  readonly formattedTime = computed(() => {
+    const dateStr = this.message()?.createdDate;
+    if (!dateStr) {
+      return '';
+    }
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '';
+    }
+  });
+
+  /**
+   * Parser Markdown an toàn hỗ trợ code block, inline code, bold, italic, list và line-breaks.
+   */
+  private parseSimpleMarkdown(text: string): string {
+    // 1. Chống XSS bằng cách escape các ký tự HTML đặc biệt trước tiên
+    let escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    // 2. Multi-line code block: ```lang ... ```
+    escaped = escaped.replace(/```(?:([a-zA-Z0-9_-]+)\r?\n)?([\s\S]*?)```/g, (_match, _lang, code) => {
+      return `<pre class="chat-code-block"><code>${code.trim()}</code></pre>`;
+    });
+
+    // 3. Inline code: `code`
+    escaped = escaped.replace(/`([^`\n]+)`/g, '<code class="chat-inline-code">$1</code>');
+
+    // 4. Bold: **text** hoặc __text__
+    escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    escaped = escaped.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+    // 5. Italic: *text* hoặc _text_
+    escaped = escaped.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    escaped = escaped.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+    // 6. Mentions: @DisplayName (tô sáng thẻ tag)
+    escaped = escaped.replace(/(@[\w\p{L}.-]+)/gu, '<span class="chat-mention-tag">$1</span>');
+
+    // 7. Bullet lists: Các dòng bắt đầu bằng `- ` hoặc `* `
+    const lines = escaped.split(/\r?\n/);
+    const processedLines: string[] = [];
+    let inList = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        if (!inList) {
+          processedLines.push('<ul class="chat-bullet-list">');
+          inList = true;
+        }
+        processedLines.push(`<li>${trimmed.substring(2)}</li>`);
+      } else {
+        if (inList) {
+          processedLines.push('</ul>');
+          inList = false;
+        }
+        processedLines.push(line);
+      }
+    }
+
+    if (inList) {
+      processedLines.push('</ul>');
+    }
+
+    // 8. Convert remaining newlines sang <br/> (trừ các thẻ HTML block)
+    return processedLines
+      .join('\n')
+      .replace(/\n/g, '<br/>')
+      .replace(/<br\/><pre/g, '<pre')
+      .replace(/<\/pre><br\/>/g, '</pre>')
+      .replace(/<br\/><ul/g, '<ul')
+      .replace(/<\/ul><br\/>/g, '</ul>');
+  }
+}
