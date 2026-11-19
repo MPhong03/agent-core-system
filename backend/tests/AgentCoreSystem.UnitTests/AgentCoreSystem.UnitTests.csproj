@@ -29,6 +29,7 @@
     <ProjectReference Include="..\..\src\Modules\Organization\AgentCoreSystem.Module.Organization.Domain\AgentCoreSystem.Module.Organization.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Organization\AgentCoreSystem.Module.Organization.Application\AgentCoreSystem.Module.Organization.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Organization\AgentCoreSystem.Module.Organization.Infrastructure\AgentCoreSystem.Module.Organization.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Domain\AgentCoreSystem.Module.Chat.Domain.csproj" />
   </ItemGroup>
 
 </Project>
