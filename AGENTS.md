@@ -62,7 +62,14 @@ Trước khi tạo mới hoặc sửa đổi code, Agent **BẮT BUỘC** phải
 
 ---
 
-## 3. Tài liệu Kiến trúc Hệ thống (.agents/documents/)
+## 3. Hệ thống Skills & Workflows Dự án (.agents/skills/ & .agents/workflows/)
+- **`/review`** - **Code Review Đối Chiếu Rules**: `@[.agents/skills/review/SKILL.md]` (hoặc workflow `@[.agents/workflows/review.md]`)
+  - **Mục đích**: Tự động rà soát, kiểm tra và đối chiếu các thay đổi (`git diff`, staged changes, hoặc PR) so với toàn bộ 10 bộ quy tắc cốt lõi trong `.agents/rules/` trước khi commit hoặc merge.
+  - **Lệnh thực thi**: Gõ `/review`, `@review` hoặc yêu cầu rà soát vi phạm rules.
+
+---
+
+## 4. Tài liệu Kiến trúc Hệ thống (.agents/documents/)
 - [Tổng quan Kiến trúc & Data Flow](.agents/documents/architecture-overview.md)
 - [Hướng dẫn Quản lý Schema & Migrations trên SQL Server](.agents/documents/database-schema-guide.md)
 - [Hướng dẫn Cấu hình Hangfire với MongoDB Storage](.agents/documents/hangfire-mongodb-guide.md)
@@ -70,7 +77,7 @@ Trước khi tạo mới hoặc sửa đổi code, Agent **BẮT BUỘC** phải
 
 ---
 
-## 4. Cấu trúc Thư mục Dự án (Project Layout)
+## 5. Cấu trúc Thư mục Dự án (Project Layout)
 ```text
 PROJECT/
 ├── AGENTS.md                                     # Quy ước tối cao & Chỉ mục dành cho Agent
