@@ -3,6 +3,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Modules\System\AgentCoreSystem.Module.System.Presentation\AgentCoreSystem.Module.System.Presentation.csproj" />
     <ProjectReference Include="..\..\Modules\System\AgentCoreSystem.Module.System.Infrastructure\AgentCoreSystem.Module.System.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Organization\AgentCoreSystem.Module.Organization.Presentation\AgentCoreSystem.Module.Organization.Presentation.csproj" />
+    <ProjectReference Include="..\..\Modules\Organization\AgentCoreSystem.Module.Organization.Infrastructure\AgentCoreSystem.Module.Organization.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Shared\AgentCoreSystem.Shared.Infrastructure\AgentCoreSystem.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Shared\AgentCoreSystem.Shared.Persistence\AgentCoreSystem.Shared.Persistence.csproj" />
   </ItemGroup>

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\AgentCoreSystem.Module.Organization.Domain\AgentCoreSystem.Module.Organization.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Application\AgentCoreSystem.Shared.Application.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

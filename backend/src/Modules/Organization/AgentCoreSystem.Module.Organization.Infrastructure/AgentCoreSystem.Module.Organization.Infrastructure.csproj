@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\AgentCoreSystem.Module.Organization.Domain\AgentCoreSystem.Module.Organization.Domain.csproj" />
+    <ProjectReference Include="..\AgentCoreSystem.Module.Organization.Application\AgentCoreSystem.Module.Organization.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Persistence\AgentCoreSystem.Shared.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Infrastructure\AgentCoreSystem.Shared.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

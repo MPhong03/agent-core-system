@@ -4,6 +4,12 @@
     <Project Path="src/Host/AgentCoreSystem.Api/AgentCoreSystem.Api.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Organization/">
+    <Project Path="src/Modules/Organization/AgentCoreSystem.Module.Organization.Application/AgentCoreSystem.Module.Organization.Application.csproj" />
+    <Project Path="src/Modules/Organization/AgentCoreSystem.Module.Organization.Domain/AgentCoreSystem.Module.Organization.Domain.csproj" />
+    <Project Path="src/Modules/Organization/AgentCoreSystem.Module.Organization.Infrastructure/AgentCoreSystem.Module.Organization.Infrastructure.csproj" />
+    <Project Path="src/Modules/Organization/AgentCoreSystem.Module.Organization.Presentation/AgentCoreSystem.Module.Organization.Presentation.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/System/">
     <Project Path="src/Modules/System/AgentCoreSystem.Module.System.Application/AgentCoreSystem.Module.System.Application.csproj" />
     <Project Path="src/Modules/System/AgentCoreSystem.Module.System.Domain/AgentCoreSystem.Module.System.Domain.csproj" />
