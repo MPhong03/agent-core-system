@@ -61,6 +61,14 @@ test-backend:
 test-ui:
     cd frontend; npm test -- --run
 
+# Chạy End-to-End Tests với Playwright (Headless)
+test-e2e:
+    cd frontend; npx playwright test
+
+# Chạy End-to-End Tests với giao diện trực quan Playwright UI Runner
+test-e2e-ui:
+    cd frontend; npx playwright test --ui
+
 # -----------------------------------------------------------------------------
 # 4. EF Core Migrations (Hỗ trợ Kiến trúc Schema-per-module)
 # -----------------------------------------------------------------------------
