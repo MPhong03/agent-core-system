@@ -54,7 +54,9 @@ Trước khi tạo mới hoặc sửa đổi code, Agent **BẮT BUỘC** phải
    - Feature-driven Modular Design với **Standalone Components** làm mặc định.
    - Tối ưu hiệu năng với `ChangeDetectionStrategy.OnPush`, **Angular Signals** (`signal`, `computed`, `effect`) và cú pháp Control Flow mới (`@if`, `@for`, `@defer`).
    - Lazy load toàn bộ Feature modules qua `loadChildren` / `loadComponent`.
-9. **[Command Runner (`justfile`)](.agents/documents/justfile-guide.md)**:
+9. **[Frontend Design Philosophy (Dropbox Pack)](.agents/rules/frontend-design-philosophy.md)**:
+   - Kết hợp triết lý **Hallmark** (Anti-AI-slop, 8-state discipline), **Minimalist UI** (Warm canvas `#F7F5F2`, 1px borders, muted pastels), và **Frontend Design** theo chuẩn [DESIGN.md](DESIGN.md).
+10. **[Command Runner (`justfile`)](.agents/documents/justfile-guide.md)**:
    - Sử dụng `just <command>` làm Single Entry Point cho các thao tác Build, Test, Format và quản lý EF Core Migrations đa schema.
    - Gõ `just` hoặc `just --list` tại thư mục gốc để tra cứu nhanh menu lệnh.
 
