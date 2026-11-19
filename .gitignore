@@ -58,3 +58,5 @@ desktop.ini
 
 # Superpowers / Local scratch
 .superpowers/
+.worktrees/
+worktrees/
