@@ -32,6 +32,7 @@ namespace AgentCoreSystem.Module.Chat.Application.Messages.Commands
     /// <param name="CallDepth">Độ sâu cuộc gọi phản hồi tự động (mặc định 0).</param>
     /// <param name="ParentMessageId">Mã tin nhắn cha được phản hồi (nếu có).</param>
     /// <param name="MentionIds">Danh sách mã thành viên được nhắc tên trong tin nhắn (nếu có).</param>
+    /// <param name="MessageId">Mã định danh tin nhắn được cấp trước (UUIDv7, nếu có).</param>
     public record SaveChatMessageCommand(
         Guid ChannelId,
         Guid SenderMemberId,
@@ -40,7 +41,8 @@ namespace AgentCoreSystem.Module.Chat.Application.Messages.Commands
         string Content,
         int CallDepth = 0,
         Guid? ParentMessageId = null,
-        List<Guid>? MentionIds = null) : ICommand<ChatMessageDto>;
+        List<Guid>? MentionIds = null,
+        Guid? MessageId = null) : ICommand<ChatMessageDto>;
 
     /// <summary>
     /// Bộ xác thực tính hợp lệ của lệnh lưu tin nhắn trò chuyện.
@@ -70,7 +72,7 @@ namespace AgentCoreSystem.Module.Chat.Application.Messages.Commands
         : ICommandHandler<SaveChatMessageCommand, ChatMessageDto>
     {
         public async Task<Result<ChatMessageDto>> Handle(
-            SaveChatMessageCommand request, 
+            SaveChatMessageCommand request,
             CancellationToken cancellationToken)
         {
             var message = new ChatMessage(
@@ -80,7 +82,8 @@ namespace AgentCoreSystem.Module.Chat.Application.Messages.Commands
                 request.IsAgent,
                 request.Content,
                 request.CallDepth,
-                request.ParentMessageId);
+                request.ParentMessageId,
+                request.MessageId);
 
             if (request.MentionIds is { Count: > 0 })
             {

@@ -23,7 +23,7 @@ namespace AgentCoreSystem.Module.Chat.Application.Messages.Queries
         : IQueryHandler<GetChannelMessagesQuery, IReadOnlyList<ChatMessageDto>>
     {
         public async Task<Result<IReadOnlyList<ChatMessageDto>>> Handle(
-            GetChannelMessagesQuery request, 
+            GetChannelMessagesQuery request,
             CancellationToken cancellationToken)
         {
             var limit = request.Limit > 0 ? request.Limit : 50;
@@ -38,7 +38,7 @@ namespace AgentCoreSystem.Module.Chat.Application.Messages.Queries
                 var beforeMessage = await dbContext.Messages
                     .AsNoTracking()
                     .FirstOrDefaultAsync(
-                        m => m.Id == request.BeforeMessageId.Value && m.ChannelId == request.ChannelId, 
+                        m => m.Id == request.BeforeMessageId.Value && m.ChannelId == request.ChannelId,
                         cancellationToken);
 
                 if (beforeMessage is null)

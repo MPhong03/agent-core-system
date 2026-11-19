@@ -45,7 +45,8 @@ namespace AgentCoreSystem.Module.Chat.Domain.Entities
             bool isAgent,
             string content,
             int callDepth = 0,
-            Guid? parentMessageId = null) : base()
+            Guid? parentMessageId = null,
+            Guid? id = null) : base(id ?? Guid.Empty)
         {
             ChannelId = channelId;
             SenderMemberId = senderMemberId;

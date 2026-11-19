@@ -6,6 +6,7 @@
 using System;
 using AgentCoreSystem.Module.Chat.Application.Contracts;
 using AgentCoreSystem.Module.Chat.Infrastructure.Persistence;
+using AgentCoreSystem.Module.Chat.Infrastructure.Services;
 using AgentCoreSystem.Shared.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,7 +17,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure
     public static class DependencyInjection
     {
         /// <summary>
-        /// Đăng ký các dịch vụ tầng hạ tầng (Infrastructure) của phân hệ Chat bao gồm ChatDbContext và SQL Server.
+        /// Đăng ký các dịch vụ tầng hạ tầng (Infrastructure) của phân hệ Chat bao gồm ChatDbContext, SignalR và MessageDispatcherService.
         /// </summary>
         /// <param name="services">Tập hợp các dịch vụ ứng dụng.</param>
         /// <param name="configuration">Cấu hình hệ thống.</param>
@@ -39,6 +40,9 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure
 
             services.AddScoped<IChatDbContext>(sp =>
                 sp.GetRequiredService<ChatDbContext>());
+
+            services.AddSignalR();
+            services.AddScoped<IMessageDispatcherService, MessageDispatcherService>();
 
             return services;
         }

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AgentCoreSystem.Module.Chat.Domain\AgentCoreSystem.Module.Chat.Domain.csproj" />
     <ProjectReference Include="..\AgentCoreSystem.Module.Chat.Application\AgentCoreSystem.Module.Chat.Application.csproj" />
+    <ProjectReference Include="..\..\Organization\AgentCoreSystem.Module.Organization.Application\AgentCoreSystem.Module.Organization.Application.csproj" />
     <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Persistence\AgentCoreSystem.Shared.Persistence.csproj" />
     <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Infrastructure\AgentCoreSystem.Shared.Infrastructure.csproj" />
   </ItemGroup>

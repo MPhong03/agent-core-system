@@ -252,7 +252,7 @@ namespace AgentCoreSystem.UnitTests.Chat
             services.AddChatApplication();
 
             // Mock IChatDbContext
-            services.AddScoped<AgentCoreSystem.Module.Chat.Application.Contracts.IChatDbContext>(_ => 
+            services.AddScoped<AgentCoreSystem.Module.Chat.Application.Contracts.IChatDbContext>(_ =>
             {
                 var options = new DbContextOptionsBuilder<ChatDbContext>()
                     .UseInMemoryDatabase(Guid.NewGuid().ToString())

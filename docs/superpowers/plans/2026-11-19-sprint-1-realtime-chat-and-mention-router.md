@@ -51,12 +51,12 @@
   - `interface ILLMClient { IAsyncEnumerable<string> StreamChatAsync(string model, IEnumerable<ChatMessagePayload> messages, decimal? temperature, CancellationToken ct); }`
   - `interface ILLMProviderFactory { ILLMClient GetClient(string? providerName = null); }`
 
-- [ ] **Step 1: Viết Unit Test cho OpenAiCompatibleClient giả lập SSE stream (`data: {"choices":[{"delta":{"content":"Hello"}}]}`)**
-- [ ] **Step 2: Chạy test để xác nhận FAIL**
+- [x] **Step 1: Viết Unit Test cho OpenAiCompatibleClient giả lập SSE stream (`data: {"choices":[{"delta":{"content":"Hello"}}]}`)**
+- [x] **Step 2: Chạy test để xác nhận FAIL**
   Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter FullyQualifiedName~LlmClientTests`
-- [ ] **Step 3: Triển khai `LlmOptions`, `OpenAiCompatibleClient` (đọc SSE `text/event-stream`), `LlmProviderFactory` và đăng ký DI**
-- [ ] **Step 4: Chạy lại test để xác nhận PASS**
-- [ ] **Step 5: Commit**
+- [x] **Step 3: Triển khai `LlmOptions`, `OpenAiCompatibleClient` (đọc SSE `text/event-stream`), `LlmProviderFactory` và đăng ký DI**
+- [x] **Step 4: Chạy lại test để xác nhận PASS**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Shared/AgentCoreSystem.Shared.Infrastructure/LLM/ backend/tests/AgentCoreSystem.UnitTests/LLM/
   git commit -m "feat(llm): implement generic OpenAI-compatible streaming LLM client"
@@ -77,11 +77,11 @@
 **Interfaces:**
 - Produces: 4 tầng Clean Architecture của Module Chat kết nối vào Solution và Host API.
 
-- [ ] **Step 1: Tạo csproj cho 4 tầng của `Module.Chat` tham chiếu các tầng Shared tương ứng**
-- [ ] **Step 2: Đăng ký 4 project vào `backend/AgentCoreSystem.slnx` dưới thư mục `/src/Modules/Chat/`**
-- [ ] **Step 3: Thêm project references vào `AgentCoreSystem.Api.csproj`**
-- [ ] **Step 4: Chạy `dotnet build backend/AgentCoreSystem.slnx` để xác nhận build thành công**
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Tạo csproj cho 4 tầng của `Module.Chat` tham chiếu các tầng Shared tương ứng**
+- [x] **Step 2: Đăng ký 4 project vào `backend/AgentCoreSystem.slnx` dưới thư mục `/src/Modules/Chat/`**
+- [x] **Step 3: Thêm project references vào `AgentCoreSystem.Api.csproj`**
+- [x] **Step 4: Chạy `dotnet build backend/AgentCoreSystem.slnx` để xác nhận build thành công**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Chat/ backend/AgentCoreSystem.slnx backend/src/Host/AgentCoreSystem.Api/AgentCoreSystem.Api.csproj
   git commit -m "feat(chat): scaffold clean architecture projects for Chat module"
@@ -101,12 +101,12 @@
   - `class ChatMessage : BaseEntity { Guid ChannelId, Guid SenderMemberId, string SenderDisplayName, bool IsAgent, string Content, int CallDepth, Guid? ParentMessageId, ICollection<MessageMention> Mentions }`
   - `class MessageMention : BaseEntity { Guid MessageId, Guid MentionedMemberId }`
 
-- [ ] **Step 1: Viết Unit Test kiểm tra khởi tạo `ChatMessage`, gán UUIDv7, default `CallDepth = 0`, thêm Mention**
-- [ ] **Step 2: Chạy test để xác nhận FAIL**
+- [x] **Step 1: Viết Unit Test kiểm tra khởi tạo `ChatMessage`, gán UUIDv7, default `CallDepth = 0`, thêm Mention**
+- [x] **Step 2: Chạy test để xác nhận FAIL**
   Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter FullyQualifiedName~ChatDomainTests`
-- [ ] **Step 3: Triển khai các Entities `ChatMessage` và `MessageMention` trong `Module.Chat.Domain`**
-- [ ] **Step 4: Chạy lại test để xác nhận PASS**
-- [ ] **Step 5: Commit**
+- [x] **Step 3: Triển khai các Entities `ChatMessage` và `MessageMention` trong `Module.Chat.Domain`**
+- [x] **Step 4: Chạy lại test để xác nhận PASS**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Chat/AgentCoreSystem.Module.Chat.Domain/ backend/tests/AgentCoreSystem.UnitTests/Chat/
   git commit -m "feat(chat): define ChatMessage and MessageMention domain entities"
@@ -129,11 +129,11 @@
   - Index trên `ChannelId` và `CreatedDate` (đáp ứng truy vấn nhanh Sliding Window 20 tin nhắn)
   - Extension `IServiceCollection AddChatInfrastructure(this IServiceCollection services, IConfiguration configuration)`
 
-- [ ] **Step 1: Định nghĩa `ChatDbContext` và các Fluent API Configurations trong schema `chat`**
-- [ ] **Step 2: Tạo EF Core Migration đầu tiên `Initial_Chat_Schema`**
+- [x] **Step 1: Định nghĩa `ChatDbContext` và các Fluent API Configurations trong schema `chat`**
+- [x] **Step 2: Tạo EF Core Migration đầu tiên `Initial_Chat_Schema`**
   Run: `dotnet ef migrations add Initial_Chat_Schema --project backend/src/Modules/Chat/AgentCoreSystem.Module.Chat.Infrastructure --startup-project backend/src/Host/AgentCoreSystem.Api --output-dir Persistence/Migrations`
-- [ ] **Step 3: Đăng ký `AddChatInfrastructure` và build test thành công**
-- [ ] **Step 4: Commit**
+- [x] **Step 3: Đăng ký `AddChatInfrastructure` và build test thành công**
+- [x] **Step 4: Commit**
   ```bash
   git add backend/src/Modules/Chat/AgentCoreSystem.Module.Chat.Infrastructure/
   git commit -m "feat(chat): configure ChatDbContext and generate initial chat migrations"
@@ -158,11 +158,11 @@
   - `GetChannelMessagesQuery(Guid ChannelId, int Limit = 50, Guid? BeforeMessageId = null) : IRequest<Result<IReadOnlyList<ChatMessageDto>>>`
   - `SaveChatMessageCommand(Guid ChannelId, Guid SenderMemberId, string SenderDisplayName, bool IsAgent, string Content, int CallDepth, Guid? ParentMessageId, List<Guid>? MentionIds) : IRequest<Result<ChatMessageDto>>`
 
-- [ ] **Step 1: Viết Unit Test cho `GetChannelMessagesQueryHandler` và `SaveChatMessageCommandHandler`**
-- [ ] **Step 2: Chạy test để xác nhận FAIL**
-- [ ] **Step 3: Triển khai Query lấy thành viên trong Module Org, triển khai DTOs, Handlers và `AddChatApplication`**
-- [ ] **Step 4: Chạy lại test để xác nhận PASS**
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Viết Unit Test cho `GetChannelMessagesQueryHandler` và `SaveChatMessageCommandHandler`**
+- [x] **Step 2: Chạy test để xác nhận FAIL**
+- [x] **Step 3: Triển khai Query lấy thành viên trong Module Org, triển khai DTOs, Handlers và `AddChatApplication`**
+- [x] **Step 4: Chạy lại test để xác nhận PASS**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Organization/AgentCoreSystem.Module.Organization.Application/ backend/src/Modules/Chat/AgentCoreSystem.Module.Chat.Application/ backend/tests/AgentCoreSystem.UnitTests/Chat/
   git commit -m "feat(chat): implement cross-module member lookup and chat CQRS handlers"
@@ -191,11 +191,11 @@
     - Lưu câu trả lời vào DB với `CallDepth = userMessage.CallDepth + 1`.
     - Dừng kích hoạt nếu `CallDepth >= 3`.
 
-- [ ] **Step 1: Viết Unit Test kiểm tra `MessageDispatcherService`: xử lý tuần tự nhiều agent, lấy 20 tin nhắn gần nhất, và ngắt khi `CallDepth >= 3`**
-- [ ] **Step 2: Chạy test để xác nhận FAIL**
-- [ ] **Step 3: Triển khai `SignalRChatHub` và `MessageDispatcherService`**
-- [ ] **Step 4: Chạy lại test để xác nhận PASS**
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Viết Unit Test kiểm tra `MessageDispatcherService`: xử lý tuần tự nhiều agent, lấy 20 tin nhắn gần nhất, và ngắt khi `CallDepth >= 3`**
+- [x] **Step 2: Chạy test để xác nhận FAIL**
+- [x] **Step 3: Triển khai `SignalRChatHub` và `MessageDispatcherService`**
+- [x] **Step 4: Chạy lại test để xác nhận PASS**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Chat/AgentCoreSystem.Module.Chat.Infrastructure/ backend/tests/AgentCoreSystem.UnitTests/Chat/
   git commit -m "feat(chat): implement SignalRChatHub and sequential @Mention MessageDispatcherService"

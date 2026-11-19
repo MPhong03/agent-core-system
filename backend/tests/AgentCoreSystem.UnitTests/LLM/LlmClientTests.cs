@@ -28,7 +28,7 @@ namespace AgentCoreSystem.UnitTests.LLM
         [Fact]
         public async Task StreamChatAsync_ShouldYieldChunks_WhenSseStreamIsValid()
         {
-            var sseContent = 
+            var sseContent =
                 "data: {\"choices\":[{\"delta\":{\"content\":\"Hello\"}}]}\n\n" +
                 "data: {\"choices\":[{\"delta\":{\"content\":\" World\"}}]}\n\n" +
                 "data: [DONE]\n\n";
