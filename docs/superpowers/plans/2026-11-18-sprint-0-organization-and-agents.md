@@ -47,10 +47,10 @@
   - `Presentation` references `Application`, `AgentCoreSystem.Shared.Infrastructure`
   - `Host/Api` references `Infrastructure`, `Presentation`
 
-- [ ] **Step 1: Tạo thư mục và csproj cho 4 tầng của Module.Organization**
-- [ ] **Step 2: Thêm các project vào `backend/AgentCoreSystem.slnx` dưới thư mục `/src/Modules/Organization/`**
-- [ ] **Step 3: Chạy `dotnet build backend/AgentCoreSystem.slnx` để kiểm tra liên kết project thành công**
-- [ ] **Step 4: Commit**
+- [x] **Step 1: Tạo thư mục và csproj cho 4 tầng của Module.Organization**
+- [x] **Step 2: Thêm các project vào `backend/AgentCoreSystem.slnx` dưới thư mục `/src/Modules/Organization/`**
+- [x] **Step 3: Chạy `dotnet build backend/AgentCoreSystem.slnx` để kiểm tra liên kết project thành công**
+- [x] **Step 4: Commit**
   ```bash
   git add backend/src/Modules/Organization/ backend/AgentCoreSystem.slnx backend/src/Host/AgentCoreSystem.Api/AgentCoreSystem.Api.csproj
   git commit -m "feat(org): scaffold Organization module clean architecture projects"
@@ -78,12 +78,12 @@
   - `class Member : BaseEntity { Guid ChannelId, MemberType Type, Guid? UserId, Guid? AgentProfileId, string DisplayName }`
   - `class AgentProfile : BaseEntity { string Name, string? AvatarUrl, ModelProviderType Provider, string ModelName, string SystemPrompt, string? PrivateMemoryNotes, decimal Temperature }`
 
-- [ ] **Step 1: Viết Unit Test kiểm tra khởi tạo Entity UUIDv7 và default values**
-- [ ] **Step 2: Chạy test để xác nhận FAIL**
+- [x] **Step 1: Viết Unit Test kiểm tra khởi tạo Entity UUIDv7 và default values**
+- [x] **Step 2: Chạy test để xác nhận FAIL**
   Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter FullyQualifiedName~OrganizationDomainTests`
-- [ ] **Step 3: Triển khai các Enums và Entities trong `AgentCoreSystem.Module.Organization.Domain`**
-- [ ] **Step 4: Chạy lại test để xác nhận PASS**
-- [ ] **Step 5: Commit**
+- [x] **Step 3: Triển khai các Enums và Entities trong `AgentCoreSystem.Module.Organization.Domain`**
+- [x] **Step 4: Chạy lại test để xác nhận PASS**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Organization/AgentCoreSystem.Module.Organization.Domain/ backend/tests/AgentCoreSystem.UnitTests/Organization/
   git commit -m "feat(org): define domain entities and enums for Organization module"
@@ -110,12 +110,12 @@
   - Unique Index: `(DepartmentId, Name)` on `TeamChannel`, `(ChannelId, DisplayName)` on `Member`
   - Extension `IServiceCollection AddOrganizationInfrastructure(this IServiceCollection services, IConfiguration configuration)`
 
-- [ ] **Step 1: Định nghĩa `OrganizationDbContext` kế thừa `BaseDbContext` với `builder.HasDefaultSchema("org");`**
-- [ ] **Step 2: Viết các Fluent API Configuration mapping tables sang schema `org`**
-- [ ] **Step 3: Tạo EF Core Migration đầu tiên `Initial_Organization_Schema`**
+- [x] **Step 1: Định nghĩa `OrganizationDbContext` kế thừa `BaseDbContext` với `builder.HasDefaultSchema("org");`**
+- [x] **Step 2: Viết các Fluent API Configuration mapping tables sang schema `org`**
+- [x] **Step 3: Tạo EF Core Migration đầu tiên `Initial_Organization_Schema`**
   Run: `dotnet ef migrations add Initial_Organization_Schema --project backend/src/Modules/Organization/AgentCoreSystem.Module.Organization.Infrastructure --startup-project backend/src/Host/AgentCoreSystem.Api --output-dir Persistence/Migrations`
-- [ ] **Step 4: Đăng ký DbContext vào `AddOrganizationInfrastructure` và build test thành công**
-- [ ] **Step 5: Commit**
+- [x] **Step 4: Đăng ký DbContext vào `AddOrganizationInfrastructure` và build test thành công**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Organization/AgentCoreSystem.Module.Organization.Infrastructure/
   git commit -m "feat(org): configure OrganizationDbContext and generate initial migrations"
@@ -145,11 +145,11 @@
   - `GetDepartmentsQuery() : IRequest<Result<IReadOnlyList<DepartmentDto>>>`
   - `GetChannelsByDepartmentQuery(Guid DepartmentId) : IRequest<Result<IReadOnlyList<TeamChannelDto>>>`
 
-- [ ] **Step 1: Viết Unit Test cho CreateDepartmentCommandHandler (Happy path & Validation failure)**
-- [ ] **Step 2: Chạy test để xác nhận FAIL**
-- [ ] **Step 3: Triển khai DTOs, Commands, Queries, Validators, Handlers và `AddOrganizationApplication`**
-- [ ] **Step 4: Chạy lại test để xác nhận PASS**
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Viết Unit Test cho CreateDepartmentCommandHandler (Happy path & Validation failure)**
+- [x] **Step 2: Chạy test để xác nhận FAIL**
+- [x] **Step 3: Triển khai DTOs, Commands, Queries, Validators, Handlers và `AddOrganizationApplication`**
+- [x] **Step 4: Chạy lại test để xác nhận PASS**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Organization/AgentCoreSystem.Module.Organization.Application/ backend/tests/AgentCoreSystem.UnitTests/Organization/
   git commit -m "feat(org): implement Department and TeamChannel CQRS handlers"
@@ -174,11 +174,11 @@
   - `AssignMemberToChannelCommand(Guid ChannelId, MemberType Type, Guid? UserId, Guid? AgentProfileId, string DisplayName) : IRequest<Result<Guid>>`
   - `GetAgentProfilesQuery() : IRequest<Result<IReadOnlyList<AgentProfileDto>>>`
 
-- [ ] **Step 1: Viết Unit Test cho CreateAgentProfile và AssignMemberToChannel**
-- [ ] **Step 2: Chạy test để xác nhận FAIL**
-- [ ] **Step 3: Triển khai Commands, Handlers, Validators kiểm tra SystemPrompt không rỗng, ModelName hợp lệ**
-- [ ] **Step 4: Chạy lại test để xác nhận PASS**
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Viết Unit Test cho CreateAgentProfile và AssignMemberToChannel**
+- [x] **Step 2: Chạy test để xác nhận FAIL**
+- [x] **Step 3: Triển khai Commands, Handlers, Validators kiểm tra SystemPrompt không rỗng, ModelName hợp lệ**
+- [x] **Step 4: Chạy lại test để xác nhận PASS**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Organization/AgentCoreSystem.Module.Organization.Application/Agents/ backend/tests/AgentCoreSystem.UnitTests/Organization/
   git commit -m "feat(org): implement AgentProfile creation and channel assignment CQRS"
@@ -206,11 +206,11 @@
   - `POST /api/v1/channels/{channelId}/members`
   - Full OpenAPI documentation with `<summary>`, `<remarks>`, `[ProducesResponseType]`
 
-- [ ] **Step 1: Viết các Controllers v1 kế thừa BaseApiController, sử dụng MediatR `ISender` và `ToProblemDetails()`**
-- [ ] **Step 2: Tạo `OrganizationModuleExtensions.cs` đăng ký Application, Infrastructure, Presentation vào Host**
-- [ ] **Step 3: Gọi `builder.Services.AddOrganizationModule(builder.Configuration);` trong `Program.cs`**
-- [ ] **Step 4: Chạy `dotnet build backend/AgentCoreSystem.slnx` đảm bảo 0 errors, 0 warnings**
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Viết các Controllers v1 kế thừa BaseApiController, sử dụng MediatR `ISender` và `ToProblemDetails()`**
+- [x] **Step 2: Tạo `OrganizationModuleExtensions.cs` đăng ký Application, Infrastructure, Presentation vào Host**
+- [x] **Step 3: Gọi `builder.Services.AddOrganizationModule(builder.Configuration);` trong `Program.cs`**
+- [x] **Step 4: Chạy `dotnet build backend/AgentCoreSystem.slnx` đảm bảo 0 errors, 0 warnings**
+- [x] **Step 5: Commit**
   ```bash
   git add backend/src/Modules/Organization/AgentCoreSystem.Module.Organization.Presentation/ backend/src/Host/AgentCoreSystem.Api/
   git commit -m "feat(org): expose Organization REST API v1 endpoints with OAS docs"
@@ -233,10 +233,10 @@
   - `OrganizationService`: `getDepartments()`, `createDepartment()`, `getChannels()`, `createChannel()`, `getAgentProfiles()`, `createAgentProfile()`
   - `OrganizationStore`: Signals `departments = signal<Department[]>([])`, `selectedDepartment = signal<Department | null>(null)`, `agentProfiles = signal<AgentProfile[]>([])`, `loading = signal<boolean>(false)`
 
-- [ ] **Step 1: Định nghĩa Typescript models khớp với C# DTOs**
-- [ ] **Step 2: Viết `OrganizationService` sử dụng Angular `HttpClient`**
-- [ ] **Step 3: Viết `OrganizationStore` quản lý trạng thái bằng Angular Signals**
-- [ ] **Step 4: Commit**
+- [x] **Step 1: Định nghĩa Typescript models khớp với C# DTOs**
+- [x] **Step 2: Viết `OrganizationService` sử dụng Angular `HttpClient`**
+- [x] **Step 3: Viết `OrganizationStore` quản lý trạng thái bằng Angular Signals**
+- [x] **Step 4: Commit**
   ```bash
   git add frontend/src/app/features/organization/
   git commit -m "feat(frontend): create models, service and signals store for organization feature"
@@ -261,11 +261,11 @@
     - Cột phải: Danh sách thành viên Kênh & Modal cấu hình Agent (Chọn model: Gemini/OpenAI, nhập System prompt, thanh trượt Temperature)
   - Lazy-loaded route: `/organization` in `app.routes.ts`
 
-- [ ] **Step 1: Xây dựng UI Organization Shell hiển thị cây phòng ban và danh sách kênh**
-- [ ] **Step 2: Xây dựng Modal tạo/sửa hồ sơ Agent (AgentProfileModalComponent)**
-- [ ] **Step 3: Đăng ký route lazy-load `/organization` trong `app.routes.ts`**
-- [ ] **Step 4: Chạy `npm run build` trong thư mục `frontend` đảm bảo build thành công 0 lỗi**
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Xây dựng UI Organization Shell hiển thị cây phòng ban và danh sách kênh**
+- [x] **Step 2: Xây dựng Modal tạo/sửa hồ sơ Agent (AgentProfileModalComponent)**
+- [x] **Step 3: Đăng ký route lazy-load `/organization` trong `app.routes.ts`**
+- [x] **Step 4: Chạy `npm run build` trong thư mục `frontend` đảm bảo build thành công 0 lỗi**
+- [x] **Step 5: Commit**
   ```bash
   git add frontend/src/app/features/organization/ frontend/src/app/app.routes.ts
   git commit -m "feat(frontend): implement Organization tree view and Agent profile modal UI"
