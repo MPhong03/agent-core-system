@@ -30,6 +30,9 @@ namespace AgentCoreSystem.Module.Organization.Infrastructure
                 }).AddInterceptors(interceptor);
             });
 
+            services.AddScoped<AgentCoreSystem.Module.Organization.Application.Contracts.IOrganizationDbContext>(sp => 
+                sp.GetRequiredService<OrganizationDbContext>());
+
             return services;
         }
     }
