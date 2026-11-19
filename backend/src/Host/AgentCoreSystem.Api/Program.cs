@@ -122,6 +122,7 @@ namespace AgentCoreSystem.Api
 
             // 6. Đăng ký các Phân hệ nghiệp vụ (Modular Monolith)
             builder.Services.AddSystemModule(builder.Configuration);
+            builder.Services.AddOrganizationModule(builder.Configuration);
 
             // 7. Cấu hình API Versioning (/api/v1/...)
             builder.Services.AddApiVersioning(options =>
