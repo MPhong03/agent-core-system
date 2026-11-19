@@ -30,6 +30,8 @@
     <ProjectReference Include="..\..\src\Modules\Organization\AgentCoreSystem.Module.Organization.Application\AgentCoreSystem.Module.Organization.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Organization\AgentCoreSystem.Module.Organization.Infrastructure\AgentCoreSystem.Module.Organization.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Domain\AgentCoreSystem.Module.Chat.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Application\AgentCoreSystem.Module.Chat.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Infrastructure\AgentCoreSystem.Module.Chat.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

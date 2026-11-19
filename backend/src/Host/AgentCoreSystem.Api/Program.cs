@@ -10,6 +10,7 @@ using Asp.Versioning.ApiExplorer;
 using AgentCoreSystem.Api.Extensions;
 using AgentCoreSystem.Api.Middleware;
 using AgentCoreSystem.Api.Swagger;
+using AgentCoreSystem.Module.Chat.Infrastructure;
 using AgentCoreSystem.Module.System.Application.Common;
 using AgentCoreSystem.Shared.Application;
 using AgentCoreSystem.Shared.Infrastructure;
@@ -133,6 +134,7 @@ namespace AgentCoreSystem.Api
             // 6. Đăng ký các Phân hệ nghiệp vụ (Modular Monolith)
             builder.Services.AddSystemModule(builder.Configuration);
             builder.Services.AddOrganizationModule(builder.Configuration);
+            builder.Services.AddChatInfrastructure(builder.Configuration);
 
             // 7. Cấu hình API Versioning (/api/v1/...)
             builder.Services.AddApiVersioning(options =>
