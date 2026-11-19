@@ -12,7 +12,9 @@ using AgentCoreSystem.Module.Chat.Application.Contracts;
 using AgentCoreSystem.Module.Chat.Application.Messages.Commands;
 using AgentCoreSystem.Module.Organization.Application.Members.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace AgentCoreSystem.Module.Chat.Infrastructure.Hubs
@@ -25,9 +27,10 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Hubs
     /// <para><strong>When:</strong> Khách hàng (Web Client) kết nối tới endpoint <c>/hubs/chat</c> để nhận và gửi thông điệp trò chuyện thời gian thực.</para>
     /// <para><strong>Why:</strong> Cung cấp kênh truyền thông hai chiều (full-duplex) với độ trễ tối thiểu, hỗ trợ streaming từng token LLM từ AI Agent về giao diện người dùng.</para>
     /// </remarks>
+    [Authorize]
     public class SignalRChatHub(
         ISender sender,
-        IMessageDispatcherService dispatcher,
+        IServiceScopeFactory scopeFactory,
         ILogger<SignalRChatHub>? logger = null) : Hub
     {
         /// <summary>
@@ -99,14 +102,16 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Hubs
             var groupName = $"channel_{channelId}";
             await Clients.Group(groupName).SendAsync("ReceiveMessage", message);
 
-            // 4. Ủy thác điều phối @mention tới MessageDispatcherService trong background
+            // 4. Ủy thác điều phối @mention tới MessageDispatcherService trong background với scope riêng
             if (mentionIds is { Count: > 0 })
             {
                 _ = Task.Run(async () =>
                 {
                     try
                     {
-                        await dispatcher.DispatchMessageAsync(message, mentionIds, CancellationToken.None);
+                        using var scope = scopeFactory.CreateScope();
+                        var scopedDispatcher = scope.ServiceProvider.GetRequiredService<IMessageDispatcherService>();
+                        await scopedDispatcher.DispatchMessageAsync(message, mentionIds, CancellationToken.None);
                     }
                     catch (Exception ex)
                     {

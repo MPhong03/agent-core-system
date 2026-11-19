@@ -456,13 +456,38 @@ namespace AgentCoreSystem.UnitTests.Chat
             await sender.DidNotReceive().Send(Arg.Any<SaveChatMessageCommand>(), Arg.Any<CancellationToken>());
         }
 
+        private static IServiceScopeFactory CreateMockScopeFactory(IMessageDispatcherService? dispatcher = null)
+        {
+            var scopeFactory = Substitute.For<IServiceScopeFactory>();
+            var scope = Substitute.For<IServiceScope>();
+            var serviceProvider = Substitute.For<IServiceProvider>();
+
+            scopeFactory.CreateScope().Returns(scope);
+            scope.ServiceProvider.Returns(serviceProvider);
+
+            if (dispatcher != null)
+            {
+                serviceProvider.GetService(typeof(IMessageDispatcherService)).Returns(dispatcher);
+            }
+
+            return scopeFactory;
+        }
+
+        [Fact]
+        public void SignalRChatHub_ShouldHaveAuthorizeAttribute()
+        {
+            var attributes = typeof(SignalRChatHub)
+                .GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), inherit: false);
+            Assert.NotEmpty(attributes);
+        }
+
         [Fact]
         public async Task SignalRChatHub_JoinAndLeaveChannel_ShouldCallGroupManager()
         {
             // Arrange
             var sender = Substitute.For<ISender>();
-            var dispatcher = Substitute.For<IMessageDispatcherService>();
-            var hub = new SignalRChatHub(sender, dispatcher);
+            var scopeFactory = CreateMockScopeFactory();
+            var hub = new SignalRChatHub(sender, scopeFactory);
 
             var context = Substitute.For<HubCallerContext>();
             context.ConnectionId.Returns("conn-123");
@@ -487,8 +512,8 @@ namespace AgentCoreSystem.UnitTests.Chat
         {
             // Arrange
             var sender = Substitute.For<ISender>();
-            var dispatcher = Substitute.For<IMessageDispatcherService>();
-            var hub = new SignalRChatHub(sender, dispatcher);
+            var scopeFactory = CreateMockScopeFactory();
+            var hub = new SignalRChatHub(sender, scopeFactory);
 
             var context = Substitute.For<HubCallerContext>();
             context.UserIdentifier.Returns((string?)null);
@@ -506,7 +531,8 @@ namespace AgentCoreSystem.UnitTests.Chat
             // Arrange
             var sender = Substitute.For<ISender>();
             var dispatcher = Substitute.For<IMessageDispatcherService>();
-            var hub = new SignalRChatHub(sender, dispatcher);
+            var scopeFactory = CreateMockScopeFactory(dispatcher);
+            var hub = new SignalRChatHub(sender, scopeFactory);
 
             var userId = Guid.NewGuid();
             var channelId = Guid.NewGuid();

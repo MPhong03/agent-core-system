@@ -149,11 +149,13 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                 .AsNoTracking()
                 .Where(m => m.ChannelId == userMessage.ChannelId)
                 .OrderByDescending(m => m.CreatedDate)
+                .ThenByDescending(m => m.Id)
                 .Take(SlidingWindowSize)
                 .ToListAsync(ct);
 
             var orderedHistory = recentMessages
                 .OrderBy(m => m.CreatedDate)
+                .ThenBy(m => m.Id)
                 .Select(m => new ChatMessagePayload(
                     Role: m.IsAgent ? "assistant" : "user",
                     Content: m.Content))
