@@ -3,6 +3,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // ------------------------------------------------------------------------------------------------
 
+using AgentCoreSystem.Module.Organization.Application.Contracts;
 using AgentCoreSystem.Module.Organization.Domain.Entities;
 using AgentCoreSystem.Shared.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ namespace AgentCoreSystem.Module.Organization.Infrastructure.Persistence
     /// <para><strong>What:</strong> Quản lý các thực thể Phòng ban, Kênh nhóm, Thành viên và Hồ sơ Agent.</para>
     /// <para><strong>Why:</strong> Thiết lập HasDefaultSchema("org") và MigrationsHistoryTable riêng để đảm bảo tính độc lập và tự chủ (Autonomy) theo kiến trúc Modular Monolith.</para>
     /// </remarks>
-    public class OrganizationDbContext(DbContextOptions<OrganizationDbContext> options) : BaseDbContext(options)
+    public class OrganizationDbContext(DbContextOptions<OrganizationDbContext> options) : BaseDbContext(options), IOrganizationDbContext
     {
         public const string SchemaName = "org";
 
