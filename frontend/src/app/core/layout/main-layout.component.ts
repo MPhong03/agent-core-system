@@ -31,6 +31,11 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
             <span>{{ 'NAV.DASHBOARD' | translate }}</span>
           </a>
 
+          <a routerLink="/organization" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">🏢</span>
+            <span>{{ 'NAV.ORGANIZATION' | translate }}</span>
+          </a>
+
           <div class="nav-header">{{ 'NAV.SYSTEM_SECTION' | translate }}</div>
 
           <a routerLink="/system/users" routerLinkActive="active" class="nav-item">

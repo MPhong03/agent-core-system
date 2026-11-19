@@ -31,6 +31,11 @@ export const routes: Routes = [
         path: 'system',
         loadChildren: () => import('./features/system/system.routes').then((m) => m.SYSTEM_ROUTES),
       },
+      {
+        path: 'organization',
+        loadChildren: () =>
+          import('./features/organization/organization.routes').then((m) => m.ORGANIZATION_ROUTES),
+      },
     ],
   },
   {

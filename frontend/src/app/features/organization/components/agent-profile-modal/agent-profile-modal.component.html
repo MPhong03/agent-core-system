@@ -1,0 +1,156 @@
+@if (isOpen) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-title">
+          <div class="header-icon">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+              <rect x="3" y="11" width="18" height="10" rx="2"/>
+              <circle cx="12" cy="5" r="2"/>
+              <path d="M12 7v4M8 16h.01M16 16h.01"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Tạo Hồ Sơ Agent Mới</h3>
+            <p class="subtitle">Thiết lập nhân viên AI tự chủ tham gia vào kênh nhóm</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" (click)="close()" aria-label="Đóng">✕</button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal-body">
+        @if (submitError()) {
+          <div class="alert-danger">
+            {{ submitError() }}
+          </div>
+        }
+
+        <!-- Tên Agent -->
+        <div class="form-group">
+          <label for="agentName" class="form-label">
+            Tên Agent <span class="required">*</span>
+          </label>
+          <input
+            id="agentName"
+            type="text"
+            class="form-control"
+            formControlName="name"
+            placeholder="Ví dụ: Dev Lead Agent, Content Writer Bot..."
+          />
+          @if (form.get('name')?.touched && form.get('name')?.hasError('required')) {
+            <span class="error-msg">Vui lòng nhập tên Agent</span>
+          }
+        </div>
+
+        <!-- Provider Selection -->
+        <div class="form-group">
+          <label class="form-label">
+            Nhà Cung Cấp LLM (Provider) <span class="required">*</span>
+          </label>
+          <div class="provider-grid">
+            @for (p of providers; track p.type) {
+              <button
+                type="button"
+                class="provider-card"
+                [class.selected]="form.get('provider')?.value === p.type"
+                (click)="onProviderChange(p.type)"
+              >
+                <span class="provider-tag">{{ p.tag }}</span>
+                <span class="provider-name">{{ p.name }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Model Name -->
+        <div class="form-group">
+          <label for="modelName" class="form-label">
+            Tên Mô Hình (Model Name) <span class="required">*</span>
+          </label>
+          <input
+            id="modelName"
+            type="text"
+            class="form-control"
+            formControlName="modelName"
+            placeholder="Ví dụ: gemini-2.5-flash, gpt-4o, claude-3-7-sonnet..."
+          />
+          @if (form.get('modelName')?.touched && form.get('modelName')?.hasError('required')) {
+            <span class="error-msg">Vui lòng nhập tên Model</span>
+          }
+        </div>
+
+        <!-- Temperature Slider -->
+        <div class="form-group">
+          <div class="slider-header">
+            <label for="temperature" class="form-label">
+              Nhiệt độ (Temperature)
+            </label>
+            <span class="temperature-badge">{{ temperatureValue | number: '1.2-2' }}</span>
+          </div>
+          <input
+            id="temperature"
+            type="range"
+            class="form-range"
+            min="0"
+            max="2"
+            step="0.05"
+            formControlName="temperature"
+          />
+          <div class="slider-labels">
+            <span>0.0 (Chính xác)</span>
+            <span>1.0 (Cân bằng)</span>
+            <span>2.0 (Sáng tạo)</span>
+          </div>
+        </div>
+
+        <!-- System Prompt -->
+        <div class="form-group">
+          <label for="systemPrompt" class="form-label">
+            System Prompt (Chỉ thị hành vi cốt lõi) <span class="required">*</span>
+          </label>
+          <textarea
+            id="systemPrompt"
+            rows="4"
+            class="form-control"
+            formControlName="systemPrompt"
+            placeholder="Định nghĩa vai trò, nhiệm vụ và phong cách phản hồi của Agent..."
+          ></textarea>
+          @if (form.get('systemPrompt')?.touched && form.get('systemPrompt')?.hasError('required')) {
+            <span class="error-msg">Vui lòng nhập System Prompt</span>
+          }
+        </div>
+
+        <!-- Private Memory Notes -->
+        <div class="form-group">
+          <label for="privateMemoryNotes" class="form-label">
+            Ghi Chú Bộ Nhớ Riêng (Private Memory Notes)
+          </label>
+          <textarea
+            id="privateMemoryNotes"
+            rows="2"
+            class="form-control"
+            formControlName="privateMemoryNotes"
+            placeholder="Ghi chú kiến thức hoặc ngữ cảnh đặc biệt dành riêng cho Agent này..."
+          ></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="close()">
+            Hủy Bỏ
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="submitting() || form.invalid"
+          >
+            @if (submitting()) {
+              <span class="spinner"></span> Đang Lưu...
+            } @else {
+              Tạo Hồ Sơ Agent
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
