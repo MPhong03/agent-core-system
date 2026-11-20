@@ -16,6 +16,12 @@
     <Project Path="src/Modules/Organization/AgentCoreSystem.Module.Organization.Infrastructure/AgentCoreSystem.Module.Organization.Infrastructure.csproj" />
     <Project Path="src/Modules/Organization/AgentCoreSystem.Module.Organization.Presentation/AgentCoreSystem.Module.Organization.Presentation.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Tasks/">
+    <Project Path="src/Modules/Tasks/AgentCoreSystem.Module.Tasks.Application/AgentCoreSystem.Module.Tasks.Application.csproj" />
+    <Project Path="src/Modules/Tasks/AgentCoreSystem.Module.Tasks.Domain/AgentCoreSystem.Module.Tasks.Domain.csproj" />
+    <Project Path="src/Modules/Tasks/AgentCoreSystem.Module.Tasks.Infrastructure/AgentCoreSystem.Module.Tasks.Infrastructure.csproj" />
+    <Project Path="src/Modules/Tasks/AgentCoreSystem.Module.Tasks.Presentation/AgentCoreSystem.Module.Tasks.Presentation.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/System/">
     <Project Path="src/Modules/System/AgentCoreSystem.Module.System.Application/AgentCoreSystem.Module.System.Application.csproj" />
     <Project Path="src/Modules/System/AgentCoreSystem.Module.System.Domain/AgentCoreSystem.Module.System.Domain.csproj" />
