@@ -32,6 +32,8 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Controllers.v1
     [Produces("application/json")]
     public class AgentProfilesController(ISender mediator) : ControllerBase
     {
+        // ── Command Actions ──
+
         /// <summary>
         /// Tạo mới một hồ sơ nhân sự AI Agent.
         /// </summary>
@@ -69,6 +71,8 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Controllers.v1
                 ? StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Ok(result.Value, "Tạo hồ sơ Agent thành công."))
                 : result.ToProblemDetails(this);
         }
+
+        // ── Query Actions ──
 
         /// <summary>
         /// Lấy danh sách toàn bộ hồ sơ nhân sự AI Agent trong tổ chức.

@@ -62,9 +62,14 @@ namespace AgentCoreSystem.Module.Organization.Application.Members.Commands.Assig
     /// <summary>
     /// Handler xử lý gán thành viên vào kênh làm việc.
     /// </summary>
+    /// <remarks>
+    /// <para>Xác thực tính hợp lệ của kênh và hồ sơ Agent (nếu là Agent), đồng thời kiểm tra tính duy nhất của DisplayName trong kênh.</para>
+    /// <para>🔴 <strong>Ràng buộc:</strong> DisplayName phải là duy nhất trong kênh để phục vụ phân giải @mention chính xác.</para>
+    /// </remarks>
     public class AssignMemberToChannelCommandHandler(IOrganizationDbContext dbContext) 
         : ICommandHandler<AssignMemberToChannelCommand, Guid>
     {
+        /// <inheritdoc />
         public async Task<Result<Guid>> Handle(
             AssignMemberToChannelCommand request, 
             CancellationToken cancellationToken)

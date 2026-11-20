@@ -9,8 +9,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AgentCoreSystem.Module.Organization.Infrastructure.Persistence.Configurations
 {
+    /// <summary>
+    /// Cấu hình ánh xạ Entity Framework Core cho thực thể <see cref="TeamChannel"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Ánh xạ bảng <c>Channels</c> trên schema 'org' kèm ràng buộc chỉ mục duy nhất kết hợp <c>(DepartmentId, Name)</c>.</para>
+    /// <para>⇒ Xóa kênh sẽ tự động xóa toàn bộ liên kết thành viên trong kênh đó (DeleteBehavior.Cascade).</para>
+    /// </remarks>
     public class TeamChannelConfiguration : IEntityTypeConfiguration<TeamChannel>
     {
+        /// <inheritdoc />
         public void Configure(EntityTypeBuilder<TeamChannel> builder)
         {
             builder.ToTable("Channels");

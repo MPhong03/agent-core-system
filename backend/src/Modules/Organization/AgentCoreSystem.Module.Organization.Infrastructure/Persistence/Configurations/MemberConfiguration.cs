@@ -9,8 +9,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AgentCoreSystem.Module.Organization.Infrastructure.Persistence.Configurations
 {
+    /// <summary>
+    /// Cấu hình ánh xạ Entity Framework Core cho thực thể <see cref="Member"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Ánh xạ bảng <c>Members</c> trên schema 'org' kèm ràng buộc chỉ mục duy nhất kết hợp <c>(ChannelId, DisplayName)</c>.</para>
+    /// <para>🔴 <strong>Lưu ý:</strong> Liên kết sang hồ sơ Agent sử dụng DeleteBehavior.Restrict để bảo toàn danh tính thành viên.</para>
+    /// </remarks>
     public class MemberConfiguration : IEntityTypeConfiguration<Member>
     {
+        /// <inheritdoc />
         public void Configure(EntityTypeBuilder<Member> builder)
         {
             builder.ToTable("Members");

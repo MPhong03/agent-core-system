@@ -18,6 +18,8 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
     /// </remarks>
     public class AgentProfile : BaseEntity
     {
+        // ── Constructors ──
+
         /// <summary>
         /// Khởi tạo một hồ sơ Agent mới.
         /// </summary>
@@ -58,44 +60,73 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
             Members = new List<Member>();
         }
 
+        // ── Core Identity ──
+
         /// <summary>
         /// Tên định danh của Agent (vd: Tech Researcher, Email Scraper).
         /// </summary>
+        /// <remarks>🔴 <strong>Ràng buộc:</strong> Tối đa 150 ký tự, không được để trống.</remarks>
         public string Name { get; set; }
 
         /// <summary>
         /// Đường dẫn ảnh đại diện của Agent.
         /// </summary>
+        /// <remarks>Tối đa 500 ký tự. Có thể là URL nội bộ hoặc CDN đám mây.</remarks>
         public string? AvatarUrl { get; set; }
+
+        // ── LLM Configuration ──
 
         /// <summary>
         /// Nhà cung cấp mô hình AI.
         /// </summary>
+        /// <remarks>
+        /// <para>Xác định bộ adapter LLM tương ứng trong hệ thống.</para>
+        /// <para>⇒ Thay đổi provider kéo theo cấu hình API Key và Endpoint tương ứng trong cấu hình hạ tầng.</para>
+        /// </remarks>
         public ModelProviderType Provider { get; set; }
 
         /// <summary>
         /// Tên định danh kỹ thuật của model (vd: gemini-2.5-flash, claude-3-7-sonnet).
         /// </summary>
+        /// <remarks>🔴 <strong>Lưu ý:</strong> Phải khớp chính xác chuỗi định danh mô hình mà Provider hỗ trợ.</remarks>
         public string ModelName { get; set; }
 
         /// <summary>
         /// Chỉ dẫn hệ thống định hình tính cách và năng lực chuyên môn.
         /// </summary>
+        /// <remarks>
+        /// <para>Chỉ dẫn cốt lõi luôn được đưa vào System Role trong mỗi ngữ cảnh hội thoại.</para>
+        /// <para>⛔ <strong>Cấm:</strong> Không đưa bí mật hệ thống hoặc token xác thực vào System Prompt.</para>
+        /// </remarks>
         public string SystemPrompt { get; set; }
 
         /// <summary>
-        /// Độ sáng tạo của model (thường từ 0.0 đến 1.0).
+        /// Độ sáng tạo của model (thường từ 0.0 đến 2.0).
         /// </summary>
+        /// <remarks>
+        /// <para>🔴 <strong>Lưu ý:</strong> Giá trị nằm trong khoảng từ 0.0 đến 2.0.</para>
+        /// <para>⇒ Giá trị càng cao thì phản hồi càng đa dạng nhưng nguy cơ hallucination tăng.</para>
+        /// </remarks>
         public decimal Temperature { get; set; } = 0.7m;
+
+        // ── Memory & Context ──
 
         /// <summary>
         /// Ghi chú bộ nhớ riêng tư lưu thói quen và kinh nghiệm làm việc của Agent.
         /// </summary>
+        /// <remarks>
+        /// <para>AI-NOTE: Vùng đệm ghi nhớ ngắn hạn và trung hạn riêng của Agent trước khi đồng bộ sang hệ thống bộ nhớ phân tán.</para>
+        /// </remarks>
         public string? PrivateMemoryNotes { get; set; }
+
+        // ── Navigation ──
 
         /// <summary>
         /// Danh sách thành viên trong các kênh mà hồ sơ Agent này đang đảm nhiệm.
         /// </summary>
+        /// <remarks>
+        /// <para>Quan hệ 1-N: Một hồ sơ Agent có thể được phân bổ làm thành viên tại nhiều kênh khác nhau.</para>
+        /// </remarks>
         public virtual ICollection<Member> Members { get; set; }
     }
 }

@@ -18,6 +18,8 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
     /// </remarks>
     public class TeamChannel : BaseEntity
     {
+        // ── Constructors ──
+
         /// <summary>
         /// Khởi tạo một kênh làm việc mới.
         /// </summary>
@@ -41,20 +43,30 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
             Members = new List<Member>();
         }
 
+        // ── Channel Properties ──
+
         /// <summary>
         /// Mã định danh phòng ban trực thuộc.
         /// </summary>
+        /// <remarks>Khóa ngoại vật lý tham chiếu tới bảng <see cref="Department"/>.</remarks>
         public Guid DepartmentId { get; set; }
 
         /// <summary>
         /// Tên kênh làm việc.
         /// </summary>
+        /// <remarks>
+        /// <para>🔴 <strong>Ràng buộc:</strong> Tên kênh là duy nhất trong cùng một phòng ban (Unique Index kết hợp <see cref="DepartmentId"/> và <see cref="Name"/>).</para>
+        /// <para>Tối đa 150 ký tự, không được để trống.</para>
+        /// </remarks>
         public string Name { get; set; }
 
         /// <summary>
         /// Mô tả mục tiêu của kênh.
         /// </summary>
+        /// <remarks>Tối đa 500 ký tự. Có thể để trống.</remarks>
         public string? Description { get; set; }
+
+        // ── Navigation ──
 
         /// <summary>
         /// Tham chiếu điều hướng tới phòng ban trực thuộc.
@@ -62,8 +74,11 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
         public virtual Department? Department { get; set; }
 
         /// <summary>
-        /// Danh sách thành viên (Human & Agent) tham gia kênh.
+        /// Danh sách thành viên (Human &amp; Agent) tham gia kênh.
         /// </summary>
+        /// <remarks>
+        /// <para>Quan hệ 1-N: Xóa kênh sẽ tự động xóa các liên kết thành viên tương ứng (DeleteBehavior.Cascade).</para>
+        /// </remarks>
         public virtual ICollection<Member> Members { get; set; }
     }
 }

@@ -29,9 +29,14 @@ namespace AgentCoreSystem.Module.Organization.Application.Members.Queries.GetCha
     /// <summary>
     /// Handler xử lý truy vấn danh sách thành viên kênh.
     /// </summary>
+    /// <remarks>
+    /// <para>Xác thực kênh tồn tại trước khi lấy danh sách thành viên.</para>
+    /// <para>⇒ Danh sách bao gồm cả Human và Agent tham gia kênh, phục vụ phân tích @mention.</para>
+    /// </remarks>
     public class GetChannelMembersQueryHandler(IOrganizationDbContext dbContext) 
         : IQueryHandler<GetChannelMembersQuery, IReadOnlyList<MemberDto>>
     {
+        /// <inheritdoc />
         public async Task<Result<IReadOnlyList<MemberDto>>> Handle(
             GetChannelMembersQuery request, 
             CancellationToken cancellationToken)

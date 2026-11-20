@@ -1,0 +1,57 @@
+<!-- Popover Gợi Ý Tự Động Hoàn Thành Nhắc Tên (@mention Autocomplete) (PBI-CHAT-03)
+     🔴 Hỗ trợ đầy đủ ARIA Accessibility: role="listbox", role="option" và attr.aria-selected -->
+@if (visible()) {
+  <div class="mention-popover-card mention-popover" (click)="$event.stopPropagation()">
+    <!-- Header Popover & Hướng dẫn sử dụng bàn phím -->
+    <div class="popover-header">
+      <span class="header-title">Nhắc tên thành viên (&#64;mention)</span>
+      <span class="keyboard-hint">↑↓ để chọn, Enter để chèn</span>
+    </div>
+
+    <!-- Danh Sách Gợi Ý Thành Viên Phù Hợp -->
+    <div class="members-list" role="listbox">
+      @for (member of filteredMembers(); track member.id; let i = $index) {
+        <div
+          class="member-item"
+          role="option"
+          [attr.aria-selected]="selectedIndex() === i"
+          [class.active]="selectedIndex() === i"
+          [class.is-agent]="member.type === MemberType.Agent"
+          (click)="onSelect(member)"
+          (mouseenter)="selectedIndex.set(i)"
+        >
+          <!-- Avatar Thành Viên (Phân biệt Agent AI xanh lá vs Người dùng xanh dương) -->
+          <div class="member-avatar" [class.agent-avatar]="member.type === MemberType.Agent">
+            @if (member.type === MemberType.Agent) {
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="#0AC27D" stroke-width="2" fill="none">
+                <rect x="3" y="11" width="18" height="10" rx="2"/>
+                <circle cx="12" cy="5" r="2"/>
+                <path d="M12 7v4M8 16h.01M16 16h.01"/>
+              </svg>
+            } @else {
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="#0061FF" stroke-width="2" fill="none">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            }
+          </div>
+
+          <!-- Tên Hiển Thị & Huy Hiệu Phân Loại -->
+          <div class="member-info">
+            <span class="member-name">{{ member.displayName }}</span>
+            @if (member.type === MemberType.Agent) {
+              <span class="member-tag badge-agent">Agent AI</span>
+            } @else {
+              <span class="member-tag badge-human">Người dùng</span>
+            }
+          </div>
+        </div>
+      } @empty {
+        <!-- Trạng thái không tìm thấy thành viên khớp từ khóa -->
+        <div class="empty-results">
+          <span>Không tìm thấy thành viên phù hợp</span>
+        </div>
+      }
+    </div>
+  </div>
+}

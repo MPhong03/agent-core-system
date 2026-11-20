@@ -19,11 +19,35 @@ namespace AgentCoreSystem.Module.Organization.Application.Contracts
     /// </remarks>
     public interface IOrganizationDbContext
     {
+        // ── DbSets ──
+
+        /// <summary>
+        /// Tập hợp các thực thể phòng ban trong tổ chức.
+        /// </summary>
         DbSet<Department> Departments { get; }
+
+        /// <summary>
+        /// Tập hợp các thực thể kênh làm việc chuyên môn theo nhóm.
+        /// </summary>
         DbSet<TeamChannel> Channels { get; }
+
+        /// <summary>
+        /// Tập hợp các thực thể thành viên (Human và Agent) trong các kênh.
+        /// </summary>
         DbSet<Member> Members { get; }
+
+        /// <summary>
+        /// Tập hợp các thực thể hồ sơ định danh nhân sự AI.
+        /// </summary>
         DbSet<AgentProfile> AgentProfiles { get; }
 
+        // ── Persistence Operations ──
+
+        /// <summary>
+        /// Lưu các thay đổi hiện tại vào cơ sở dữ liệu trên schema 'org'.
+        /// </summary>
+        /// <param name="cancellationToken">Mã hủy bỏ tác vụ không đồng bộ.</param>
+        /// <returns>Số lượng bản ghi bị tác động trong cơ sở dữ liệu.</returns>
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

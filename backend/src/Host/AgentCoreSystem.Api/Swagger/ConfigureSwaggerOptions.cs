@@ -65,6 +65,8 @@ namespace AgentCoreSystem.Api.Swagger
             // Đọc các file XML comments nếu có
             IncludeXmlCommentsIfExists(options, Assembly.GetExecutingAssembly());
             IncludeXmlCommentsIfExists(options, typeof(AgentCoreSystem.Module.System.Presentation.SystemPresentationExtensions).Assembly);
+            IncludeXmlCommentsIfExists(options, typeof(AgentCoreSystem.Module.Organization.Presentation.DependencyInjection).Assembly);
+            IncludeXmlCommentsIfExists(options, typeof(AgentCoreSystem.Module.Chat.Presentation.DependencyInjection).Assembly);
         }
 
         private static void IncludeXmlCommentsIfExists(SwaggerGenOptions options, Assembly assembly)

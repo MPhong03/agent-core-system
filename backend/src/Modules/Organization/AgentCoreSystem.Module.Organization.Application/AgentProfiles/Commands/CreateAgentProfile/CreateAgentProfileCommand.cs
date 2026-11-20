@@ -67,9 +67,14 @@ namespace AgentCoreSystem.Module.Organization.Application.AgentProfiles.Commands
     /// <summary>
     /// Handler xử lý tạo mới hồ sơ Agent.
     /// </summary>
+    /// <remarks>
+    /// <para>Khởi tạo bản ghi <see cref="AgentProfile"/> với khóa chính UUIDv7 và lưu vào schema 'org'.</para>
+    /// <para>AI-NOTE: Hồ sơ Agent sau khi tạo sẽ sẵn sàng để được gán vào các kênh làm việc qua <c>AssignMemberToChannelCommand</c>.</para>
+    /// </remarks>
     public class CreateAgentProfileCommandHandler(IOrganizationDbContext dbContext) 
         : ICommandHandler<CreateAgentProfileCommand, Guid>
     {
+        /// <inheritdoc />
         public async Task<Result<Guid>> Handle(
             CreateAgentProfileCommand request, 
             CancellationToken cancellationToken)

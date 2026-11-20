@@ -9,8 +9,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AgentCoreSystem.Module.Organization.Infrastructure.Persistence.Configurations
 {
+    /// <summary>
+    /// Cấu hình ánh xạ Entity Framework Core cho thực thể <see cref="AgentProfile"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Ánh xạ bảng <c>AgentProfiles</c> trên schema 'org' với các ràng buộc kiểu dữ liệu, độ dài và soft delete.</para>
+    /// <para>🔴 <strong>Ràng buộc:</strong> Áp dụng Global Query Filter loại bỏ bản ghi bị xóa mềm (<c>!IsDeleted</c>).</para>
+    /// </remarks>
     public class AgentProfileConfiguration : IEntityTypeConfiguration<AgentProfile>
     {
+        /// <inheritdoc />
         public void Configure(EntityTypeBuilder<AgentProfile> builder)
         {
             builder.ToTable("AgentProfiles");

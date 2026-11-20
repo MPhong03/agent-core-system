@@ -1,6 +1,9 @@
+﻿<!-- Modal Tạo Hồ Sơ Agent AI Tự Chủ (PBI-ORG-02)
+     🔴 Lưu ý: Click vào backdrop ngoài để đóng, click vào modal-card cần stopPropagation để không bị tắt nhầm -->
 @if (isOpen) {
   <div class="modal-backdrop" (click)="close()">
     <div class="modal-card" (click)="$event.stopPropagation()">
+      <!-- Modal Header: Tiêu đề và nút đóng -->
       <div class="modal-header">
         <div class="header-title">
           <div class="header-icon">
@@ -18,14 +21,16 @@
         <button type="button" class="btn-close" (click)="close()" aria-label="Đóng">✕</button>
       </div>
 
+      <!-- Modal Body: Biểu mẫu cấu hình chi tiết thông số Agent AI -->
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal-body">
+        <!-- Khối hiển thị thông báo lỗi khi API tạo Agent thất bại (RULE-06: Không nuốt lỗi) -->
         @if (submitError()) {
           <div class="alert-danger">
             {{ submitError() }}
           </div>
         }
 
-        <!-- Tên Agent -->
+        <!-- Trường 1: Tên hiển thị của Agent -->
         <div class="form-group">
           <label for="agentName" class="form-label">
             Tên Agent <span class="required">*</span>
@@ -42,7 +47,8 @@
           }
         </div>
 
-        <!-- Provider Selection -->
+        <!-- Trường 2: Chọn Nhà cung cấp LLM (Provider Selection Grid)
+             ⇒ Thay đổi provider tự động kích hoạt onProviderChange cập nhật model mặc định -->
         <div class="form-group">
           <label class="form-label">
             Nhà Cung Cấp LLM (Provider) <span class="required">*</span>
@@ -62,7 +68,7 @@
           </div>
         </div>
 
-        <!-- Model Name -->
+        <!-- Trường 3: Tên Model cụ thể của LLM -->
         <div class="form-group">
           <label for="modelName" class="form-label">
             Tên Mô Hình (Model Name) <span class="required">*</span>
@@ -79,7 +85,8 @@
           }
         </div>
 
-        <!-- Temperature Slider -->
+        <!-- Trường 4: Nhiệt độ sáng tạo (Temperature Slider 0.0 - 2.0)
+             🔴 Lưu ý: Dùng getter temperatureValue nhẹ nhàng, không bọc hàm tính toán nặng trong template -->
         <div class="form-group">
           <div class="slider-header">
             <label for="temperature" class="form-label">
@@ -103,7 +110,7 @@
           </div>
         </div>
 
-        <!-- System Prompt -->
+        <!-- Trường 5: System Prompt (Chỉ thị hành vi cốt lõi) -->
         <div class="form-group">
           <label for="systemPrompt" class="form-label">
             System Prompt (Chỉ thị hành vi cốt lõi) <span class="required">*</span>
@@ -120,7 +127,7 @@
           }
         </div>
 
-        <!-- Private Memory Notes -->
+        <!-- Trường 6: Ghi chú bộ nhớ riêng (Private Memory Notes) -->
         <div class="form-group">
           <label for="privateMemoryNotes" class="form-label">
             Ghi Chú Bộ Nhớ Riêng (Private Memory Notes)
@@ -134,6 +141,7 @@
           ></textarea>
         </div>
 
+        <!-- Modal Footer: Nút Hủy và Nút Lưu -->
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="close()">
             Hủy Bỏ

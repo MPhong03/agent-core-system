@@ -27,9 +27,14 @@ namespace AgentCoreSystem.Module.Organization.Application.AgentProfiles.Queries.
     /// <summary>
     /// Handler xử lý truy vấn danh sách hồ sơ Agent.
     /// </summary>
+    /// <remarks>
+    /// <para>Truy vấn không theo dõi (AsNoTracking) danh sách hồ sơ Agent sắp xếp theo thời điểm khởi tạo.</para>
+    /// <para>⇒ Tự động loại bỏ các bản ghi bị xóa mềm nhờ Global Query Filter.</para>
+    /// </remarks>
     public class GetAgentProfilesQueryHandler(IOrganizationDbContext dbContext) 
         : IQueryHandler<GetAgentProfilesQuery, IReadOnlyList<AgentProfileDto>>
     {
+        /// <inheritdoc />
         public async Task<Result<IReadOnlyList<AgentProfileDto>>> Handle(
             GetAgentProfilesQuery request, 
             CancellationToken cancellationToken)

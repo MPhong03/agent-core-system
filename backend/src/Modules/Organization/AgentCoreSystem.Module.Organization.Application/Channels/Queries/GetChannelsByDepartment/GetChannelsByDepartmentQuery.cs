@@ -29,9 +29,14 @@ namespace AgentCoreSystem.Module.Organization.Application.Channels.Queries.GetCh
     /// <summary>
     /// Handler xử lý truy vấn danh sách kênh nhóm theo phòng ban.
     /// </summary>
+    /// <remarks>
+    /// <para>Xác thực phòng ban tồn tại trước khi truy vấn các kênh làm việc.</para>
+    /// <para>⇒ Tự động tính toán số lượng thành viên chưa bị xóa mềm trong từng kênh.</para>
+    /// </remarks>
     public class GetChannelsByDepartmentQueryHandler(IOrganizationDbContext dbContext) 
         : IQueryHandler<GetChannelsByDepartmentQuery, IReadOnlyList<TeamChannelDto>>
     {
+        /// <inheritdoc />
         public async Task<Result<IReadOnlyList<TeamChannelDto>>> Handle(
             GetChannelsByDepartmentQuery request, 
             CancellationToken cancellationToken)

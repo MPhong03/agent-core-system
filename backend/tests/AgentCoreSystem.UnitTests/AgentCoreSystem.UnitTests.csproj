@@ -23,11 +23,17 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Shared\AgentCoreSystem.Shared.Kernel\AgentCoreSystem.Shared.Kernel.csproj" />
     <ProjectReference Include="..\..\src\Shared\AgentCoreSystem.Shared.Application\AgentCoreSystem.Shared.Application.csproj" />
+    <ProjectReference Include="..\..\src\Shared\AgentCoreSystem.Shared.Infrastructure\AgentCoreSystem.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\System\AgentCoreSystem.Module.System.Infrastructure\AgentCoreSystem.Module.System.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\System\AgentCoreSystem.Module.System.Domain\AgentCoreSystem.Module.System.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Organization\AgentCoreSystem.Module.Organization.Domain\AgentCoreSystem.Module.Organization.Domain.csproj" />
     <ProjectReference Include="..\..\src\Modules\Organization\AgentCoreSystem.Module.Organization.Application\AgentCoreSystem.Module.Organization.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Organization\AgentCoreSystem.Module.Organization.Infrastructure\AgentCoreSystem.Module.Organization.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Domain\AgentCoreSystem.Module.Chat.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Application\AgentCoreSystem.Module.Chat.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Infrastructure\AgentCoreSystem.Module.Chat.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Presentation\AgentCoreSystem.Module.Chat.Presentation.csproj" />
+    <ProjectReference Include="..\..\src\Host\AgentCoreSystem.Api\AgentCoreSystem.Api.csproj" />
   </ItemGroup>
 
 </Project>

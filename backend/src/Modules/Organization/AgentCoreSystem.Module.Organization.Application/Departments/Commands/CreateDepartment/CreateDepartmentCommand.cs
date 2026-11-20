@@ -45,9 +45,14 @@ namespace AgentCoreSystem.Module.Organization.Application.Departments.Commands.C
     /// <summary>
     /// Handler xử lý nghiệp vụ tạo mới phòng ban.
     /// </summary>
+    /// <remarks>
+    /// <para>Kiểm tra tính duy nhất của tên phòng ban trên toàn hệ thống trước khi khởi tạo.</para>
+    /// <para>🔴 <strong>Ràng buộc:</strong> Trả về lỗi Conflict nếu tên phòng ban đã tồn tại.</para>
+    /// </remarks>
     public class CreateDepartmentCommandHandler(IOrganizationDbContext dbContext) 
         : ICommandHandler<CreateDepartmentCommand, Guid>
     {
+        /// <inheritdoc />
         public async Task<Result<Guid>> Handle(
             CreateDepartmentCommand request, 
             CancellationToken cancellationToken)
