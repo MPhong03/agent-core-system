@@ -35,6 +35,8 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Controllers.v1
     [Produces("application/json")]
     public class DepartmentsController(ISender mediator) : ControllerBase
     {
+        // ── Department Management ──
+
         /// <summary>
         /// Tạo mới một phòng ban trong tổ chức.
         /// </summary>
@@ -90,6 +92,8 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Controllers.v1
                 ? Ok(ApiResponse<IReadOnlyList<DepartmentDto>>.Ok(result.Value))
                 : result.ToProblemDetails(this);
         }
+
+        // ── Channel Sub-resource Management ──
 
         /// <summary>
         /// Tạo mới một kênh làm việc trong phòng ban chỉ định.

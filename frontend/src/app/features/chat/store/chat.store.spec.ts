@@ -3,6 +3,14 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
 
+/**
+ * @file chat.store.spec.ts — Unit tests cho ChatStore (Sprint 1 - PBI-CHAT-01)
+ *
+ * ## Mục Tiêu Kiểm Thử
+ * Đảm bảo ChatStore quản lý chính xác trạng thái tin nhắn kênh, ghép nối streaming token từ SignalR,
+ * chốt tin nhắn khi Agent hoàn thành và dọn dẹp state khi rời kênh.
+ */
+
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { of, Subject } from 'rxjs';

@@ -9,8 +9,17 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AgentCoreSystem.Module.Chat.Infrastructure.Persistence.Configurations
 {
+    /// <summary>
+    /// Cấu hình ánh xạ Entity Framework Core cho thực thể <see cref="ChatMessage"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Ánh xạ bảng <c>ChatMessages</c> trên schema 'chat' với các chỉ mục tối ưu cho phân trang và sliding window context.</para>
+    /// <para>🔴 <strong>Chỉ mục hiệu năng:</strong> Index kết hợp <c>(ChannelId, CreatedDate)</c> để tăng tốc truy vấn 20 tin nhắn gần nhất.</para>
+    /// <para>⇒ Áp dụng Global Query Filter lọc các tin nhắn bị xóa mềm (<c>!IsDeleted</c>).</para>
+    /// </remarks>
     public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
     {
+        /// <inheritdoc />
         public void Configure(EntityTypeBuilder<ChatMessage> builder)
         {
             builder.ToTable("ChatMessages");

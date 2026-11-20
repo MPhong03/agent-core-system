@@ -1,6 +1,20 @@
-/**
+﻿/**
  * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+/**
+ * @file chat-bubble.component.ts — Component hiển thị bong bóng tin nhắn đơn lẻ (Sprint 1 - PBI-CHAT-02)
+ *
+ * ## Giao Diện Bong Bóng Hội Thoại (Chat Bubble)
+ * Render nội dung tin nhắn của Người dùng (Human) hoặc AI Agent, hỗ trợ markdown an toàn (code blocks,
+ * inline code, bold, italic, lists, @mention tag) và con trỏ streaming token thời gian thực.
+ *
+ * ## Ràng buộc Kỹ thuật & Anti-AI-Slop (RULE-01, RULE-05, RULE-06)
+ * 🔴 Bảo Mật XSS: Luôn escape ký tự HTML (`&`, `<`, `>`, `"`, `'`) trước khi parse Markdown, sau đó mới bypassSecurityTrustHtml.
+ * 🔴 Placeholder Regex: Dùng placeholder không chứa ký tự gạch dưới `_` (`%%%CODEBLOCK0%%%`) để tránh regex italic làm rách token.
+ * ⛔ Không gọi parse Markdown trực tiếp trong template interpolation; luôn bọc qua `computed()`.
+ * ⇒ `isStreaming = true` kéo theo coi người gửi là AI Agent, hiển thị `typing-cursor` và nhãn đang phản hồi.
  */
 
 import {
@@ -8,22 +22,12 @@ import {
   ChangeDetectionStrategy,
   computed,
   input,
-  SecurityContext,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ChatMessage } from '../../models/chat.models';
 
-/**
- * Hiển thị một bong bóng tin nhắn đơn lẻ trong hội thoại kênh.
- *
- * <remarks>
- * <para><strong>What:</strong> Render nội dung tin nhắn của Người dùng (Human) hoặc AI Agent, hỗ trợ markdown an toàn và streaming cursor.</para>
- * <para><strong>When:</strong> Được nhúng trong ChatRoomComponent cho từng tin nhắn lịch sử và tin nhắn đang được Agent sinh token.</para>
- * <para><strong>Why:</strong> Đảm bảo chuẩn giao diện Minimalist UI / Dropbox Pack, phân biệt trực quan giữa con người và AI Agent.</para>
- * </remarks>
- */
 @Component({
   selector: 'app-chat-bubble',
   standalone: true,
@@ -33,7 +37,10 @@ import { ChatMessage } from '../../models/chat.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatBubbleComponent {
+  // ── Injections ──
   private readonly sanitizer = inject(DomSanitizer);
+
+  // ── Inputs (Angular 19 Signals Input) ──
 
   /**
    * Tin nhắn cần hiển thị.
@@ -49,6 +56,8 @@ export class ChatBubbleComponent {
    * Chuỗi token tích lũy tạm thời khi isStreaming = true.
    */
   readonly streamingText = input<string>('');
+
+  // ── Computed Signals (Biến Đổi Trạng Thái Hiển Thị) ──
 
   /**
    * Xác định người gửi có phải là AI Agent hay không.
@@ -109,6 +118,8 @@ export class ChatBubbleComponent {
     }
   });
 
+  // ── Bộ Xử Lý Markdown An Toàn (Sanitization) ──
+
   /**
    * Parser Markdown an toàn hỗ trợ code block, inline code, bold, italic, list và line-breaks.
    */
@@ -121,7 +132,7 @@ export class ChatBubbleComponent {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
 
-    // 2. Tách và bảo toàn code block nhiều dòng (triple-backtick) vào placeholder array (tránh dùng ký tự '_' làm hỏng italic regex)
+    // 2. Tách và bảo toàn code block nhiều dòng (triple-backtick) vào placeholder array
     const codeBlocks: string[] = [];
     escaped = escaped.replace(/```(?:([a-zA-Z0-9_-]+)\r?\n)?([\s\S]*?)```/g, (_match, _lang, code) => {
       const index = codeBlocks.length;

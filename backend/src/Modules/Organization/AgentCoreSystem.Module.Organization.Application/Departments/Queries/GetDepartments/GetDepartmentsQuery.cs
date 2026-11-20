@@ -27,9 +27,14 @@ namespace AgentCoreSystem.Module.Organization.Application.Departments.Queries.Ge
     /// <summary>
     /// Handler xử lý truy vấn danh sách phòng ban.
     /// </summary>
+    /// <remarks>
+    /// <para>Truy vấn danh sách phòng ban kèm số lượng kênh hoạt động (chưa bị xóa mềm).</para>
+    /// <para>AI-NOTE: Sử dụng AsNoTracking để tối ưu hiệu năng bộ nhớ cho truy vấn chỉ đọc.</para>
+    /// </remarks>
     public class GetDepartmentsQueryHandler(IOrganizationDbContext dbContext) 
         : IQueryHandler<GetDepartmentsQuery, IReadOnlyList<DepartmentDto>>
     {
+        /// <inheritdoc />
         public async Task<Result<IReadOnlyList<DepartmentDto>>> Handle(
             GetDepartmentsQuery request, 
             CancellationToken cancellationToken)

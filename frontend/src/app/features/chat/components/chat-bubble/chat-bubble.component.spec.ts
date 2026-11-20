@@ -3,6 +3,14 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
 
+/**
+ * @file chat-bubble.component.spec.ts — Unit tests cho ChatBubbleComponent (Sprint 1 - PBI-CHAT-02)
+ *
+ * ## Mục Tiêu Kiểm Thử
+ * Đảm bảo render chính xác tin nhắn người dùng và AI Agent, hiển thị badge phân loại,
+ * xử lý định dạng markdown an toàn và hiển thị con trỏ typing cursor khi streaming.
+ */
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ChatBubbleComponent } from './chat-bubble.component';

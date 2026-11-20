@@ -14,6 +14,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AgentCoreSystem.Module.Chat.Infrastructure
 {
+    /// <summary>
+    /// Lớp mở rộng đăng ký các dịch vụ tầng hạ tầng (Infrastructure) của phân hệ Chat.
+    /// </summary>
     public static class DependencyInjection
     {
         /// <summary>

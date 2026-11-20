@@ -1,4 +1,4 @@
-# Workflow: /review - Code Review Đối Chiếu .agents/rules/
+﻿# Workflow: /review - Code Review Đối Chiếu .agents/rules/
 
 Workflow tự động kiểm tra, rà soát và đánh giá các thay đổi trong mã nguồn (uncommitted changes, branch commits hoặc PR) so với 10 bộ quy tắc cốt lõi của dự án trong `.agents/rules/`.
 
@@ -15,16 +15,17 @@ Workflow tự động kiểm tra, rà soát và đánh giá các thay đổi tro
 
 ### Bước 3: Đối Chiếu Chi Tiết Với .agents/rules/
 Đọc và áp dụng checklist từ skill `@[.agents/skills/review/SKILL.md]`:
-1. **C# Conventions**: Block-scoped namespaces, Primary constructors, XML Docs `<summary>` + `<remarks>`, Copyright headers.
+1. **C# Conventions**: Block-scoped namespaces, Primary constructors, XML Docs `<summary>` + `<remarks>` (lý do & ràng buộc, 🔴, ⛔, ⇒, `AI-NOTE:`, `// ── Tiêu đề nhóm ──`), Copyright headers.
 2. **Modular Monolith**: Schema-per-module, tuyệt đối cấm cross-module direct FKs, giao tiếp qua MediatR/Interfaces.
 3. **Error Handling**: Result pattern `Result<T>`, ErrorType rõ ràng, `ToProblemDetails()`, RFC 7807.
 4. **Database & UUIDv7**: BaseEntity với UUIDv7, Interceptors, Soft delete.
 5. **Identity & RBAC**: Schema `system`, role checks.
 6. **Security & Fail-Fast**: Zero hardcoded secrets, throw `InvalidOperationException` khi thiếu config.
 7. **OpenAPI Specification**: XML Docs trên Controllers, `[ProducesResponseType]`.
-8. **Angular Standards**: Standalone, `ChangeDetectionStrategy.OnPush`, Signals, Control flow (`@if`, `@for`).
+8. **Angular Standards**: Standalone, `ChangeDetectionStrategy.OnPush`, Signals, Control flow (`@if`, `@for`), JSDoc `@file` (mô tả, PBI, mục `## …`), Template HTML comments.
 9. **Frontend Design Philosophy**: Dropbox tokens (`#F7F5F2`, `#0061FF`, 1px borders), Hallmark 8-state discipline.
 10. **SOLID Architecture**: SRP, DIP, Interface Segregation.
+11. **Anti-AI-Slop Standards**: 14 mã (`RULE-01` -> `RULE-14`) theo 4 trụ cột kiến trúc (Hợp đồng, Luồng thực thi, Chất lượng code, Tài liệu & Git).
 
 ### Bước 4: Xuất Báo Cáo
 - Xuất bảng báo cáo theo mẫu chuẩn trong `@[.agents/skills/review/SKILL.md]`:

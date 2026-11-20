@@ -3,12 +3,21 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
 
+/**
+ * @file chat-http.service.spec.ts — Unit tests cho ChatHttpService (Sprint 1 - PBI-CHAT-01)
+ *
+ * ## Mục Tiêu Kiểm Thử
+ * Đảm bảo các yêu cầu HTTP GET phân trang lịch sử tin nhắn kênh được định dạng đúng URL path,
+ * query parameters (`limit`, `before`) và xử lý phản hồi ApiResponse<ChatMessage[]>.
+ */
+
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ChatHttpService } from './chat-http.service';
 import { ChatMessage } from '../models/chat.models';
 import { ApiResponse } from '../../../core/models/api-response.model';
+import { environment } from '../../../../environments/environment';
 
 describe('ChatHttpService', () => {
   let service: ChatHttpService;
@@ -67,7 +76,7 @@ describe('ChatHttpService', () => {
 
     const req = httpTestingController.expectOne(
       (request) =>
-        request.url === `/api/v1/channels/${channelId}/messages` &&
+        request.url === `${environment.apiUrl}/channels/${channelId}/messages` &&
         request.params.get('limit') === '50' &&
         !request.params.has('before'),
     );
@@ -84,7 +93,7 @@ describe('ChatHttpService', () => {
 
     const req = httpTestingController.expectOne(
       (request) =>
-        request.url === `/api/v1/channels/${channelId}/messages` &&
+        request.url === `${environment.apiUrl}/channels/${channelId}/messages` &&
         request.params.get('limit') === '25' &&
         request.params.get('before') === beforeId,
     );

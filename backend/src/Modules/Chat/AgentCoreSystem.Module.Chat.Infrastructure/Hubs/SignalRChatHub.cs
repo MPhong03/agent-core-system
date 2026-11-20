@@ -33,10 +33,13 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Hubs
         IServiceScopeFactory scopeFactory,
         ILogger<SignalRChatHub>? logger = null) : Hub
     {
+        // ── Channel Group Management ──
+
         /// <summary>
         /// Tham gia vào nhóm lắng nghe tin nhắn thời gian thực của một kênh làm việc cụ thể.
         /// </summary>
         /// <param name="channelId">Mã định danh kênh làm việc.</param>
+        /// <returns>Tác vụ bất đồng bộ bổ sung kết nối client vào SignalR group.</returns>
         public async Task JoinChannel(Guid channelId)
         {
             var groupName = $"channel_{channelId}";
@@ -47,11 +50,14 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Hubs
         /// Rời khỏi nhóm lắng nghe tin nhắn của một kênh làm việc.
         /// </summary>
         /// <param name="channelId">Mã định danh kênh làm việc.</param>
+        /// <returns>Tác vụ bất đồng bộ loại bỏ kết nối client khỏi SignalR group.</returns>
         public async Task LeaveChannel(Guid channelId)
         {
             var groupName = $"channel_{channelId}";
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
+
+        // ── Real-time Messaging ──
 
         /// <summary>
         /// Gửi một tin nhắn mới vào kênh làm việc, phát sóng tới các thành viên và kích hoạt @mention Agents.
@@ -59,6 +65,11 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Hubs
         /// <param name="channelId">Mã định danh kênh làm việc.</param>
         /// <param name="content">Nội dung văn bản tin nhắn.</param>
         /// <param name="mentionIds">Danh sách mã định danh thành viên được gắn thẻ nhắc tên (@mention).</param>
+        /// <returns>Tác vụ bất đồng bộ xử lý và phát sóng tin nhắn.</returns>
+        /// <remarks>
+        /// <para>🔴 <strong>Lưu ý:</strong> Việc gọi AI Agent qua <c>IMessageDispatcherService</c> được thực thi trong một tác vụ nền độc lập (<c>Task.Run</c>) với ServiceScope riêng biệt để tránh block kết nối WebSocket của Client.</para>
+        /// <para>AI-NOTE: Ngoại lệ trong background task được log chi tiết và không ảnh hưởng tới việc lưu tin nhắn chính của người dùng.</para>
+        /// </remarks>
         public async Task SendMessage(Guid channelId, string content, List<Guid>? mentionIds)
         {
             var userIdString = Context.UserIdentifier

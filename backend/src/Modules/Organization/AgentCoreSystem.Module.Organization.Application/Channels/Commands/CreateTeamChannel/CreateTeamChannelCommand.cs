@@ -52,9 +52,14 @@ namespace AgentCoreSystem.Module.Organization.Application.Channels.Commands.Crea
     /// <summary>
     /// Handler xử lý nghiệp vụ tạo mới kênh nhóm làm việc.
     /// </summary>
+    /// <remarks>
+    /// <para>Kiểm tra sự tồn tại của phòng ban cha và tính duy nhất của tên kênh trong phòng ban đó.</para>
+    /// <para>🔴 <strong>Ràng buộc:</strong> Trả về lỗi Conflict nếu tên kênh đã tồn tại trong cùng phòng ban.</para>
+    /// </remarks>
     public class CreateTeamChannelCommandHandler(IOrganizationDbContext dbContext) 
         : ICommandHandler<CreateTeamChannelCommand, Guid>
     {
+        /// <inheritdoc />
         public async Task<Result<Guid>> Handle(
             CreateTeamChannelCommand request, 
             CancellationToken cancellationToken)

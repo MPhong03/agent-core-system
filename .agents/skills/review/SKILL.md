@@ -1,4 +1,4 @@
----
+﻿---
 name: review
 description: Use when reviewing git diffs, working tree changes, PRs, or commits against the project rules in .agents/rules/ before committing or merging. Triggered by /review or @review.
 ---
@@ -66,7 +66,11 @@ Duyệt qua từng file trong diff và đối chiếu nghiêm ngặt với 10 qu
   // Licensed under the MIT License. See LICENSE in the project root for license information.
   // ------------------------------------------------------------------------------------------------
   ```
-- [ ] **XML Docs What-When-Why**: Các public class, method, endpoint bắt buộc có thẻ `<summary>` (What) và `<remarks>` (When & Why), cùng `<param>`, `<returns>`. Cấm comment sáo rỗng hoặc viết bằng tiếng Anh đối phó vô nghĩa.
+- [ ] **XML Docs & Comment Chuẩn**:
+  - Dùng XML doc `/// <summary>` cho class, property, method `public` và `internal`, kèm `<remarks>`, `<param>`, `<returns>`, `<see cref="..."/>`, `<c>...</c>`, `<inheritdoc />`.
+  - Nội dung viết bằng tiếng Việt, thuật ngữ kỹ thuật giữ tiếng Anh.
+  - Comment tập trung vào **lý do và ràng buộc**, không diễn giải code (vd: «Enricher điền sau phân trang ⇒ không lọc/sắp được»).
+  - Đánh dấu đúng: 🔴 (cảnh báo đừng đổi), ⛔ (điều cấm), ⇒ (quan hệ kéo theo), `AI-NOTE:` (ghi chú cho AI/dev đọc sau), `// ── Tiêu đề nhóm ──` (chia nhóm property).
 - [ ] **Naming Conventions**: PascalCase cho Class/Method/Property/Event; camelCase cho parameters và local variables. Không dùng tiền tố `_` trong tham số của Primary Constructor.
 
 #### Quy Tắc 2: Modular Monolith (`.agents/rules/modular-monolith-rules.md`)
@@ -104,6 +108,10 @@ Duyệt qua từng file trong diff và đối chiếu nghiêm ngặt với 10 qu
 - [ ] **Angular Signals**: Quản lý state bằng `signal()`, `computed()`, `effect()`. Không lạm dụng BehaviorSubject không cần thiết.
 - [ ] **Control Flow Syntax**: Bắt buộc dùng `@if`, `@for (...; track item.id)`, `@empty`, `@defer`. Cấm dùng `*ngIf`, `*ngFor`.
 - [ ] **Lazy Loading**: Route khai báo qua `loadComponent` hoặc `loadChildren`.
+- [ ] **Comment & JSDoc Standards**:
+  - Đầu file có JSDoc `@file <tên>.ts — mô tả (mã PBI)` kèm các mục `## …` giải thích thiết kế (vd: «Hai vai trò của tab»).
+  - Sử dụng đúng ký hiệu: 🔴 (cảnh báo đừng đổi), ⛔ (điều cấm), ⇒ (quan hệ kéo theo), `AI-NOTE:`, `// ── Tiêu đề nhóm ──`.
+  - Comment HTML trong template giải thích cell template và cấu trúc UI phức tạp.
 
 #### Quy Tắc 9: Frontend Design Philosophy (`.agents/rules/frontend-design-philosophy.md`)
 - [ ] **Dropbox Design Tokens**: Warm Canvas `#F7F5F2`, Primary Blue `#0061FF`, Ink `#1E1919`, Border 1px `#D8D6D3`.
@@ -113,6 +121,26 @@ Duyệt qua từng file trong diff và đối chiếu nghiêm ngặt với 10 qu
 #### Quy Tắc 10: SOLID Architecture (`.agents/rules/solid-architecture.md`)
 - [ ] SRP: Mỗi class làm đúng một nhiệm vụ.
 - [ ] DIP: Domain/Application không phụ thuộc vào Infrastructure; phụ thuộc thông qua abstractions (interfaces).
+
+#### Quy Tắc 11: Anti-AI-Slop Standards (`.agents/rules/anti-ai-slop.md`)
+- **🏛️ Hợp đồng & Ranh giới (Mức CRIT):**
+  - [ ] **RULE-01 (CRIT - ƯU TIÊN CAO NHẤT)**: Hai nửa của một contract (FE↔BE, ghi↔đọc) phải khớp về field, casing, kiểu, verb, route.
+  - [ ] **RULE-02 (CRIT)**: Không gán cứng host, port, IP nội bộ, version hay cờ quyền `true`.
+  - [ ] **RULE-03 (CRIT)**: Mọi khoá i18n, quyền, route, config và symbol import đều phải tồn tại, đủ ở mọi ngôn ngữ (EN, VI).
+- **⚙️ Luồng Thực Thi Thực Chất (Mức CRIT):**
+  - [ ] **RULE-04 (CRIT)**: Không có mock/seed/json tĩnh nằm trong luồng chạy thật; BE không resolve ra bản stub `Null*/Fake*`.
+  - [ ] **RULE-05 (CRIT)**: Chức năng chưa làm không được lộ ra người dùng (cấm handler rỗng bind vào nút, `NotImplementedException`, route chỉ có khung rỗng).
+  - [ ] **RULE-06 (CRIT)**: Chỉ báo thành công khi việc đã làm xong thật (cấm `catchError` nuốt lỗi rồi trả `of([])`/`null` làm "thành công giả").
+  - [ ] **RULE-07 (CRIT)**: BE: `catch` bắt lỗi rộng mà thân rỗng phải có lý do; bộ lọc huỷ không được che lỗi timeout.
+- **🧹 Chất Lượng Code & Tái Cấu Trúc (Mức WARN):**
+  - [ ] **RULE-08 (WARN)**: Không để dead code (export/route không ai gọi, khối code bị comment-out).
+  - [ ] **RULE-09 (WARN)**: BE: logic nghiệp vụ bị chép tới lần thứ ba thì phải gom về một chỗ (DRY).
+  - [ ] **RULE-10 (WARN)**: BE: seam hoặc service trả hằng thay cho nguồn thật phải ghi rõ là tạm và nêu cách thay bằng bản thật.
+- **📝 Tài Liệu & Kỷ Luật Git (Mức WARN):**
+  - [ ] **RULE-11 (WARN)**: Comment phải tự hiểu được, không kể lịch sử, không nhắc tới phiên làm việc.
+  - [ ] **RULE-12 (WARN)**: Comment, docs, README, AGENTS.md, `.agents/documents/` phải mô tả đúng code hiện tại.
+  - [ ] **RULE-13 (WARN)**: Làm theo luật đã ghi trong repo, nếu không có thì theo pattern đã có.
+  - [ ] **RULE-14 (WARN)**: Diff phải khớp với tên nhánh và commit message, không sửa lan sang việc ngoài phạm vi.
 
 ---
 

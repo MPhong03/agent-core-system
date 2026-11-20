@@ -19,9 +19,15 @@ namespace AgentCoreSystem.Module.Chat.Application.Messages.Queries
     /// <summary>
     /// Handler xử lý truy vấn danh sách tin nhắn trong kênh làm việc.
     /// </summary>
+    /// <remarks>
+    /// <para>Hỗ trợ phân trang lùi (Keyset/Cursor pagination) qua BeforeMessageId và CreatedDate để nạp lịch sử chat mượt mà.</para>
+    /// <para>🔴 <strong>Hiệu năng:</strong> Sử dụng AsNoTracking() và sắp xếp lại kết quả theo thứ tự thời gian tăng dần trước khi trả về.</para>
+    /// <para>AI-NOTE: Giới hạn tối đa mặc định 50 tin nhắn cho mỗi trang truy vấn.</para>
+    /// </remarks>
     public class GetChannelMessagesQueryHandler(IChatDbContext dbContext)
         : IQueryHandler<GetChannelMessagesQuery, IReadOnlyList<ChatMessageDto>>
     {
+        /// <inheritdoc />
         public async Task<Result<IReadOnlyList<ChatMessageDto>>> Handle(
             GetChannelMessagesQuery request,
             CancellationToken cancellationToken)

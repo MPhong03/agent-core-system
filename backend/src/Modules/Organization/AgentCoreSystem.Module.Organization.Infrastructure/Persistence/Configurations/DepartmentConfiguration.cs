@@ -9,8 +9,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AgentCoreSystem.Module.Organization.Infrastructure.Persistence.Configurations
 {
+    /// <summary>
+    /// Cấu hình ánh xạ Entity Framework Core cho thực thể <see cref="Department"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>Ánh xạ bảng <c>Departments</c> trên schema 'org' kèm ràng buộc chỉ mục duy nhất trên trường <c>Name</c>.</para>
+    /// <para>🔴 <strong>Ràng buộc xóa:</strong> DeleteBehavior.Restrict để không tự xóa các kênh làm việc trực thuộc khi xóa phòng ban.</para>
+    /// </remarks>
     public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
     {
+        /// <inheritdoc />
         public void Configure(EntityTypeBuilder<Department> builder)
         {
             builder.ToTable("Departments");

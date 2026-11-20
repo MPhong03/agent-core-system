@@ -32,6 +32,8 @@ namespace AgentCoreSystem.Module.Chat.Presentation.Controllers.v1
     [Authorize]
     public class ChatController(ISender mediator) : BaseApiController
     {
+        // ── Channel Message Queries ──
+
         /// <summary>
         /// Truy vấn danh sách tin nhắn trong một kênh làm việc với phân trang theo mốc tin nhắn.
         /// </summary>

@@ -3,6 +3,14 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
 
+/**
+ * @file chat-signalr.service.spec.ts — Unit tests cho ChatSignalRService (Sprint 1 - PBI-CHAT-01)
+ *
+ * ## Mục Tiêu Kiểm Thử
+ * Đảm bảo các luồng Subject/Observable (tin nhắn hoàn chỉnh, streaming chunk, completion, reconnect)
+ * của ChatSignalRService phát đúng dữ liệu và chuyển trạng thái kết nối chuẩn xác.
+ */
+
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { ChatSignalRService } from './chat-signalr.service';
@@ -52,7 +60,7 @@ describe('ChatSignalRService', () => {
 
     const promise = firstValueFrom(service.messageReceived$);
 
-    // Simulate internal handler callback
+    // Mô phỏng callback nội bộ khi nhận tin nhắn
     (service as any).messageReceivedSubject.next(mockMsg);
 
     const received = await promise;

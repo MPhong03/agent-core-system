@@ -68,9 +68,14 @@ namespace AgentCoreSystem.Module.Chat.Application.Messages.Commands
     /// <summary>
     /// Handler xử lý lưu tin nhắn trò chuyện vào cơ sở dữ liệu.
     /// </summary>
+    /// <remarks>
+    /// <para>Khởi tạo và lưu trữ bản ghi <see cref="ChatMessage"/> cùng các liên kết <see cref="MessageMention"/> vào schema 'chat'.</para>
+    /// <para>AI-NOTE: Hỗ trợ truyền mã MessageId định sẵn (UUIDv7) để đồng bộ nhất quán giữa Client streaming và Database record.</para>
+    /// </remarks>
     public class SaveChatMessageCommandHandler(IChatDbContext dbContext)
         : ICommandHandler<SaveChatMessageCommand, ChatMessageDto>
     {
+        /// <inheritdoc />
         public async Task<Result<ChatMessageDto>> Handle(
             SaveChatMessageCommand request,
             CancellationToken cancellationToken)

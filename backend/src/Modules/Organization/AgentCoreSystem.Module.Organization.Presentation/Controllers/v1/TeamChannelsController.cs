@@ -32,6 +32,8 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Controllers.v1
     [Produces("application/json")]
     public class TeamChannelsController(ISender mediator) : ControllerBase
     {
+        // ── Channel Membership Operations ──
+
         /// <summary>
         /// Gán một thành viên (Con người hoặc AI Agent) vào kênh làm việc.
         /// </summary>
@@ -74,6 +76,8 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Controllers.v1
                 ? StatusCode(StatusCodes.Status201Created, ApiResponse<Guid>.Ok(result.Value, "Gán thành viên vào kênh thành công."))
                 : result.ToProblemDetails(this);
         }
+
+        // ── Channel Member Queries ──
 
         /// <summary>
         /// Lấy danh sách thành viên (Human &amp; Agent) đang tham gia kênh làm việc.

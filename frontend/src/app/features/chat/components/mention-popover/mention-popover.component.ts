@@ -1,6 +1,21 @@
-/**
+﻿/**
  * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+/**
+ * @file mention-popover.component.ts — Popover gợi ý và autocomplete nhắc tên (@mention) (Sprint 1 - PBI-CHAT-03)
+ *
+ * ## Giao Diện Autocomplete Nhắc Tên Thành Viên
+ * Hiển thị danh sách gợi ý thành viên (Người dùng & AI Agent) khi gõ ký tự '@' trong ô nhập tin nhắn.
+ * Hỗ trợ lọc danh sách theo chuỗi tìm kiếm, duyệt danh sách bằng phím mũi tên Lên/Xuống,
+ * nhấn Enter/Tab để chèn và Escape để đóng.
+ *
+ * ## Ràng buộc Kỹ thuật & Anti-AI-Slop (RULE-01, RULE-05)
+ * 🔴 Keyboard Handling: Chặn sự kiện mặc định (`preventDefault`) của ArrowUp/Down/Enter/Tab để ngăn trỏ chuột nhảy lung tung trong textarea.
+ * ⛔ Cấm sửa đổi trực tiếp mảng `members`; toàn bộ việc lọc được thực hiện bất biến qua `computed()`.
+ * ⇒ Khi từ khóa lọc thay đổi ⇒ Tự động reset chỉ số được chọn `selectedIndex` về `0`.
+ * AI-NOTE: Phân định rõ ràng giữa Agent AI và Con người thông qua icon và nhãn badge.
  */
 
 import {
@@ -15,15 +30,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { Member, MemberType } from '../../../organization/models/organization.models';
 
-/**
- * Popover gợi ý và tự động hoàn thành danh sách thành viên (@mention) trong kênh chat.
- *
- * <remarks>
- * <para><strong>What:</strong> Hiển thị danh sách gợi ý thành viên (Người dùng & AI Agent) khi gõ ký tự '@', hỗ trợ lọc tên và điều hướng bàn phím.</para>
- * <para><strong>When:</strong> Được kích hoạt trong ChatRoomComponent khi con trỏ trong ô nhập tin nhắn đứng sau ký tự '@'.</para>
- * <para><strong>Why:</strong> Cung cấp trải nghiệm gõ @mention mượt mà, phân biệt rõ người thật và trợ lý AI để điều hướng tin nhắn chính xác.</para>
- * </remarks>
- */
 @Component({
   selector: 'app-mention-popover',
   standalone: true,
@@ -34,6 +40,8 @@ import { Member, MemberType } from '../../../organization/models/organization.mo
 })
 export class MentionPopoverComponent {
   readonly MemberType = MemberType;
+
+  // ── Inputs & Outputs (Angular 19 Signals) ──
 
   /**
    * Danh sách toàn bộ thành viên trong kênh làm việc.
@@ -60,10 +68,14 @@ export class MentionPopoverComponent {
    */
   readonly closePopover = output<void>();
 
+  // ── State Signals ──
+
   /**
    * Chỉ số thành viên đang được chọn (active highlight) bằng bàn phím.
    */
   readonly selectedIndex = signal<number>(0);
+
+  // ── Computed Signals (Lọc Thành Viên) ──
 
   /**
    * Danh sách thành viên đã được lọc theo filterText.
@@ -79,6 +91,7 @@ export class MentionPopoverComponent {
     return list.filter((m) => m.displayName.toLowerCase().includes(query));
   });
 
+  // ── Lifecycle & Effects ──
   constructor() {
     // Tự động reset con trỏ chọn về vị trí đầu tiên khi danh sách lọc thay đổi
     effect(() => {
@@ -86,6 +99,8 @@ export class MentionPopoverComponent {
       this.selectedIndex.set(0);
     });
   }
+
+  // ── Điều Hướng Bàn Phím & Lựa Chọn ──
 
   /**
    * Xử lý các phím điều hướng bàn phím (Mũi tên Lên/Xuống, Enter, Escape).

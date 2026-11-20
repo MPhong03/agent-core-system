@@ -17,6 +17,8 @@ namespace AgentCoreSystem.Module.Chat.Domain.Entities
     /// </remarks>
     public class MessageMention : BaseEntity
     {
+        // ── Constructors ──
+
         /// <summary>
         /// Khởi tạo phục vụ Entity Framework Core deserialization.
         /// </summary>
@@ -35,15 +37,24 @@ namespace AgentCoreSystem.Module.Chat.Domain.Entities
             MentionedMemberId = mentionedMemberId;
         }
 
+        // ── Identifiers & Relationships ──
+
         /// <summary>
         /// Mã định danh tin nhắn cha chứa lượt nhắc tên này.
         /// </summary>
+        /// <remarks>Khóa ngoại vật lý tham chiếu tới bảng <see cref="ChatMessage"/>.</remarks>
         public Guid MessageId { get; private set; }
 
         /// <summary>
         /// Mã định danh thành viên được nhắc tới (tham chiếu logic tới org.Members).
         /// </summary>
+        /// <remarks>
+        /// <para>⛔ <strong>Cấm:</strong> Không thiết lập Foreign Key vật lý sang bảng org.Members.</para>
+        /// <para>⇒ Được Mention Dispatcher sử dụng để phân loại thành viên Human hay Agent nhằm kích hoạt phản hồi tự động.</para>
+        /// </remarks>
         public Guid MentionedMemberId { get; private set; }
+
+        // ── Navigation ──
 
         /// <summary>
         /// Tham chiếu điều hướng tới tin nhắn chứa lượt nhắc.

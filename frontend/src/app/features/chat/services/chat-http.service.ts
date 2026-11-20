@@ -1,28 +1,37 @@
-/**
+﻿/**
  * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+/**
+ * @file chat-http.service.ts — Dịch vụ HTTP truy vấn lịch sử tin nhắn kênh chat (Sprint 1 - PBI-CHAT-01)
+ *
+ * ## Vai trò Kiến trúc
+ * Cung cấp các thao tác truy vấn lịch sử tin nhắn trong kênh làm việc theo phân trang và mốc thời gian qua REST API.
+ *
+ * ## Ràng buộc Kỹ thuật & Anti-AI-Slop (RULE-01, RULE-02, RULE-06)
+ * 🔴 Phân trang lùi (Cursor-based Pagination): Tham số `before` nhận ID tin nhắn mốc để lấy 50 tin nhắn cũ hơn.
+ * 🔴 RULE-02: Sử dụng `environment.apiUrl`, không hardcode tiền tố domain hoặc port.
+ * ⛔ RULE-06: Tuyệt đối không dùng `catchError` nuốt lỗi trả về danh sách rỗng giả mạo.
+ * ⇒ Luồng Observable trả về `ApiResponse<ChatMessage[]>` bọc danh sách tin nhắn từ server.
  */
 
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
 import { ChatMessage } from '../models/chat.models';
 
-/**
- * Dịch vụ HTTP tương tác với REST API phân hệ Chat.
- *
- * <remarks>
- * <para><strong>What:</strong> Cung cấp các thao tác truy vấn lịch sử tin nhắn trong kênh làm việc theo phân trang và mốc thời gian.</para>
- * <para><strong>When:</strong> Khách hàng (Angular Client) cần nạp dữ liệu lịch sử hội thoại khi người dùng truy cập hoặc cuộn ngược trang trong kênh làm việc.</para>
- * <para><strong>Why:</strong> Đảm bảo phân trang tối ưu hiệu năng, giảm thiểu lượng dữ liệu truyền tải và hỗ trợ nạp tin nhắn theo mốc thời gian.</para>
- * </remarks>
- */
 @Injectable({
   providedIn: 'root',
 })
 export class ChatHttpService {
+  // ── Injections & Cấu hình ──
   private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl;
+
+  // ── Truy Vấn Lịch Sử Tin Nhắn ──
 
   /**
    * Truy vấn danh sách tin nhắn trong một kênh làm việc với phân trang theo mốc tin nhắn.
@@ -43,7 +52,7 @@ export class ChatHttpService {
       params = params.set('before', before.trim());
     }
 
-    return this.http.get<ApiResponse<ChatMessage[]>>(`/api/v1/channels/${channelId}/messages`, {
+    return this.http.get<ApiResponse<ChatMessage[]>>(`${this.apiUrl}/channels/${channelId}/messages`, {
       params,
     });
   }

@@ -1,10 +1,12 @@
+<!-- Bong Bóng Tin Nhắn Đơn Lẻ (PBI-CHAT-02)
+     🔴 Lưu ý: Phân chia CSS class động theo vai trò người gửi: agent-row vs user-row -->
 <div
   class="chat-bubble-container"
   [class.agent-row]="isAgent()"
   [class.user-row]="!isAgent()"
   [class.streaming]="isStreaming()"
 >
-  <!-- Avatar Block -->
+  <!-- Khối Avatar: Phân biệt rõ Agent AI (icon robot/xanh lá) và Người dùng (icon người/xanh dương) -->
   <div class="sender-avatar" [class.agent-avatar]="isAgent()">
     @if (isAgent()) {
       <svg viewBox="0 0 24 24" width="18" height="18" stroke="#0AC27D" stroke-width="2" fill="none">
@@ -20,33 +22,39 @@
     }
   </div>
 
-  <!-- Message Body -->
+  <!-- Thân Tin Nhắn & Siêu Dữ Liệu -->
   <div class="message-content-wrapper">
-    <!-- Header Meta -->
+    <!-- Header Meta: Tên người gửi, các huy hiệu nhận diện và thời gian gửi -->
     <div class="message-header">
       <span class="sender-name">{{ senderDisplayName() }}</span>
 
+      <!-- Badge nhận diện trợ lý AI -->
       @if (isAgent()) {
         <span class="badge-ai">AI</span>
       }
 
+      <!-- Badge độ sâu chuỗi đàm thoại (Agent gọi Agent) khi callDepth > 1 -->
       @if (message()?.callDepth && message()!.callDepth > 1) {
         <span class="badge-depth" title="Độ sâu gọi chuỗi Agent">Lớp {{ message()!.callDepth }}</span>
       }
 
+      <!-- Thời gian gửi tin nhắn dạng HH:mm -->
       @if (formattedTime()) {
         <span class="message-time">{{ formattedTime() }}</span>
       }
 
+      <!-- Trạng thái đang stream token thời gian thực từ AI Agent -->
       @if (isStreaming()) {
         <span class="streaming-pill">Đang trả lời...</span>
       }
     </div>
 
-    <!-- Bubble Card -->
+    <!-- Khối Thẻ Bong Bóng Chứa Nội Dung Văn Bản Đã Render Markdown -->
     <div class="bubble-card" [class.streaming-card]="isStreaming()">
+      <!-- Nội dung Markdown đã được parse và sanitize an toàn chống XSS qua renderedContent() -->
       <div class="bubble-text" [innerHTML]="renderedContent()"></div>
 
+      <!-- Con trỏ gõ chữ nhấp nháy thời gian thực khi đang sinh token -->
       @if (isStreaming()) {
         <span class="typing-cursor" aria-hidden="true"></span>
       }

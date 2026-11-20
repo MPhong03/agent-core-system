@@ -1,6 +1,21 @@
-/**
+﻿/**
  * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+/**
+ * @file chat.store.ts — Quản lý trạng thái phân hệ Chat thời gian thực bằng Angular Signals (Sprint 1 - PBI-CHAT-01)
+ *
+ * ## Quản Trị Trạng Thái Realtime Bằng Angular Signals
+ * Đóng vai trò Single Source of Truth cho toàn bộ tin nhắn kênh, luồng streaming token real-time,
+ * trạng thái kết nối socket SignalR, và phân trang lịch sử tin nhắn cũ.
+ *
+ * ## Ràng buộc Kỹ thuật & Luồng Dữ liệu
+ * 🔴 Streaming Map Bất Biến: `streamingMessages` lưu `Map<string, string>` đại diện cho token tích lũy của từng tin nhắn. Cập nhật qua `new Map(map)` để kích hoạt signal reactivity.
+ * ⛔ RULE-06: Cấm nuốt lỗi khi kết nối hoặc nạp tin nhắn; mọi lỗi đều được đẩy vào signal `error`.
+ * ⇒ Nhận chunk streaming (`handleIncomingChunk`) ⇒ Cập nhật text tích lũy trong `streamingMessages`.
+ * ⇒ Hoàn thành streaming (`handleMessageCompleted`) ⇒ Xóa khỏi `streamingMessages` và chốt vào `messages`.
+ * ⇒ Phục hồi kết nối (`reconnected$`) ⇒ Tự động gọi `loadHistory` để bù đắp các tin nhắn bị lỡ.
  */
 
 import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
@@ -13,24 +28,16 @@ import {
   StreamingChunk,
 } from '../models/chat.models';
 
-/**
- * Quản lý trạng thái phân hệ Chat bằng Angular Signals (Signals Store).
- *
- * <remarks>
- * <para><strong>What:</strong> Lưu trữ trạng thái danh sách tin nhắn, luồng streaming token real-time, trạng thái kết nối SignalR và điều phối các thao tác gửi/nhận tin nhắn.</para>
- * <para><strong>When:</strong> Được các Component giao diện Chat (ChatRoomComponent, ChatBubbleComponent) inject để hiển thị dữ liệu và phản ứng tức thì với các sự kiện real-time.</para>
- * <para><strong>Why:</strong> Tập trung hóa logic xử lý stream token mượt mà, ghép nối chunk LLM không gây re-render thừa và quản lý vòng đời kênh hội thoại nhất quán.</para>
- * </remarks>
- */
 @Injectable({
   providedIn: 'root',
 })
 export class ChatStore {
+  // ── Injections ──
   private readonly httpService = inject(ChatHttpService);
   private readonly signalrService = inject(ChatSignalRService);
   private readonly destroyRef = inject(DestroyRef);
 
-  // Core State Signals
+  // ── State Signals ──
   readonly messages = signal<ChatMessage[]>([]);
   readonly streamingMessages = signal<Map<string, string>>(new Map());
   readonly activeChannelId = signal<string | null>(null);
@@ -38,11 +45,11 @@ export class ChatStore {
   readonly hasMoreHistory = signal<boolean>(true);
   readonly error = signal<string | null>(null);
 
-  // Delegated SignalR Status
+  // ── Delegated SignalR Signals ──
   readonly isConnected = this.signalrService.isConnected;
   readonly connectionState = this.signalrService.connectionState;
 
-  // Computed State Helpers
+  // ── Computed Selectors ──
   readonly activeStreamingEntries = computed(() =>
     Array.from(this.streamingMessages().entries()).map(([messageId, content]) => ({
       messageId,
@@ -51,9 +58,12 @@ export class ChatStore {
   );
   readonly totalMessages = computed(() => this.messages().length);
 
+  // ── Khởi Tạo Subscriptions ──
   constructor() {
     this.initRealtimeSubscriptions();
   }
+
+  // ── Actions Tham Gia / Rời Kênh ──
 
   /**
    * Tham gia vào một kênh làm việc: kết nối SignalR, join group và nạp lịch sử tin nhắn.
@@ -107,6 +117,8 @@ export class ChatStore {
       this.error.set(null);
     }
   }
+
+  // ── Actions Lịch Sử Tin Nhắn (History) ──
 
   /**
    * Tải lịch sử tin nhắn của kênh qua REST API (hỗ trợ phân trang lùi qua mốc 'before').
@@ -168,6 +180,8 @@ export class ChatStore {
     this.loadHistory(channelId, limit, oldestMessageId);
   }
 
+  // ── Actions Gửi Tin Nhắn (Send Message) ──
+
   /**
    * Gửi tin nhắn mới vào kênh làm việc hiện tại qua SignalR.
    *
@@ -186,6 +200,8 @@ export class ChatStore {
 
     await this.signalrService.sendMessage(channelId, content.trim(), mentionIds);
   }
+
+  // ── Internal Handlers (Sự Kiện Realtime) ──
 
   /**
    * Lắng nghe các luồng sự kiện thời gian thực từ ChatSignalRService.

@@ -28,7 +28,12 @@ Trước khi tạo mới hoặc sửa đổi code, Agent **BẮT BUỘC** phải
 1. **[C# Coding Conventions](.agents/rules/csharp-conventions.md)**:
    - Sử dụng **Block-scoped namespaces** (`namespace AgentCoreSystem.Domain { ... }`).
    - Sử dụng **C# Primary Constructors** cho việc khai báo Dependency Injection (`public class Service(IDependency dep) : IService`).
-   - Quy tắc comment XML Docs **What - When - Why**: Khai thác triệt để thẻ `<summary>` (What) và `<remarks>` (When & Why), cùng `<param>`, `<returns>`.
+   - **Quy tắc Comment & XML Docs**:
+     - Dùng XML doc `/// <summary>` cho class, property, method `public` và `internal`, kèm `<remarks>`, `<param>`, `<returns>`, `<see cref="..."/>`, `<c>...</c>`, `<inheritdoc />`.
+     - Viết bằng tiếng Việt, thuật ngữ kỹ thuật giữ tiếng Anh.
+     - Tập trung vào **lý do và ràng buộc**, không diễn giải code (vd: «Enricher điền sau phân trang ⇒ không lọc/sắp được»).
+     - Dấu hiệu nhận diện: `AI-NOTE:` (ghi chú cho AI/dev đọc sau), `// ── Tiêu đề nhóm ──` (chia nhóm property).
+     - Ký hiệu đánh dấu: 🔴 (cảnh báo «đừng đổi cái này vì...»), ⛔ (điều cấm), ⇒ (quan hệ kéo theo).
 2. **[Modular Monolith Architecture](.agents/rules/modular-monolith-rules.md)**:
    - Mỗi module là một tập hợp các project Clean Architecture độc lập (Domain, Application, Infrastructure, Presentation).
    - Cơ chế **Schema-per-module** trên cùng một database SQL Server (ví dụ: `system`, `catalog`, `order`).
@@ -54,11 +59,21 @@ Trước khi tạo mới hoặc sửa đổi code, Agent **BẮT BUỘC** phải
    - Feature-driven Modular Design với **Standalone Components** làm mặc định.
    - Tối ưu hiệu năng với `ChangeDetectionStrategy.OnPush`, **Angular Signals** (`signal`, `computed`, `effect`) và cú pháp Control Flow mới (`@if`, `@for`, `@defer`).
    - Lazy load toàn bộ Feature modules qua `loadChildren` / `loadComponent`.
+   - **Quy tắc Comment & JSDoc**:
+     - Đầu file có JSDoc `@file <tên>.ts — mô tả (mã PBI)` kèm các mục `## …` giải thích thiết kế (vd: «Hai vai trò của tab»).
+     - Ký hiệu đánh dấu: 🔴 (cảnh báo «đừng đổi cái này vì...»), ⛔ (điều cấm), ⇒ (quan hệ kéo theo), `AI-NOTE:`, `// ── Tiêu đề nhóm ──`.
+     - Comment HTML trong template giải thích cell template và cấu trúc UI phức tạp.
 9. **[Frontend Design Philosophy (Dropbox Pack)](.agents/rules/frontend-design-philosophy.md)**:
    - Kết hợp triết lý **Hallmark** (Anti-AI-slop, 8-state discipline), **Minimalist UI** (Warm canvas `#F7F5F2`, 1px borders, muted pastels), và **Frontend Design** theo chuẩn [DESIGN.md](DESIGN.md).
 10. **[Command Runner (`justfile`)](.agents/documents/justfile-guide.md)**:
    - Sử dụng `just <command>` làm Single Entry Point cho các thao tác Build, Test, Format và quản lý EF Core Migrations đa schema.
    - Gõ `just` hoặc `just --list` tại thư mục gốc để tra cứu nhanh menu lệnh.
+11. **[Anti-AI-Slop Standards](.agents/rules/anti-ai-slop.md)**:
+   - Hệ thống 14 mã tiêu chuẩn chống code ẩu (`RULE-01` đến `RULE-14`) phân theo 4 trụ cột kiến trúc, xếp thứ tự ưu tiên CRIT $\rightarrow$ WARN:
+     - 🏛️ **Hợp đồng & Ranh giới (CRIT)**: Khớp contract FE↔BE (RULE-01, ưu tiên cao nhất), không gán cứng host/port/cờ quyền (RULE-02), đủ khoá i18n và quyền (RULE-03).
+     - ⚙️ **Luồng Thực Thi Thực Chất (CRIT)**: Cấm mock/stub trong luồng thật (RULE-04), cấm lộ chức năng rỗng (RULE-05), cấm nuốt lỗi báo thành công giả (RULE-06), quản lý exception/timeout chặt chẽ (RULE-07).
+     - 🧹 **Chất Lượng Code & Tái Cấu Trúc (WARN)**: Xóa dead code (RULE-08), chống nhân bản code quá 3 lần - DRY (RULE-09), seam trả hằng phải có lộ trình thay thật (RULE-10).
+     - 📝 **Tài Liệu & Kỷ Luật Git (WARN)**: Comment không kể lể lịch sử (RULE-11), tài liệu mô tả đúng code thật (RULE-12), làm theo pattern repo (RULE-13), diff tập trung không lan man (RULE-14).
 
 ---
 

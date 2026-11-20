@@ -1,6 +1,21 @@
-/**
+﻿/**
  * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+/**
+ * @file organization.store.ts — Quản lý trạng thái phân hệ Organization bằng Angular Signals (Sprint 0 - PBI-ORG-01)
+ *
+ * ## Quản Trị Trạng Thái Bằng Angular Signals
+ * Lưu trữ tập trung trạng thái cây tổ chức (Phòng ban -> Kênh nhóm -> Thành viên) và danh mục Hồ sơ Agent AI.
+ * Đóng vai trò Single Source of Truth (SSOT) cho toàn bộ các UI components trong module Organization.
+ *
+ * ## Ràng buộc Kỹ thuật & Luồng Dữ liệu
+ * 🔴 Bất Biến State: Cập nhật state bất biến qua `.set()` hoặc `.update()`, cấm mutate trực tiếp mảng/đối tượng bên trong Signal.
+ * ⛔ RULE-06: Tuyệt đối không nuốt lỗi; mọi thất bại mạng/API đều được đẩy vào Signal `error` và tắt cờ `loading`.
+ * ⇒ Chọn phòng ban (`selectDepartment`) ⇒ Tự động reset kênh được chọn, dọn dẹp danh sách thành viên và tải kênh mới.
+ * ⇒ Tạo kênh mới thành công ⇒ Tải lại danh sách kênh kèm làm mới phòng ban để cập nhật số lượng `channelCount`.
+ * ⇒ Gán thành viên mới thành công ⇒ Làm mới danh sách thành viên kênh và cập nhật `memberCount` của kênh.
  */
 
 import { Injectable, computed, inject, signal } from '@angular/core';
@@ -23,9 +38,10 @@ import { OrganizationService } from '../services/organization.service';
   providedIn: 'root',
 })
 export class OrganizationStore {
+  // ── Injections ──
   private readonly orgService = inject(OrganizationService);
 
-  // State Signals
+  // ── State Signals ──
   readonly departments = signal<Department[]>([]);
   readonly selectedDepartment = signal<Department | null>(null);
   readonly channels = signal<TeamChannel[]>([]);
@@ -35,7 +51,7 @@ export class OrganizationStore {
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
 
-  // Computed Selectors
+  // ── Computed Selectors ──
   readonly humanMembers = computed(() =>
     this.channelMembers().filter((m) => m.type === MemberType.Human),
   );
@@ -48,7 +64,12 @@ export class OrganizationStore {
 
   readonly totalChannelCount = computed(() => this.channels().length);
 
-  // Actions
+  // ── Actions (Tải dữ liệu & Đồng bộ State) ──
+
+  /**
+   * Nạp danh sách tất cả phòng ban từ API.
+   * AI-NOTE: Giữ nguyên phòng ban đang được chọn nếu vẫn tồn tại trong danh sách mới.
+   */
   loadDepartments(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -58,7 +79,6 @@ export class OrganizationStore {
         this.loading.set(false);
         if (res.success && res.data) {
           this.departments.set(res.data);
-          // If previous selectedDepartment exists, keep or refresh it
           const current = this.selectedDepartment();
           if (current) {
             const updated = res.data.find((d) => d.id === current.id);
@@ -75,6 +95,10 @@ export class OrganizationStore {
     });
   }
 
+  /**
+   * Chọn một phòng ban làm tiêu điểm làm việc.
+   * ⇒ Kéo theo reset kênh được chọn và nạp danh sách kênh thuộc phòng ban này.
+   */
   selectDepartment(dept: Department): void {
     this.selectedDepartment.set(dept);
     this.selectedChannel.set(null);
@@ -82,6 +106,9 @@ export class OrganizationStore {
     this.loadChannels(dept.id);
   }
 
+  /**
+   * Nạp danh sách kênh làm việc của một phòng ban.
+   */
   loadChannels(deptId: string): void {
     this.loading.set(true);
     this.error.set(null);
@@ -100,11 +127,17 @@ export class OrganizationStore {
     });
   }
 
+  /**
+   * Chọn kênh làm việc hiện tại và nạp danh sách thành viên trong kênh.
+   */
   selectChannel(channel: TeamChannel): void {
     this.selectedChannel.set(channel);
     this.loadChannelMembers(channel.id);
   }
 
+  /**
+   * Nạp danh sách thành viên (con người và Agent AI) của một kênh.
+   */
   loadChannelMembers(channelId: string): void {
     this.loading.set(true);
     this.error.set(null);
@@ -123,6 +156,9 @@ export class OrganizationStore {
     });
   }
 
+  /**
+   * Nạp danh mục toàn bộ hồ sơ cấu hình Agent AI.
+   */
   loadAgentProfiles(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -141,6 +177,11 @@ export class OrganizationStore {
     });
   }
 
+  // ── Actions (Thao tác Thêm / Gán Dữ liệu) ──
+
+  /**
+   * Tạo phòng ban mới và tự động nạp lại danh sách phòng ban.
+   */
   createDepartment(req: CreateDepartmentRequest): Observable<ApiResponse<string>> {
     this.loading.set(true);
     return this.orgService.createDepartment(req).pipe(
@@ -157,6 +198,9 @@ export class OrganizationStore {
     );
   }
 
+  /**
+   * Tạo kênh làm việc mới thuộc phòng ban và làm mới danh sách kênh & số lượng kênh phòng ban.
+   */
   createChannel(deptId: string, req: CreateChannelRequest): Observable<ApiResponse<string>> {
     this.loading.set(true);
     return this.orgService.createChannel(deptId, req).pipe(
@@ -164,7 +208,7 @@ export class OrganizationStore {
         next: () => {
           this.loading.set(false);
           this.loadChannels(deptId);
-          this.loadDepartments(); // To refresh channelCount
+          this.loadDepartments(); // Refresh channelCount phòng ban
         },
         error: (err) => {
           this.loading.set(false);
@@ -174,6 +218,9 @@ export class OrganizationStore {
     );
   }
 
+  /**
+   * Tạo hồ sơ cấu hình Agent AI mới và làm mới danh mục Agent profiles.
+   */
   createAgentProfile(req: CreateAgentProfileRequest): Observable<ApiResponse<string>> {
     this.loading.set(true);
     return this.orgService.createAgentProfile(req).pipe(
@@ -190,6 +237,9 @@ export class OrganizationStore {
     );
   }
 
+  /**
+   * Gán thành viên mới hoặc Agent vào kênh làm việc và đồng bộ lại danh sách thành viên kênh.
+   */
   assignMember(channelId: string, req: AssignMemberRequest): Observable<ApiResponse<string>> {
     this.loading.set(true);
     return this.orgService.assignMember(channelId, req).pipe(
@@ -199,7 +249,7 @@ export class OrganizationStore {
           this.loadChannelMembers(channelId);
           const dept = this.selectedDepartment();
           if (dept) {
-            this.loadChannels(dept.id); // Refresh memberCount
+            this.loadChannels(dept.id); // Refresh memberCount kênh
           }
         },
         error: (err) => {

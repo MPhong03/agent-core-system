@@ -1,10 +1,14 @@
+<!-- Popover Gợi Ý Tự Động Hoàn Thành Nhắc Tên (@mention Autocomplete) (PBI-CHAT-03)
+     🔴 Hỗ trợ đầy đủ ARIA Accessibility: role="listbox", role="option" và attr.aria-selected -->
 @if (visible()) {
   <div class="mention-popover-card mention-popover" (click)="$event.stopPropagation()">
+    <!-- Header Popover & Hướng dẫn sử dụng bàn phím -->
     <div class="popover-header">
       <span class="header-title">Nhắc tên thành viên (&#64;mention)</span>
       <span class="keyboard-hint">↑↓ để chọn, Enter để chèn</span>
     </div>
 
+    <!-- Danh Sách Gợi Ý Thành Viên Phù Hợp -->
     <div class="members-list" role="listbox">
       @for (member of filteredMembers(); track member.id; let i = $index) {
         <div
@@ -16,6 +20,7 @@
           (click)="onSelect(member)"
           (mouseenter)="selectedIndex.set(i)"
         >
+          <!-- Avatar Thành Viên (Phân biệt Agent AI xanh lá vs Người dùng xanh dương) -->
           <div class="member-avatar" [class.agent-avatar]="member.type === MemberType.Agent">
             @if (member.type === MemberType.Agent) {
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="#0AC27D" stroke-width="2" fill="none">
@@ -31,6 +36,7 @@
             }
           </div>
 
+          <!-- Tên Hiển Thị & Huy Hiệu Phân Loại -->
           <div class="member-info">
             <span class="member-name">{{ member.displayName }}</span>
             @if (member.type === MemberType.Agent) {
@@ -41,6 +47,7 @@
           </div>
         </div>
       } @empty {
+        <!-- Trạng thái không tìm thấy thành viên khớp từ khóa -->
         <div class="empty-results">
           <span>Không tìm thấy thành viên phù hợp</span>
         </div>

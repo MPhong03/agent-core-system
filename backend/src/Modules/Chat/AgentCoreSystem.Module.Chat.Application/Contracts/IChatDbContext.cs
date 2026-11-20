@@ -19,6 +19,8 @@ namespace AgentCoreSystem.Module.Chat.Application.Contracts
     /// </remarks>
     public interface IChatDbContext
     {
+        // ── DbSets ──
+
         /// <summary>
         /// Tập hợp các thực thể tin nhắn trò chuyện trong kênh.
         /// </summary>
@@ -39,8 +41,10 @@ namespace AgentCoreSystem.Module.Chat.Application.Contracts
         /// </summary>
         DbSet<MessageMention> MessageMentions { get; }
 
+        // ── Persistence Operations ──
+
         /// <summary>
-        /// Lưu các thay đổi vào cơ sở dữ liệu.
+        /// Lưu các thay đổi vào cơ sở dữ liệu trên schema 'chat'.
         /// </summary>
         /// <param name="cancellationToken">Mã hủy bỏ tác vụ không đồng bộ.</param>
         /// <returns>Số lượng bản ghi bị tác động trong cơ sở dữ liệu.</returns>

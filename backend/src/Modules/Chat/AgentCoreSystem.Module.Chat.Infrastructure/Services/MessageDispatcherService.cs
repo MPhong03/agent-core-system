@@ -41,15 +41,14 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
         IHubContext<SignalRChatHub> hubContext,
         ILogger<MessageDispatcherService>? logger = null) : IMessageDispatcherService
     {
+        // ── Constants & Configuration ──
+
         private const int MaxCallDepth = 3;
         private const int SlidingWindowSize = 20;
 
-        /// <summary>
-        /// Điều phối tin nhắn tới các Agent được nhắc tên trong kênh làm việc theo hàng đợi tuần tự.
-        /// </summary>
-        /// <param name="userMessage">Tin nhắn kích hoạt việc điều phối.</param>
-        /// <param name="mentionedAgentIds">Danh sách mã định danh thành viên hoặc hồ sơ Agent được gắn thẻ nhắc tên.</param>
-        /// <param name="ct">Mã hủy bỏ tác vụ.</param>
+        // ── Dispatcher Entry Point ──
+
+        /// <inheritdoc />
         public async Task DispatchMessageAsync(
             ChatMessageDto userMessage,
             List<Guid> mentionedAgentIds,
@@ -136,6 +135,15 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
             }
         }
 
+        // ── LLM Invocation & Streaming ──
+
+        /// <summary>
+        /// Xử lý lấy context, gọi streaming qua LLM provider và lưu kết quả phản hồi của một Agent.
+        /// </summary>
+        /// <param name="userMessage">Tin nhắn của người dùng hoặc tin nhắn kích hoạt.</param>
+        /// <param name="member">Thông tin thành viên kênh của Agent.</param>
+        /// <param name="profile">Hồ sơ cấu hình LLM của Agent.</param>
+        /// <param name="ct">Token hủy tác vụ.</param>
         private async Task ProcessAgentResponseAsync(
             ChatMessageDto userMessage,
             MemberDto member,

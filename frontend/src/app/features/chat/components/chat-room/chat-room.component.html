@@ -1,5 +1,7 @@
+﻿<!-- Phòng Chat Hội Thoại Realtime (PBI-CHAT-01)
+     🔴 Bố cục 3 phần chuẩn: 1. Header kênh | 2. Khung tin nhắn cuộn mượt | 3. Ô soạn thảo tin nhắn & gợi ý @mention -->
 <div class="chat-room-layout chat-room">
-  <!-- 1. Header Bar -->
+  <!-- 1. Thanh Tiêu Đề Kênh & Trạng Thái Kết Nối Realtime -->
   <header class="chat-header">
     <div class="header-info">
       <div class="channel-title-row">
@@ -11,6 +13,7 @@
       </div>
     </div>
 
+    <!-- Huy hiệu trạng thái kết nối SignalR Hub (Trực tuyến / Đang kết nối / Mất kết nối) -->
     <div class="header-status">
       <div
         class="connection-pill"
@@ -24,13 +27,13 @@
     </div>
   </header>
 
-  <!-- 2. Scrollable Messages History -->
+  <!-- 2. Khung Cuộn Lịch Sử Tin Nhắn & Token Streaming -->
   <main
     #messagesContainer
     class="messages-container messages-viewport"
     (scroll)="onScroll()"
   >
-    <!-- Nút tải tin nhắn cũ hơn -->
+    <!-- Nút tải thêm tin nhắn cũ hơn (Phân trang lùi qua mốc 'before') -->
     @if (chatStore.hasMoreHistory() && chatStore.messages().length > 0) {
       <div class="load-older-wrapper">
         <button
@@ -49,7 +52,7 @@
       </div>
     }
 
-    <!-- Trạng thái tải lần đầu -->
+    <!-- Trạng thái đang tải lịch sử lần đầu khi mới tham gia kênh -->
     @if (chatStore.isLoadingHistory() && chatStore.messages().length === 0) {
       <div class="loading-state">
         <span class="spinner"></span>
@@ -57,7 +60,7 @@
       </div>
     }
 
-    <!-- Trạng thái kênh trống -->
+    <!-- Trạng thái kênh hội thoại chưa có tin nhắn nào -->
     @if (!chatStore.isLoadingHistory() && chatStore.messages().length === 0 && chatStore.activeStreamingEntries().length === 0) {
       <div class="empty-chat-state">
         <div class="empty-chat-icon">
@@ -70,12 +73,12 @@
       </div>
     }
 
-    <!-- Danh sách tin nhắn chính thức -->
+    <!-- Danh sách tin nhắn chính thức đã lưu và nhận qua SignalR -->
     @for (msg of chatStore.messages(); track msg.id) {
       <app-chat-bubble [message]="msg"></app-chat-bubble>
     }
 
-    <!-- Danh sách các tin nhắn AI Agent đang stream token trực tiếp -->
+    <!-- Danh sách các tin nhắn AI Agent đang sinh token trực tiếp (Streaming) -->
     @for (streaming of chatStore.activeStreamingEntries(); track streaming.messageId) {
       <app-chat-bubble
         [isStreaming]="true"
@@ -84,7 +87,7 @@
     }
   </main>
 
-  <!-- Nút cuộn xuống cuối khi có tin mới -->
+  <!-- Nút bấm nổi cuộn nhanh xuống đáy khi người dùng cuộn ngược đọc tin cũ -->
   @if (showScrollBottomButton()) {
     <button
       type="button"
@@ -96,9 +99,9 @@
     </button>
   }
 
-  <!-- 3. Message Input Composer -->
+  <!-- 3. Khu Vực Soạn Thảo Tin Nhắn (Composer) -->
   <footer class="composer-container">
-    <!-- Popover Autocomplete @mention -->
+    <!-- Popover Gợi Ý Tự Động Hoàn Thành Nhắc Tên (@mention Autocomplete) -->
     <app-mention-popover
       [members]="channelMembers()"
       [filterText]="mentionFilterText()"
@@ -107,7 +110,7 @@
       (closePopover)="closeMentionPopover()"
     ></app-mention-popover>
 
-    <!-- Error Alert nếu có lỗi gửi/nhận -->
+    <!-- Banner cảnh báo lỗi khi gửi/nhận tin nhắn (RULE-06: Không nuốt lỗi) -->
     @if (chatStore.error(); as err) {
       <div class="chat-error-banner">
         <span>{{ err }}</span>

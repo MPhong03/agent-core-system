@@ -30,9 +30,14 @@ namespace AgentCoreSystem.Module.Organization.Application.Members.Queries
     /// <summary>
     /// Handler xử lý truy vấn lấy thành viên kênh theo UserId và ChannelId.
     /// </summary>
+    /// <remarks>
+    /// <para>Truy vấn định danh thành viên liên module giữa Chat và Organization.</para>
+    /// <para>AI-NOTE: Giúp phân hệ Chat xác định MemberId tương ứng khi người dùng gửi tin nhắn qua SignalR.</para>
+    /// </remarks>
     public class GetMemberByUserIdAndChannelQueryHandler(IOrganizationDbContext dbContext)
         : IQueryHandler<GetMemberByUserIdAndChannelQuery, MemberDto>
     {
+        /// <inheritdoc />
         public async Task<Result<MemberDto>> Handle(
             GetMemberByUserIdAndChannelQuery request, 
             CancellationToken cancellationToken)

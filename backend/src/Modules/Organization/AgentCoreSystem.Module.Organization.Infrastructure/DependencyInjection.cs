@@ -12,8 +12,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AgentCoreSystem.Module.Organization.Infrastructure
 {
+    /// <summary>
+    /// Lớp mở rộng đăng ký các dịch vụ tầng hạ tầng (Infrastructure) của phân hệ Organization.
+    /// </summary>
     public static class DependencyInjection
     {
+        /// <summary>
+        /// Đăng ký DbContext, SQL Server provider và liên kết interface <c>IOrganizationDbContext</c>.
+        /// </summary>
+        /// <param name="services">Tập hợp các dịch vụ ứng dụng.</param>
+        /// <param name="configuration">Cấu hình hệ thống (chứa chuỗi kết nối DefaultConnection).</param>
+        /// <returns>Tập hợp dịch vụ sau khi đăng ký.</returns>
         public static IServiceCollection AddOrganizationInfrastructure(
             this IServiceCollection services,
             IConfiguration configuration)

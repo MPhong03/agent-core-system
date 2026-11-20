@@ -1,6 +1,25 @@
-/**
+﻿/**
  * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+/**
+ * @file chat-room.component.ts — Phòng chat hội thoại thời gian thực cho kênh làm việc (Sprint 1 - PBI-CHAT-01)
+ *
+ * ## Giao Diện Phòng Chat Hội Thoại Realtime
+ * Cung cấp không gian làm việc liền mạch giữa người dùng và các trợ lý AI Agent.
+ * Tích hợp đầy đủ:
+ * - Lịch sử tin nhắn phân trang lùi (Cursor Pagination).
+ * - Luồng streaming token thời gian thực qua SignalR.
+ * - Ô nhập tin nhắn đa dòng kèm gợi ý Autocomplete @mention thành viên/Agent.
+ * - Tự động cuộn thông minh với cơ chế throttled requestAnimationFrame.
+ *
+ * ## Ràng buộc Kỹ thuật & Anti-AI-Slop (RULE-01, RULE-05, RULE-06)
+ * 🔴 Throttling Animation: Tự động cuộn đáy khi streaming token được bọc trong `requestAnimationFrame` để loại bỏ layout thrashing.
+ * 🔴 User Scroll Protection: Nếu người dùng đang cuộn ngược lên đọc tin cũ (`distanceToBottom > 80`), không tự ý cuộn ép xuống đáy.
+ * ⛔ Không chặn phím Enter khi popover @mention đang mở; nhường quyền xử lý cho `mentionPopover.handleKeyDown`.
+ * ⇒ Nhập ký tự `@` ⇒ Tự động mở popover gợi ý thành viên (`isMentionPopoverOpen`).
+ * ⇒ Gửi tin nhắn thành công ⇒ Reset input, xóa danh sách mentions đã chọn và cuộn xuống đáy.
  */
 
 import {
@@ -20,19 +39,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatStore } from '../../store/chat.store';
 import { OrganizationStore } from '../../../organization/store/organization.store';
-import { Member, MemberType } from '../../../organization/models/organization.models';
+import { Member } from '../../../organization/models/organization.models';
 import { ChatBubbleComponent } from '../chat-bubble/chat-bubble.component';
 import { MentionPopoverComponent } from '../mention-popover/mention-popover.component';
 
-/**
- * Phòng chat thời gian thực cho kênh làm việc nhóm (Chat Room).
- *
- * <remarks>
- * <para><strong>What:</strong> Giao diện hội thoại kênh hoàn chỉnh tích hợp danh sách tin nhắn, streaming token real-time từ AI Agent, nhập tin nhắn kèm autocomplete @mention.</para>
- * <para><strong>When:</strong> Được hiển thị khi người dùng chọn một kênh nhóm (TeamChannel) trong cấu trúc phòng ban.</para>
- * <para><strong>Why:</strong> Tạo không gian làm việc cộng tác liền mạch giữa nhân sự thật và các biệt đội AI Agent, hỗ trợ đàm thoại đa tầng và streaming tức thì.</para>
- * </remarks>
- */
 @Component({
   selector: 'app-chat-room',
   standalone: true,
@@ -47,12 +57,16 @@ import { MentionPopoverComponent } from '../mention-popover/mention-popover.comp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatRoomComponent implements AfterViewInit, OnDestroy {
+  // ── Injections ──
   readonly chatStore = inject(ChatStore);
   readonly orgStore = inject(OrganizationStore);
 
+  // ── View Children ──
   @ViewChild('messagesContainer') private readonly messagesContainerRef?: ElementRef<HTMLDivElement>;
   @ViewChild('messageTextarea') private readonly messageTextareaRef?: ElementRef<HTMLTextAreaElement>;
   @ViewChild(MentionPopoverComponent) private readonly mentionPopover?: MentionPopoverComponent;
+
+  // ── Inputs (Angular 19 Signals Input) ──
 
   /**
    * Mã định danh kênh làm việc hiện tại.
@@ -64,20 +78,22 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
    */
   readonly channelName = input<string>('');
 
-  // Local UI State Signals
+  // ── Local UI State Signals ──
   readonly messageText = signal<string>('');
   readonly isSending = signal<boolean>(false);
   readonly isMentionPopoverOpen = signal<boolean>(false);
   readonly mentionFilterText = signal<string>('');
   readonly selectedMentionIds = signal<Set<string>>(new Set());
 
-  // Scroll tracking
+  // ── Scroll Tracking & Throttling ──
   private isUserScrolledUp = false;
   private scrollRafId: number | null = null;
   readonly showScrollBottomButton = signal<boolean>(false);
 
   // Vị trí con trỏ bắt đầu của ký tự '@' hiện tại trong ô input
   private mentionStartIndex = -1;
+
+  // ── Computed Selectors ──
 
   /**
    * Danh sách thành viên khả dụng trong kênh để gợi ý @mention.
@@ -87,7 +103,7 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
   });
 
   /**
-   * Trạng thái kết nối hiển thị cho người dùng.
+   * Trạng thái kết nối hiển thị trực quan cho người dùng.
    */
   readonly connectionStatusLabel = computed<string>(() => {
     switch (this.chatStore.connectionState()) {
@@ -103,8 +119,9 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
     }
   });
 
+  // ── Lifecycle & Effects ──
   constructor() {
-    // 1. Quản lý việc tham gia / chuyển kênh SignalR
+    // 1. Quản lý việc tham gia / chuyển kênh SignalR khi input channelId thay đổi
     effect(() => {
       const targetChannelId = this.channelId();
       if (targetChannelId) {
@@ -142,6 +159,8 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
     this.chatStore.leaveChannel();
   }
 
+  // ── Scroll Handlers ──
+
   /**
    * Xử lý sự kiện cuộn của khung tin nhắn để phát hiện người dùng có đang cuộn lên đọc tin cũ hay không.
    */
@@ -157,7 +176,7 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Cuộn mượt khung tin nhắn xuống đáy cùng.
+   * Cuộn khung tin nhắn xuống đáy cùng (hỗ trợ hiệu ứng smooth scroll khi cần).
    */
   scrollToBottom(smooth = false): void {
     const el = this.messagesContainerRef?.nativeElement;
@@ -181,6 +200,8 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
   loadMoreOlderMessages(): void {
     this.chatStore.loadMoreOlderMessages();
   }
+
+  // ── Input & Mention Handlers ──
 
   /**
    * Bắt các phím đặc biệt trong ô nhập văn bản (Enter để gửi, phím điều hướng @mention popover).
@@ -269,6 +290,8 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
     this.mentionFilterText.set('');
     this.mentionStartIndex = -1;
   }
+
+  // ── Submit Message Action ──
 
   /**
    * Gửi tin nhắn vào kênh làm việc qua ChatStore.

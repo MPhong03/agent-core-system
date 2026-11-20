@@ -3,6 +3,14 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
 
+/**
+ * @file chat-room.component.spec.ts — Unit tests cho ChatRoomComponent (Sprint 1 - PBI-CHAT-01)
+ *
+ * ## Mục Tiêu Kiểm Thử
+ * Đảm bảo ChatRoomComponent hiển thị tiêu đề kênh, số thành viên, tích hợp gửi tin nhắn,
+ * điều khiển mention popover và bắt các sự kiện cuộn/bàn phím.
+ */
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { describe, it, expect, beforeEach, vi } from 'vitest';

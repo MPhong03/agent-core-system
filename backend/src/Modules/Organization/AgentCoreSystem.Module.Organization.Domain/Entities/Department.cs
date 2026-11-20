@@ -17,6 +17,8 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
     /// </remarks>
     public class Department : BaseEntity
     {
+        // ── Constructors ──
+
         /// <summary>
         /// Khởi tạo một phòng ban mới.
         /// </summary>
@@ -38,19 +40,32 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
             Channels = new List<TeamChannel>();
         }
 
+        // ── General Information ──
+
         /// <summary>
         /// Tên phòng ban.
         /// </summary>
+        /// <remarks>
+        /// <para>🔴 <strong>Ràng buộc:</strong> Tên phòng ban là duy nhất trên toàn hệ thống (Unique Index).</para>
+        /// <para>Tối đa 150 ký tự, không được để trống.</para>
+        /// </remarks>
         public string Name { get; set; }
 
         /// <summary>
         /// Mô tả chi tiết chức năng nhiệm vụ của phòng ban.
         /// </summary>
+        /// <remarks>Tối đa 500 ký tự. Có thể để trống nếu không có thông tin chi tiết.</remarks>
         public string? Description { get; set; }
+
+        // ── Navigation ──
 
         /// <summary>
         /// Danh sách các kênh làm việc trực thuộc phòng ban.
         /// </summary>
+        /// <remarks>
+        /// <para>Quan hệ 1-N với <see cref="TeamChannel"/>.</para>
+        /// <para>⇒ Khi cấu hình xóa: DeleteBehavior.Restrict để bảo vệ dữ liệu lịch sử các kênh trực thuộc.</para>
+        /// </remarks>
         public virtual ICollection<TeamChannel> Channels { get; set; }
     }
 }

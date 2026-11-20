@@ -14,8 +14,22 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Extensions
     /// <summary>
     /// Các phương thức mở rộng hỗ trợ ánh xạ tập trung từ Result/Error sang RFC 7807 ProblemDetails.
     /// </summary>
+    /// <remarks>
+    /// <para><strong>What:</strong> Tiện ích chuyển đổi đối tượng <see cref="Result"/> thất bại thành phản hồi <see cref="ActionResult"/> chuẩn ProblemDetails.</para>
+    /// <para><strong>When:</strong> Được gọi tại các API Controller khi kết quả CQRS trả về lỗi nghiệp vụ.</para>
+    /// <para><strong>Why:</strong> Chuẩn hóa định dạng lỗi toàn hệ thống tuân thủ RFC 7807 và nhất quán với Angular Client.</para>
+    /// </remarks>
     public static class ResultExtensions
     {
+        // ── ProblemDetails Mapping ──
+
+        /// <summary>
+        /// Ánh xạ một đối tượng <see cref="Result"/> thất bại thành phản hồi <see cref="ActionResult"/> theo chuẩn RFC 7807 ProblemDetails.
+        /// </summary>
+        /// <param name="result">Kết quả nghiệp vụ mang thông tin lỗi.</param>
+        /// <param name="controller">ControllerBase phục vụ tạo Problem response.</param>
+        /// <returns>Đối tượng <see cref="ActionResult"/> chứa ProblemDetails.</returns>
+        /// <exception cref="InvalidOperationException">Ném ra nếu Result là trạng thái thành công.</exception>
         public static ActionResult ToProblemDetails(this Result result, ControllerBase controller)
         {
             if (result.IsSuccess)
@@ -39,6 +53,13 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Extensions
                 });
         }
 
+        // ── Helper Mappings ──
+
+        /// <summary>
+        /// Lấy mã trạng thái HTTP tương ứng với loại lỗi nghiệp vụ.
+        /// </summary>
+        /// <param name="errorType">Loại lỗi phân loại trong Domain/Kernel.</param>
+        /// <returns>Mã trạng thái HTTP tương ứng.</returns>
         public static int GetStatusCode(ErrorType errorType) => errorType switch
         {
             ErrorType.Validation => StatusCodes.Status400BadRequest,
@@ -50,6 +71,11 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Extensions
             _ => StatusCodes.Status400BadRequest
         };
 
+        /// <summary>
+        /// Lấy tiêu đề mô tả ngắn cho mã lỗi RFC 7807.
+        /// </summary>
+        /// <param name="errorType">Loại lỗi phân loại.</param>
+        /// <returns>Tiêu đề lỗi chuẩn hóa tiếng Anh.</returns>
         private static string GetTitle(ErrorType errorType) => errorType switch
         {
             ErrorType.Validation => "Bad Request - Validation Error",
@@ -61,6 +87,11 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Extensions
             _ => "Bad Request"
         };
 
+        /// <summary>
+        /// Lấy URI đặc tả kỹ thuật của chuẩn RFC tương ứng với mã lỗi.
+        /// </summary>
+        /// <param name="errorType">Loại lỗi phân loại.</param>
+        /// <returns>URI đặc tả kỹ thuật RFC.</returns>
         private static string GetTypeUri(ErrorType errorType) => errorType switch
         {
             ErrorType.Validation => "https://tools.ietf.org/html/rfc7231#section-6.5.1",

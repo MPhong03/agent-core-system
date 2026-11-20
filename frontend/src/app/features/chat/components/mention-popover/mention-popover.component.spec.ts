@@ -3,6 +3,14 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
 
+/**
+ * @file mention-popover.component.spec.ts — Unit tests cho MentionPopoverComponent (Sprint 1 - PBI-CHAT-03)
+ *
+ * ## Mục Tiêu Kiểm Thử
+ * Đảm bảo MentionPopoverComponent lọc chính xác danh sách thành viên theo từ khóa sau ký tự '@',
+ * phản hồi các phím mũi tên Lên/Xuống, Enter, Tab, Escape và phát sự kiện chọn thành viên.
+ */
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MentionPopoverComponent } from './mention-popover.component';

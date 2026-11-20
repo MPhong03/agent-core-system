@@ -1,6 +1,21 @@
-/**
+﻿/**
  * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
  * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
+/**
+ * @file chat-signalr.service.ts — Dịch vụ SignalR thời gian thực kết nối Hub /hubs/chat (Sprint 1 - PBI-CHAT-01)
+ *
+ * ## Giao Thức WebSocket Thời Gian Thực
+ * Quản lý kết nối tới SignalR Chat Hub (`/hubs/chat`), điều phối luồng streaming token của AI Agent,
+ * nhận tin nhắn mới, quản lý trạng thái kết nối và tự phục hồi khi mạng chập chờn.
+ *
+ * ## Ràng buộc Kỹ thuật & Anti-AI-Slop (RULE-01, RULE-02)
+ * 🔴 Auto Reconnect: Cấu hình tái kết nối tự động với các khoảng ngắt quãng [0, 2s, 5s, 10s, 30s].
+ * 🔴 Rejoin Channel: Khi SignalR tái kết nối thành công (`onreconnected`), bắt buộc tự động tham gia lại kênh cũ.
+ * ⛔ Tránh Duplicate Connection: Lưu giữ `connectingPromise` để ngăn chặn gọi song song `connect()` nhiều lần.
+ * ⇒ Luồng sự kiện phân tách rõ: `messageReceived$`, `messageChunkReceived$`, `messageCompleted$`.
+ * AI-NOTE: Token xác thực được nạp động từ `localStorage.getItem('access_token')`.
  */
 
 import { Injectable, OnDestroy, signal } from '@angular/core';
@@ -18,28 +33,20 @@ import {
   StreamingChunk,
 } from '../models/chat.models';
 
-/**
- * Dịch vụ giao tiếp thời gian thực SignalR cho kênh Chat.
- *
- * <remarks>
- * <para><strong>What:</strong> Quản lý kết nối WebSocket/SignalR tới Hub /hubs/chat, tự động tái kết nối, tham gia/rời nhóm kênh và điều phối các sự kiện tin nhắn thời gian thực.</para>
- * <para><strong>When:</strong> Được kích hoạt khi người dùng mở giao diện trò chuyện kênh hoặc cần nhận luồng token streaming từ AI Agents.</para>
- * <para><strong>Why:</strong> Đảm bảo độ trễ thấp nhất cho trải nghiệm hội thoại, xử lý mượt mà việc stream từng token và tự phục hồi kết nối khi mạng chập chờn.</para>
- * </remarks>
- */
 @Injectable({
   providedIn: 'root',
 })
 export class ChatSignalRService implements OnDestroy {
+  // ── Khởi Tạo Kết Nối & Trạng Thái Nội Bộ ──
   private hubConnection: HubConnection | null = null;
   private connectingPromise: Promise<void> | null = null;
   private currentChannelId: string | null = null;
 
-  // Reactive State Signals
+  // ── State Signals ──
   readonly isConnected = signal<boolean>(false);
   readonly connectionState = signal<SignalRConnectionState>('disconnected');
 
-  // Reactive Event Streams
+  // ── Event Streams (RxJS Subjects) ──
   private readonly messageReceivedSubject = new Subject<ChatMessage>();
   private readonly messageChunkSubject = new Subject<StreamingChunk>();
   private readonly messageCompletedSubject = new Subject<CompletedMessage>();
@@ -51,6 +58,8 @@ export class ChatSignalRService implements OnDestroy {
   readonly messageCompleted$: Observable<CompletedMessage> =
     this.messageCompletedSubject.asObservable();
   readonly reconnected$: Observable<void> = this.reconnectedSubject.asObservable();
+
+  // ── Khởi Tạo Kết Nối & Quản Lý Vòng Đời Hub ──
 
   /**
    * Khởi tạo kết nối tới SignalR Chat Hub với cơ chế Auto-Reconnect và Bearer Token.
@@ -123,8 +132,10 @@ export class ChatSignalRService implements OnDestroy {
     }
   }
 
+  // ── Kênh & Gửi Tin Nhắn (Channel Operations) ──
+
   /**
-   * Tham gia vào nhóm lắng nghe của một kênh làm việc cụ thể.
+   * Tham gia vào nhóm lắng nghe của một kênh làm việc cụ thể trên Hub.
    *
    * @param channelId Mã định danh kênh làm việc.
    */
@@ -170,13 +181,15 @@ export class ChatSignalRService implements OnDestroy {
     }
   }
 
+  // ── Đăng Ký Sự Kiện Lắng Nghe Realtime ──
+
   private registerEventHandlers(connection: HubConnection): void {
     // 1. Nhận tin nhắn mới hoàn chỉnh (từ người dùng hoặc agent)
     connection.on('ReceiveMessage', (message: ChatMessage) => {
       this.messageReceivedSubject.next(message);
     });
 
-    // 2. Nhận từng chunk streaming từ AI Agent
+    // 2. Nhận từng chunk streaming token từ AI Agent
     connection.on(
       'ReceiveMessageChunk',
       (messageId: string, agentMemberId: string, deltaText: string) => {
@@ -201,7 +214,7 @@ export class ChatSignalRService implements OnDestroy {
       },
     );
 
-    // Xử lý các vòng đời kết nối
+    // Xử lý các trạng thái vòng đời kết nối socket
     connection.onreconnecting((error) => {
       console.warn('[ChatSignalRService] Đang thử kết nối lại SignalR Hub...', error);
       this.isConnected.set(false);
@@ -231,6 +244,8 @@ export class ChatSignalRService implements OnDestroy {
       this.connectionState.set('disconnected');
     });
   }
+
+  // ── Dọn Dẹp Bộ Nhớ (ngOnDestroy) ──
 
   ngOnDestroy(): void {
     this.messageReceivedSubject.complete();
