@@ -33,6 +33,10 @@
     <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Application\AgentCoreSystem.Module.Chat.Application.csproj" />
     <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Infrastructure\AgentCoreSystem.Module.Chat.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Modules\Chat\AgentCoreSystem.Module.Chat.Presentation\AgentCoreSystem.Module.Chat.Presentation.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Tasks\AgentCoreSystem.Module.Tasks.Domain\AgentCoreSystem.Module.Tasks.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Tasks\AgentCoreSystem.Module.Tasks.Application\AgentCoreSystem.Module.Tasks.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Tasks\AgentCoreSystem.Module.Tasks.Infrastructure\AgentCoreSystem.Module.Tasks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Tasks\AgentCoreSystem.Module.Tasks.Presentation\AgentCoreSystem.Module.Tasks.Presentation.csproj" />
     <ProjectReference Include="..\..\src\Host\AgentCoreSystem.Api\AgentCoreSystem.Api.csproj" />
   </ItemGroup>
 
