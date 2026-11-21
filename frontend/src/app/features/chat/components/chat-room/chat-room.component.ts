@@ -184,7 +184,7 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    if (smooth) {
+    if (smooth && typeof el.scrollTo === 'function') {
       el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     } else {
       el.scrollTop = el.scrollHeight;

@@ -9,177 +9,104 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '../services/user.service';
 import { UserDto, ChangePasswordRequest } from '../models/user.model';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { AppModalComponent } from '../../../../shared/components/modal/modal.component';
+import { AppButtonComponent } from '../../../../shared/components/button/button.component';
+import { AppIconComponent } from '../../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-change-password-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    AppModalComponent,
+    AppButtonComponent,
+    AppIconComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="modal-backdrop" (click)="close()">
-      <div class="modal-card" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h3>{{ 'MODAL.CHANGE_PWD_TITLE' | translate }} ({{ targetUser()?.email }})</h3>
-          <button class="btn-close" (click)="close()">✕</button>
+    <app-modal
+      [isOpen]="true"
+      [title]="'Đổi mật khẩu: ' + (targetUser()?.fullName || targetUser()?.email)"
+      size="md"
+      (close)="close()"
+    >
+      @if (errorMessage()) {
+        <div class="mb-4 flex items-center gap-2 rounded-md bg-danger/10 border border-danger/20 p-3 text-xs text-danger dark:bg-danger/20 dark:border-danger/30">
+          <app-icon name="close" [size]="16" class="shrink-0" />
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      @if (successMessage()) {
+        <div class="mb-4 flex items-center gap-2 rounded-md bg-success/10 border border-success/20 p-3 text-xs text-success dark:bg-success/20 dark:border-success/30">
+          <app-icon name="check" [size]="16" class="shrink-0" />
+          <span>{{ successMessage() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+            {{ 'MODAL.CURRENT_PASSWORD' | translate }} <span class="text-danger">*</span>
+          </label>
+          <input
+            type="password"
+            formControlName="currentPassword"
+            placeholder="••••••••"
+            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+          />
         </div>
 
-        @if (errorMessage()) {
-          <div class="alert alert-danger">{{ errorMessage() }}</div>
-        }
-        @if (successMessage()) {
-          <div class="alert alert-success">{{ successMessage() }}</div>
-        }
+        <div>
+          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+            {{ 'MODAL.NEW_PASSWORD' | translate }} <span class="text-danger">*</span>
+          </label>
+          <input
+            type="password"
+            formControlName="newPassword"
+            placeholder="Tối thiểu 6 ký tự"
+            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+          />
+        </div>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
-          <div class="form-group">
-            <label>{{ 'MODAL.CURRENT_PASSWORD' | translate }} *</label>
-            <input type="password" formControlName="currentPassword" placeholder="••••••••" />
-          </div>
+        <div>
+          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+            {{ 'MODAL.CONFIRM_PASSWORD' | translate }} <span class="text-danger">*</span>
+          </label>
+          <input
+            type="password"
+            formControlName="confirmPassword"
+            placeholder="Nhập lại mật khẩu mới"
+            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+          />
+        </div>
+      </form>
 
-          <div class="form-group">
-            <label>{{ 'MODAL.NEW_PASSWORD' | translate }} *</label>
-            <input type="password" formControlName="newPassword" placeholder="Tối thiểu 6 ký tự" />
-          </div>
-
-          <div class="form-group">
-            <label>{{ 'MODAL.CONFIRM_PASSWORD' | translate }} *</label>
-            <input
-              type="password"
-              formControlName="confirmPassword"
-              placeholder="Nhập lại mật khẩu mới"
-            />
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" class="btn-secondary" (click)="close()">
-              {{ 'MODAL.BTN_CANCEL' | translate }}
-            </button>
-            <button type="submit" [disabled]="form.invalid || isSaving()" class="btn-primary">
-              @if (isSaving()) {
-                {{ 'MODAL.BTN_SAVING' | translate }}
-              } @else {
-                {{ 'MODAL.BTN_CONFIRM_PWD' | translate }}
-              }
-            </button>
-          </div>
-        </form>
+      <!-- Modal Footer -->
+      <div modal-footer class="flex items-center justify-end gap-2.5 w-full">
+        <app-button variant="secondary" size="sm" (click)="close()">
+          {{ 'MODAL.BTN_CANCEL' | translate }}
+        </app-button>
+        <app-button
+          variant="primary"
+          size="sm"
+          [loading]="isSaving()"
+          [disabled]="form.invalid || isSaving()"
+          (click)="onSubmit()"
+        >
+          {{ isSaving() ? ('MODAL.BTN_SAVING' | translate) : ('MODAL.BTN_CONFIRM_PWD' | translate) }}
+        </app-button>
       </div>
-    </div>
+    </app-modal>
   `,
-  styles: [
-    `
-      .modal-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(15, 23, 42, 0.6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        backdrop-filter: blur(2px);
-      }
-      .modal-card {
-        background: #ffffff;
-        width: 100%;
-        max-width: 440px;
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-      }
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #f1f5f9;
-        padding-bottom: 12px;
-      }
-      .modal-header h3 {
-        margin: 0;
-        font-size: 1.15rem;
-        color: #0f172a;
-      }
-      .btn-close {
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-        cursor: pointer;
-        color: #64748b;
-      }
-      .form-group {
-        margin-bottom: 16px;
-      }
-      .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #334155;
-      }
-      .form-group input {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        outline: none;
-        box-sizing: border-box;
-      }
-      .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 24px;
-        padding-top: 16px;
-        border-top: 1px solid #f1f5f9;
-      }
-      .btn-primary {
-        background: #2563eb;
-        color: #fff;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .btn-primary:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .btn-secondary {
-        background: #f1f5f9;
-        color: #334155;
-        border: 1px solid #cbd5e1;
-        padding: 10px 16px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .alert {
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        margin-bottom: 16px;
-      }
-      .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-      .alert-success {
-        background: #dcfce7;
-        color: #166534;
-      }
-    `,
-  ],
 })
 export class ChangePasswordModalComponent {
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
 
-  targetUser = input<UserDto | null>(null);
+  readonly targetUser = input<UserDto | null>(null);
   readonly saved = output<void>();
   readonly closed = output<void>();
 
@@ -196,15 +123,9 @@ export class ChangePasswordModalComponent {
   onSubmit(): void {
     if (this.form.invalid) return;
 
-    const { currentPassword, newPassword, confirmPassword } = this.form.getRawValue();
-
-    if (newPassword !== confirmPassword) {
-      this.errorMessage.set('Mật khẩu mới và xác nhận mật khẩu không trùng khớp.');
-      return;
-    }
-
-    if (newPassword === currentPassword) {
-      this.errorMessage.set('Mật khẩu mới không được trùng với mật khẩu hiện tại.');
+    const val = this.form.getRawValue();
+    if (val.newPassword !== val.confirmPassword) {
+      this.errorMessage.set('Mật khẩu xác nhận không khớp.');
       return;
     }
 
@@ -217,8 +138,8 @@ export class ChangePasswordModalComponent {
 
     const req: ChangePasswordRequest = {
       userId: user.id,
-      currentPassword: currentPassword!,
-      newPassword: newPassword!,
+      currentPassword: val.currentPassword!,
+      newPassword: val.newPassword!,
     };
 
     this.userService.changePassword(user.id, req).subscribe({
@@ -232,7 +153,7 @@ export class ChangePasswordModalComponent {
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.errorMessage.set(err.detail || 'Đổi mật khẩu không thành công.');
+        this.errorMessage.set(err.detail || 'Đổi mật khẩu thất bại. Vui lòng thử lại.');
       },
     });
   }

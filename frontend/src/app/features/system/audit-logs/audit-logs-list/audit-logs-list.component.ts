@@ -5,69 +5,50 @@
 
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AppCardComponent } from '../../../../shared/components/card/card.component';
+import { AppIconComponent } from '../../../../shared/components/icon/icon.component';
+import { AppBadgeComponent } from '../../../../shared/components/badge/badge.component';
 
 @Component({
   selector: 'app-audit-logs-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AppCardComponent, AppIconComponent, AppBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="audit-page">
-      <div class="page-header">
-        <h2>Nhật ký Kiểm toán Hệ thống (Audit Logs)</h2>
-        <p>
-          Tự động ghi vết các thao tác quan trọng và dọn dẹp định kỳ qua Hangfire Job trên MongoDB
+    <div class="space-y-6">
+      <!-- Page Header -->
+      <div>
+        <h2 class="text-xl sm:text-2xl font-bold text-black dark:text-white tracking-tight">
+          Nhật ký Kiểm toán Hệ thống (Audit Logs)
+        </h2>
+        <p class="text-xs sm:text-sm text-body dark:text-bodydark mt-1">
+          Hạ tầng ghi vết an ninh, giám sát các thay đổi thực thể và tự động dọn dẹp qua Hangfire trên MongoDB
         </p>
       </div>
 
-      <div class="card">
-        <div class="info-banner">
-          <span
-            >ℹ️ Dữ liệu kiểm toán được bảo quản và tự động loại bỏ sau 90 ngày thông qua
-            <code>SystemAuditLogCleanupJob</code>.</span
-          >
+      <!-- Information Banner Card -->
+      <app-card>
+        <div class="flex items-start gap-3.5">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-info/10 text-info dark:bg-info/20">
+            <app-icon name="audit" [size]="20" />
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2">
+              <h4 class="font-bold text-sm text-black dark:text-white">
+                Cơ chế Lưu trữ & Vận hành Tự động
+              </h4>
+              <app-badge variant="success" size="sm">Đang bảo vệ</app-badge>
+            </div>
+            <p class="text-xs text-body dark:text-bodydark leading-relaxed">
+              Mọi thay đổi trên các thực thể nghiệp vụ (Thêm, Sửa, Xóa mềm, Đổi mật khẩu) đều được Interceptor của EF Core tự động bắt và đẩy vào cơ sở dữ liệu MongoDB Audit Log.
+            </p>
+            <p class="text-xs text-body dark:text-bodydark leading-relaxed">
+              Dữ liệu kiểm toán được bảo quản và tự động loại bỏ sau 90 ngày thông qua tác vụ định kỳ <code class="rounded bg-gray-2 px-1.5 py-0.5 text-black font-mono text-[11px] dark:bg-meta-4 dark:text-white">SystemAuditLogCleanupJob</code> chạy trên nền tảng Hangfire.
+            </p>
+          </div>
         </div>
-      </div>
+      </app-card>
     </div>
   `,
-  styles: [
-    `
-      .audit-page {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
-      .page-header h2 {
-        margin: 0 0 4px 0;
-        color: #0f172a;
-        font-size: 1.4rem;
-      }
-      .page-header p {
-        margin: 0;
-        color: #64748b;
-        font-size: 0.85rem;
-      }
-      .card {
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-      }
-      .info-banner {
-        background-color: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        color: #166534;
-        padding: 14px;
-        border-radius: 6px;
-        font-size: 0.9rem;
-      }
-      code {
-        background: #dcfce7;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-weight: 600;
-      }
-    `,
-  ],
 })
 export class AuditLogsListComponent {}

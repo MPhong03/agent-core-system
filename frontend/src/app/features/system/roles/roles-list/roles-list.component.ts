@@ -5,108 +5,102 @@
 
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AppCardComponent } from '../../../../shared/components/card/card.component';
+import { AppBadgeComponent } from '../../../../shared/components/badge/badge.component';
+import { AppIconComponent } from '../../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-roles-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AppCardComponent, AppBadgeComponent, AppIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="roles-page">
-      <div class="page-header">
-        <h2>Quản lý Vai trò &amp; Phân quyền (RBAC)</h2>
-        <p>3 Role mặc định của hệ thống: SuperAdmin, Admin, Employee</p>
+    <div class="space-y-6">
+      <!-- Page Header -->
+      <div>
+        <h2 class="text-xl sm:text-2xl font-bold text-black dark:text-white tracking-tight">
+          Quản lý Vai trò & Phân quyền (RBAC)
+        </h2>
+        <p class="text-xs sm:text-sm text-body dark:text-bodydark mt-1">
+          Hệ thống Identity phân quyền dựa trên 3 vai trò mặc định: SuperAdmin, Admin, Employee
+        </p>
       </div>
 
-      <div class="roles-grid">
-        <div class="role-card">
-          <div class="role-badge superadmin">SuperAdmin</div>
-          <h3>Quản trị viên Tối cao</h3>
-          <p>
-            Toàn quyền trên toàn bộ hệ thống. Có thể cấu hình cơ sở hạ tầng, quản lý tất cả các phân
-            hệ và bypass kiểm tra quyền hạn.
-          </p>
-        </div>
+      <!-- Roles Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <!-- SuperAdmin Card -->
+        <app-card>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-danger/10 text-danger dark:bg-danger/20">
+                <app-icon name="shield" [size]="20" />
+              </div>
+              <app-badge variant="danger" size="sm">SuperAdmin</app-badge>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-black dark:text-white">
+                Quản trị viên Tối cao
+              </h3>
+              <p class="text-xs text-body dark:text-bodydark mt-1.5 leading-relaxed">
+                Toàn quyền trên toàn bộ hệ thống. Có thể cấu hình cơ sở hạ tầng, quản lý tất cả các phân hệ và bypass kiểm tra quyền hạn.
+              </p>
+            </div>
+            <div class="pt-2 border-t border-stroke dark:border-strokedark flex items-center gap-2 text-[11px] text-body dark:text-bodydark">
+              <span class="inline-block h-1.5 w-1.5 rounded-full bg-danger"></span>
+              <span>Quyền hạn: Toàn quyền truy cập và kiểm soát</span>
+            </div>
+          </div>
+        </app-card>
 
-        <div class="role-card">
-          <div class="role-badge admin">Admin</div>
-          <h3>Quản trị viên</h3>
-          <p>
-            Quản lý tài khoản người dùng, thiết lập phân hệ và theo dõi hoạt động vận hành của chi
-            nhánh/phân hệ.
-          </p>
-        </div>
+        <!-- Admin Card -->
+        <app-card>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/20">
+                <app-icon name="roles" [size]="20" />
+              </div>
+              <app-badge variant="primary" size="sm">Admin</app-badge>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-black dark:text-white">
+                Quản trị viên Phân hệ
+              </h3>
+              <p class="text-xs text-body dark:text-bodydark mt-1.5 leading-relaxed">
+                Quản lý tài khoản người dùng, thiết lập phân hệ và theo dõi hoạt động vận hành của chi nhánh hoặc phòng ban được phân bổ.
+              </p>
+            </div>
+            <div class="pt-2 border-t border-stroke dark:border-strokedark flex items-center gap-2 text-[11px] text-body dark:text-bodydark">
+              <span class="inline-block h-1.5 w-1.5 rounded-full bg-primary"></span>
+              <span>Quyền hạn: Quản lý Users, Tasks, Channels</span>
+            </div>
+          </div>
+        </app-card>
 
-        <div class="role-card">
-          <div class="role-badge employee">Employee</div>
-          <h3>Nhân viên Tác nghiệp</h3>
-          <p>
-            Nhân viên thực hiện các nghiệp vụ thông thường trong phạm vi chức năng được cấp phép.
-          </p>
-        </div>
+        <!-- Employee Card -->
+        <app-card>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-2 text-body dark:bg-meta-4 dark:text-bodydark">
+                <app-icon name="user" [size]="20" />
+              </div>
+              <app-badge variant="neutral" size="sm">Employee</app-badge>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-black dark:text-white">
+                Nhân viên Tác nghiệp
+              </h3>
+              <p class="text-xs text-body dark:text-bodydark mt-1.5 leading-relaxed">
+                Nhân viên thực hiện các nghiệp vụ thông thường trong phạm vi chức năng được cấp phép, kéo thả công việc Kanban và trò chuyện kênh.
+              </p>
+            </div>
+            <div class="pt-2 border-t border-stroke dark:border-strokedark flex items-center gap-2 text-[11px] text-body dark:text-bodydark">
+              <span class="inline-block h-1.5 w-1.5 rounded-full bg-bodydark2"></span>
+              <span>Quyền hạn: Tác nghiệp Workspace cơ bản</span>
+            </div>
+          </div>
+        </app-card>
       </div>
     </div>
   `,
-  styles: [
-    `
-      .roles-page {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-      .page-header h2 {
-        margin: 0 0 4px 0;
-        color: #0f172a;
-        font-size: 1.4rem;
-      }
-      .page-header p {
-        margin: 0;
-        color: #64748b;
-        font-size: 0.85rem;
-      }
-      .roles-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 16px;
-      }
-      .role-card {
-        background: #fff;
-        padding: 24px;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-      }
-      .role-badge {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        margin-bottom: 12px;
-      }
-      .role-badge.superadmin {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-      .role-badge.admin {
-        background: #dbeafe;
-        color: #1e40af;
-      }
-      .role-badge.employee {
-        background: #f1f5f9;
-        color: #475569;
-      }
-      .role-card h3 {
-        margin: 0 0 8px 0;
-        color: #0f172a;
-        font-size: 1.1rem;
-      }
-      .role-card p {
-        margin: 0;
-        color: #64748b;
-        font-size: 0.875rem;
-        line-height: 1.5;
-      }
-    `,
-  ],
 })
 export class RolesListComponent {}

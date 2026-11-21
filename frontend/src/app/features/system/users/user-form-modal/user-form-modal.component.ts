@@ -17,250 +17,161 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '../services/user.service';
 import { UserDto, CreateUserRequest, UpdateUserRequest } from '../models/user.model';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { AppModalComponent } from '../../../../shared/components/modal/modal.component';
+import { AppButtonComponent } from '../../../../shared/components/button/button.component';
+import { AppIconComponent } from '../../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-user-form-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    AppModalComponent,
+    AppButtonComponent,
+    AppIconComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="modal-backdrop" (click)="close()">
-      <div class="modal-card" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h3>
-            {{
-              isEditMode()
-                ? ('MODAL.USER_EDIT_TITLE' | translate)
-                : ('MODAL.USER_CREATE_TITLE' | translate)
-            }}
-          </h3>
-          <button class="btn-close" (click)="close()">✕</button>
+    <app-modal
+      [isOpen]="true"
+      [title]="modalTitle()"
+      size="md"
+      (close)="close()"
+    >
+      @if (errorMessage()) {
+        <div class="mb-4 flex items-center gap-2 rounded-md bg-danger/10 border border-danger/20 p-3 text-xs text-danger dark:bg-danger/20 dark:border-danger/30">
+          <app-icon name="close" [size]="16" class="shrink-0" />
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+        <!-- Full Name -->
+        <div>
+          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+            {{ 'MODAL.FULL_NAME' | translate }} <span class="text-danger">*</span>
+          </label>
+          <input
+            type="text"
+            formControlName="fullName"
+            placeholder="Nguyễn Văn A"
+            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+          />
         </div>
 
-        @if (errorMessage()) {
-          <div class="alert alert-danger">{{ errorMessage() }}</div>
-        }
+        <!-- Email -->
+        <div>
+          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+            {{ 'MODAL.EMAIL' | translate }} <span class="text-danger">*</span>
+          </label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="example@agentcore.vn"
+            [readonly]="isEditMode()"
+            [class.opacity-60]="isEditMode()"
+            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+          />
+        </div>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
-          <div class="form-group">
-            <label>{{ 'MODAL.FULL_NAME' | translate }} *</label>
-            <input type="text" formControlName="fullName" placeholder="Nguyễn Văn A" />
-          </div>
-
-          <div class="form-group">
-            <label>{{ 'MODAL.EMAIL' | translate }} *</label>
+        <!-- Password (Create mode only) -->
+        @if (!isEditMode()) {
+          <div>
+            <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+              {{ 'MODAL.PASSWORD' | translate }} <span class="text-danger">*</span>
+            </label>
             <input
-              type="email"
-              formControlName="email"
-              placeholder="example@mvp.vn"
-              [readonly]="isEditMode()"
+              type="password"
+              formControlName="password"
+              placeholder="••••••••"
+              class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
             />
           </div>
+        }
 
-          @if (!isEditMode()) {
-            <div class="form-group">
-              <label>{{ 'MODAL.PASSWORD' | translate }} *</label>
-              <input type="password" formControlName="password" placeholder="Tối thiểu 6 ký tự" />
-            </div>
-          }
+        <!-- Phone Number -->
+        <div>
+          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+            {{ 'MODAL.PHONE' | translate }}
+          </label>
+          <input
+            type="text"
+            formControlName="phoneNumber"
+            placeholder="0912345678"
+            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+          />
+        </div>
 
-          <div class="form-group">
-            <label>{{ 'MODAL.PHONE_NUMBER' | translate }}</label>
-            <input type="text" formControlName="phoneNumber" placeholder="0912345678" />
-          </div>
-
-          <div class="form-group">
-            <label>{{ 'MODAL.ROLES' | translate }} *</label>
-            <div class="roles-selection">
-              <label class="checkbox-label">
+        <!-- Roles Selection -->
+        <div>
+          <label class="mb-2 block text-xs font-medium text-black dark:text-white">
+            {{ 'MODAL.ROLES' | translate }} <span class="text-danger">*</span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            @for (role of availableRoles; track role) {
+              <label class="flex items-center gap-2 p-2.5 rounded-md border border-stroke dark:border-strokedark hover:bg-gray-2 dark:hover:bg-meta-4 cursor-pointer text-xs font-medium text-black dark:text-white transition-colors">
                 <input
                   type="checkbox"
-                  [checked]="hasRole('SuperAdmin')"
-                  (change)="toggleRole('SuperAdmin', $event)"
+                  [checked]="hasRole(role)"
+                  (change)="toggleRole(role, $event)"
+                  class="rounded text-primary focus:ring-primary h-4 w-4"
                 />
-                SuperAdmin
+                <span>{{ role }}</span>
               </label>
-              <label class="checkbox-label">
-                <input
-                  type="checkbox"
-                  [checked]="hasRole('Admin')"
-                  (change)="toggleRole('Admin', $event)"
-                />
-                Admin
-              </label>
-              <label class="checkbox-label">
-                <input
-                  type="checkbox"
-                  [checked]="hasRole('Employee')"
-                  (change)="toggleRole('Employee', $event)"
-                />
-                Employee
-              </label>
-            </div>
+            }
           </div>
+        </div>
 
-          @if (isEditMode()) {
-            <div class="form-group checkbox-group">
-              <label class="checkbox-label">
-                <input type="checkbox" formControlName="isActive" />
-                {{ 'MODAL.IS_ACTIVE' | translate }}
-              </label>
-            </div>
-          }
-
-          <div class="modal-actions">
-            <button type="button" class="btn-secondary" (click)="close()">
-              {{ 'MODAL.BTN_CANCEL' | translate }}
-            </button>
-            <button type="submit" [disabled]="form.invalid || isSaving()" class="btn-primary">
-              @if (isSaving()) {
-                {{ 'MODAL.BTN_SAVING' | translate }}
-              } @else {
-                {{ 'MODAL.BTN_SAVE' | translate }}
-              }
-            </button>
+        <!-- Active Status (Edit mode only) -->
+        @if (isEditMode()) {
+          <div class="pt-1">
+            <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-black dark:text-white">
+              <input
+                type="checkbox"
+                formControlName="isActive"
+                class="rounded text-primary focus:ring-primary h-4 w-4"
+              />
+              <span>{{ 'MODAL.IS_ACTIVE' | translate }}</span>
+            </label>
           </div>
-        </form>
+        }
+      </form>
+
+      <!-- Modal Footer -->
+      <div modal-footer class="flex items-center justify-end gap-2.5 w-full">
+        <app-button variant="secondary" size="sm" (click)="close()">
+          {{ 'MODAL.BTN_CANCEL' | translate }}
+        </app-button>
+        <app-button
+          variant="primary"
+          size="sm"
+          [loading]="isSaving()"
+          [disabled]="form.invalid || isSaving()"
+          (click)="onSubmit()"
+        >
+          {{ isSaving() ? ('MODAL.BTN_SAVING' | translate) : ('MODAL.BTN_SAVE' | translate) }}
+        </app-button>
       </div>
-    </div>
+    </app-modal>
   `,
-  styles: [
-    `
-      .modal-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(15, 23, 42, 0.6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        backdrop-filter: blur(2px);
-      }
-      .modal-card {
-        background: #ffffff;
-        width: 100%;
-        max-width: 480px;
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-      }
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #f1f5f9;
-        padding-bottom: 12px;
-      }
-      .modal-header h3 {
-        margin: 0;
-        font-size: 1.2rem;
-        color: #0f172a;
-      }
-      .btn-close {
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-        cursor: pointer;
-        color: #64748b;
-      }
-      .form-group {
-        margin-bottom: 16px;
-      }
-      .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #334155;
-      }
-      .form-group input[type='text'],
-      .form-group input[type='email'],
-      .form-group input[type='password'] {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        outline: none;
-        box-sizing: border-box;
-      }
-      .form-group input[readonly] {
-        background-color: #f8fafc;
-        color: #64748b;
-        cursor: not-allowed;
-      }
-      .roles-selection {
-        display: flex;
-        gap: 16px;
-      }
-      .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.9rem;
-        cursor: pointer;
-      }
-      .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 24px;
-        padding-top: 16px;
-        border-top: 1px solid #f1f5f9;
-      }
-      .btn-primary {
-        background: #2563eb;
-        color: #fff;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .btn-primary:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .btn-secondary {
-        background: #f1f5f9;
-        color: #334155;
-        border: 1px solid #cbd5e1;
-        padding: 10px 16px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .alert {
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        margin-bottom: 16px;
-      }
-      .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-    `,
-  ],
 })
 export class UserFormModalComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
 
-  userToEdit = input<UserDto | null>(null);
+  readonly userToEdit = input<UserDto | null>(null);
   readonly saved = output<void>();
   readonly closed = output<void>();
 
+  readonly availableRoles = ['SuperAdmin', 'Admin', 'Employee'];
+  readonly selectedRoles = signal<string[]>([]);
   readonly isSaving = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
-  readonly selectedRoles = signal<string[]>(['Employee']);
 
   readonly form = this.fb.group({
-    fullName: ['', [Validators.required, Validators.maxLength(150)]],
+    fullName: ['', [Validators.required, Validators.maxLength(100)]],
     email: ['', [Validators.required, Validators.email]],
     password: [''],
     phoneNumber: [''],
@@ -268,7 +179,11 @@ export class UserFormModalComponent implements OnInit {
   });
 
   isEditMode(): boolean {
-    return this.userToEdit() !== null;
+    return !!this.userToEdit();
+  }
+
+  modalTitle(): string {
+    return this.isEditMode() ? 'Chỉnh sửa Người dùng' : 'Thêm Người dùng mới';
   }
 
   ngOnInit(): void {
