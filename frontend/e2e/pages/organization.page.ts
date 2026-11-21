@@ -111,27 +111,23 @@ export class OrganizationPage extends BasePage {
     // Chọn chế độ thực thi công cụ (ToolExecutionMode)
     if (mode === 'semi-auto') {
       const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Semi-Auto/i });
-      if (await modeCard.isVisible()) {
-        await modeCard.click();
-      }
+      await expect(modeCard).toBeVisible();
+      await modeCard.click();
     } else if (mode === 'auto') {
       const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Auto \(Tự trị\)/i });
-      if (await modeCard.isVisible()) {
-        await modeCard.click();
-      }
+      await expect(modeCard).toBeVisible();
+      await modeCard.click();
     } else if (mode === 'need-approve') {
       const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Need Approve/i });
-      if (await modeCard.isVisible()) {
-        await modeCard.click();
-      }
+      await expect(modeCard).toBeVisible();
+      await modeCard.click();
     }
 
     // Chọn danh sách công cụ được phân quyền
     for (const toolName of toolNames) {
       const toolItem = this.page.locator('.tool-item').filter({ hasText: toolName });
-      if (await toolItem.isVisible()) {
-        await toolItem.click();
-      }
+      await expect(toolItem).toBeVisible();
+      await toolItem.click();
     }
 
     await this.submitAgentButton.click();
@@ -155,22 +151,24 @@ export class OrganizationPage extends BasePage {
 
     if (mode === 'semi-auto') {
       const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Semi-Auto/i });
+      await expect(modeCard).toBeVisible();
       await modeCard.click();
     } else if (mode === 'auto') {
       const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Auto \(Tự trị\)/i });
+      await expect(modeCard).toBeVisible();
       await modeCard.click();
     } else if (mode === 'need-approve') {
       const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Need Approve/i });
+      await expect(modeCard).toBeVisible();
       await modeCard.click();
     }
 
     for (const toolName of toolNames) {
       const toolItem = this.page.locator('.tool-item').filter({ hasText: toolName });
-      if (await toolItem.isVisible()) {
-        const isChecked = await toolItem.locator('input[type="checkbox"]').isChecked();
-        if (!isChecked) {
-          await toolItem.click();
-        }
+      await expect(toolItem).toBeVisible();
+      const isChecked = await toolItem.locator('input[type="checkbox"]').isChecked();
+      if (!isChecked) {
+        await toolItem.click();
       }
     }
 

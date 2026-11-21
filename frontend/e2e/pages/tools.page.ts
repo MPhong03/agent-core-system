@@ -53,7 +53,15 @@ export class ToolsPage extends BasePage {
     this.argumentsTextarea = page.locator('app-tool-test-dialog textarea');
     this.executeTestButton = page.getByRole('button', { name: /Gửi yêu cầu thử nghiệm/i });
     this.testResultCard = page.locator('.rounded-lg').filter({ hasText: /Kết quả Phản hồi/i });
-    this.closeTestDialogButton = page.locator('app-tool-test-dialog .btn-close, app-tool-test-dialog button:has-text("✕")');
+    this.closeTestDialogButton = page.locator('app-tool-test-dialog').getByRole('button', { name: /Đóng/i });
+  }
+
+  /**
+   * Close the Test Dialog modal
+   */
+  async closeTestDialog(): Promise<void> {
+    await this.closeTestDialogButton.click();
+    await expect(this.page.locator('app-tool-test-dialog')).toBeHidden();
   }
 
   /**
