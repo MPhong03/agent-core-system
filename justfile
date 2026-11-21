@@ -73,6 +73,10 @@ test-e2e-ui:
 test-e2e-chat:
     cd frontend; npx playwright test e2e/specs/sprint-1-chat-realtime.spec.ts
 
+# Chạy End-to-End Tests cho Kanban Realtime
+test-e2e-kanban:
+    cd frontend; npx playwright test e2e/specs/sprint-2-kanban-realtime.spec.ts
+
 # -----------------------------------------------------------------------------
 # 4. EF Core Migrations (Hỗ trợ Kiến trúc Schema-per-module)
 # -----------------------------------------------------------------------------

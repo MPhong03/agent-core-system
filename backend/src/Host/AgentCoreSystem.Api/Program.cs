@@ -148,6 +148,7 @@ namespace AgentCoreSystem.Api
             builder.Services.AddSystemModule(builder.Configuration);
             builder.Services.AddOrganizationModule(builder.Configuration);
             builder.Services.AddChatModule(builder.Configuration);
+            builder.Services.AddTasksModule(builder.Configuration);
 
             // 7. Cấu hình API Versioning (/api/v1/...)
             builder.Services.AddApiVersioning(options =>
@@ -200,6 +201,7 @@ namespace AgentCoreSystem.Api
 
             app.MapControllers();
             app.MapChatHub();
+            app.MapTasksHub();
 
             // 8. Tự động khởi tạo dữ liệu mẫu (Seeding)
             using (var scope = app.Services.CreateScope())
