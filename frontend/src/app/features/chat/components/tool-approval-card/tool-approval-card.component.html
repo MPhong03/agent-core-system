@@ -1,0 +1,95 @@
+<!-- Action Card Tương Tác Phê Duyệt Công Cụ (Human-in-the-Loop) -->
+<div
+  class="tool-approval-card"
+  [class.status-confirmed]="effectiveStatus() === 'confirmed'"
+  [class.status-rejected]="effectiveStatus() === 'rejected'"
+>
+  <!-- 1. Header Cảnh Báo Yêu Cầu Phê Duyệt -->
+  <div class="card-header">
+    <div class="header-left">
+      <span class="warning-icon" aria-hidden="true">⚠️</span>
+      <span class="header-title">Yêu cầu phê duyệt công cụ</span>
+    </div>
+
+    <!-- Badge Trạng Thái Sau Khi Xử Lý -->
+    @if (effectiveStatus() === 'confirmed') {
+      <div class="status-badge badge-confirmed">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="badge-icon">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <span>Đã phê duyệt</span>
+      </div>
+    } @else if (effectiveStatus() === 'rejected') {
+      <div class="status-badge badge-rejected">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="badge-icon">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+        <span>Đã từ chối</span>
+      </div>
+    } @else {
+      <span class="status-badge badge-pending">Chờ phê duyệt</span>
+    }
+  </div>
+
+  <!-- 2. Thẻ Tên Công Cụ & Tham Số Chi Tiết -->
+  <div class="card-body">
+    <div class="tool-meta-row">
+      <span class="tool-label">Công cụ:</span>
+      <span class="tool-name-pill">{{ approvalRequest().toolName }}</span>
+    </div>
+
+    <!-- Khung Tham Số JSON (Expandable) -->
+    <div class="arguments-section">
+      <div class="arguments-header" (click)="toggleExpanded()" (keydown.enter)="toggleExpanded()" tabindex="0" role="button">
+        <span class="args-title">Tham số thực thi (Arguments):</span>
+        <button type="button" class="btn-toggle-args" aria-label="Đóng mở tham số">
+          {{ isExpanded() ? 'Thu gọn ▲' : 'Mở rộng ▼' }}
+        </button>
+      </div>
+
+      @if (isExpanded()) {
+        <div class="arguments-code-wrapper">
+          <pre class="arguments-pre"><code>{{ formattedArguments() }}</code></pre>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- 3. Khu Vực Nút Hành Động (Chỉ hiển thị khi đang ở trạng thái pending) -->
+  @if (effectiveStatus() === 'pending') {
+    <div class="card-actions">
+      <!-- Nút Từ chối -->
+      <button
+        type="button"
+        class="btn-reject"
+        data-testid="reject-tool-btn"
+        [disabled]="isSubmitting()"
+        (click)="onReject()"
+      >
+        @if (isSubmitting()) {
+          <span class="spinner-sm"></span>
+        }
+        <span>Từ chối</span>
+      </button>
+
+      <!-- Nút Phê duyệt & Thực thi -->
+      <button
+        type="button"
+        class="btn-confirm"
+        data-testid="confirm-tool-btn"
+        [disabled]="isSubmitting()"
+        (click)="onConfirm()"
+      >
+        @if (isSubmitting()) {
+          <span class="spinner-sm"></span>
+          <span>Đang gửi...</span>
+        } @else {
+          <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          <span>Phê duyệt & Thực thi</span>
+        }
+      </button>
+    </div>
+  }
+</div>

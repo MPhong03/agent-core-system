@@ -106,4 +106,37 @@ describe('ChatSignalRService', () => {
 
     await promise;
   });
+
+  it('should dispatch tool approval request to toolApprovalRequested$', async () => {
+    const promise = firstValueFrom(service.toolApprovalRequested$);
+
+    const mockRequest = {
+      pendingToolCallId: 'call-uuid-1',
+      channelId: 'chan-1',
+      chatMessageId: 'msg-1',
+      toolCallId: 'tcall-1',
+      toolName: 'sql_runner',
+      argumentsJson: '{"sql":"SELECT 1"}',
+      expiresAt: '2026-11-21T18:00:00Z',
+    };
+
+    (service as any).toolApprovalRequestedSubject.next(mockRequest);
+
+    const received = await promise;
+    expect(received.pendingToolCallId).toBe('call-uuid-1');
+    expect(received.toolName).toBe('sql_runner');
+  });
+
+  it('should dispatch tool executing event to toolExecuting$', async () => {
+    const promise = firstValueFrom(service.toolExecuting$);
+
+    (service as any).toolExecutingSubject.next({
+      channelId: 'chan-1',
+      toolName: 'web_search',
+    });
+
+    const received = await promise;
+    expect(received.channelId).toBe('chan-1');
+    expect(received.toolName).toBe('web_search');
+  });
 });
