@@ -9,192 +9,159 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
+import { AppButtonComponent } from '../../../shared/components/button/button.component';
+import { AppIconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    AppButtonComponent,
+    AppIconComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="login-wrapper">
-      <div class="login-box">
-        <div class="lang-bar">
+    <div class="relative min-h-screen flex items-center justify-center bg-whiten px-4 py-8 dark:bg-boxdark-2 font-sans transition-colors duration-200">
+      <!-- Top Action Controls (Theme & Language) -->
+      <div class="absolute top-5 right-5 flex items-center gap-3">
+        <!-- Theme Switcher -->
+        <button
+          type="button"
+          (click)="themeService.toggleTheme()"
+          class="flex h-9 w-9 items-center justify-center rounded-full border border-stroke bg-white text-body hover:text-black dark:border-strokedark dark:bg-boxdark dark:text-bodydark dark:hover:text-white shadow-card transition-colors"
+          [title]="themeService.isDark() ? 'Chuyển sang giao diện Sáng' : 'Chuyển sang giao diện Tối'"
+        >
+          <app-icon [name]="themeService.isDark() ? 'sun' : 'moon'" [size]="18" />
+        </button>
+
+        <!-- Language Switcher -->
+        <div class="flex items-center rounded-full border border-stroke bg-white p-0.5 dark:border-strokedark dark:bg-boxdark text-xs font-semibold shadow-card">
           <button
-            [class.active]="i18nService.currentLang() === 'vi'"
+            type="button"
+            [class.bg-primary]="i18nService.currentLang() === 'vi'"
+            [class.text-white]="i18nService.currentLang() === 'vi'"
             (click)="i18nService.setLanguage('vi')"
+            class="rounded-full px-2.5 py-1 text-body dark:text-bodydark transition-all"
           >
-            🇻🇳 VI
+            VI
           </button>
           <button
-            [class.active]="i18nService.currentLang() === 'en'"
+            type="button"
+            [class.bg-primary]="i18nService.currentLang() === 'en'"
+            [class.text-white]="i18nService.currentLang() === 'en'"
             (click)="i18nService.setLanguage('en')"
+            class="rounded-full px-2.5 py-1 text-body dark:text-bodydark transition-all"
           >
-            🇬🇧 EN
+            EN
           </button>
         </div>
+      </div>
 
-        <div class="header">
-          <div class="logo">E</div>
-          <h2>{{ 'AUTH.LOGIN_TITLE' | translate }}</h2>
-          <p>{{ 'AUTH.LOGIN_SUBTITLE' | translate }}</p>
+      <!-- Login Card Container -->
+      <div class="w-full max-w-md rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6 sm:p-8.5">
+        <!-- Brand Header -->
+        <div class="text-center mb-7">
+          <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white font-bold text-2xl shadow-sm">
+            A
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-black dark:text-white">
+            {{ 'AUTH.LOGIN_TITLE' | translate }}
+          </h2>
+          <p class="text-xs sm:text-sm text-body dark:text-bodydark mt-1">
+            {{ 'AUTH.LOGIN_SUBTITLE' | translate }}
+          </p>
         </div>
 
+        <!-- Error Notification Banner -->
         @if (errorMessage()) {
-          <div class="alert alert-danger">
-            {{ errorMessage() }}
+          <div class="mb-5 flex items-center gap-3 rounded-md bg-danger/10 border border-danger/20 p-3 text-xs text-danger dark:bg-danger/20 dark:border-danger/30">
+            <app-icon name="close" [size]="16" class="shrink-0 text-danger" />
+            <span>{{ errorMessage() }}</span>
           </div>
         }
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
-          <div class="form-group">
-            <label>{{ 'AUTH.EMAIL' | translate }}</label>
-            <input type="email" formControlName="email" placeholder="name@example.com" />
-          </div>
-
-          <div class="form-group">
-            <label>{{ 'AUTH.PASSWORD' | translate }}</label>
-            <input type="password" formControlName="password" placeholder="••••••••" />
-          </div>
-
-          <button type="submit" [disabled]="form.invalid || isLoading()" class="btn-submit">
-            @if (isLoading()) {
-              {{ 'AUTH.BTN_LOGGING_IN' | translate }}
-            } @else {
-              {{ 'AUTH.BTN_LOGIN' | translate }}
+        <!-- Login Form -->
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+          <!-- Email Input -->
+          <div>
+            <label class="mb-2 block text-xs font-medium text-black dark:text-white">
+              {{ 'AUTH.EMAIL' | translate }}
+            </label>
+            <div class="relative">
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="name@example.com"
+                class="w-full rounded-md border border-stroke bg-transparent py-2.5 pl-4 pr-10 text-sm text-black outline-none transition-colors focus:border-primary focus-visible:shadow-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+              />
+              <span class="absolute right-3.5 top-3 text-body dark:text-bodydark">
+                <app-icon name="mail" [size]="18" />
+              </span>
+            </div>
+            @if (form.get('email')?.touched && form.get('email')?.invalid) {
+              <p class="mt-1 text-[11px] text-danger">Email không hợp lệ hoặc để trống.</p>
             }
-          </button>
+          </div>
+
+          <!-- Password Input -->
+          <div>
+            <label class="mb-2 block text-xs font-medium text-black dark:text-white">
+              {{ 'AUTH.PASSWORD' | translate }}
+            </label>
+            <div class="relative">
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="••••••••"
+                class="w-full rounded-md border border-stroke bg-transparent py-2.5 pl-4 pr-10 text-sm text-black outline-none transition-colors focus:border-primary focus-visible:shadow-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+              />
+              <button
+                type="button"
+                (click)="showPassword.set(!showPassword())"
+                class="absolute right-3.5 top-3 text-body hover:text-black dark:text-bodydark dark:hover:text-white transition-colors"
+                tabindex="-1"
+              >
+                <app-icon [name]="showPassword() ? 'eye-slash' : 'eye'" [size]="18" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-2">
+            <app-button
+              type="submit"
+              variant="primary"
+              [fullWidth]="true"
+              [loading]="isLoading()"
+              [disabled]="form.invalid || isLoading()"
+            >
+              @if (isLoading()) {
+                {{ 'AUTH.BTN_LOGGING_IN' | translate }}
+              } @else {
+                {{ 'AUTH.BTN_LOGIN' | translate }}
+              }
+            </app-button>
+          </div>
         </form>
       </div>
     </div>
   `,
-  styles: [
-    `
-      .login-wrapper {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f1f5f9;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      }
-      .login-box {
-        width: 100%;
-        max-width: 420px;
-        padding: 32px;
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow:
-          0 10px 25px -5px rgba(0, 0, 0, 0.1),
-          0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        position: relative;
-      }
-      .lang-bar {
-        display: flex;
-        justify-content: flex-end;
-        gap: 6px;
-        margin-bottom: 12px;
-      }
-      .lang-bar button {
-        background: #f1f5f9;
-        border: 1px solid #cbd5e1;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        cursor: pointer;
-      }
-      .lang-bar button.active {
-        background: #2563eb;
-        color: #fff;
-        border-color: #2563eb;
-      }
-      .header {
-        text-align: center;
-        margin-bottom: 24px;
-      }
-      .logo {
-        width: 48px;
-        height: 48px;
-        margin: 0 auto 12px;
-        border-radius: 10px;
-        background: #2563eb;
-        color: #fff;
-        font-weight: 700;
-        font-size: 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .header h2 {
-        margin: 0 0 4px 0;
-        color: #0f172a;
-        font-size: 1.4rem;
-      }
-      .header p {
-        margin: 0;
-        color: #64748b;
-        font-size: 0.85rem;
-      }
-      .form-group {
-        margin-bottom: 16px;
-      }
-      .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #334155;
-      }
-      .form-group input {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        box-sizing: border-box;
-        outline: none;
-      }
-      .form-group input:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-      }
-      .btn-submit {
-        width: 100%;
-        padding: 12px;
-        background-color: #2563eb;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        margin-top: 8px;
-      }
-      .btn-submit:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .alert {
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        margin-bottom: 16px;
-      }
-      .alert-danger {
-        background-color: #fee2e2;
-        color: #991b1b;
-      }
-    `,
-  ],
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   readonly i18nService = inject(I18nService);
+  readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
 
   readonly isLoading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly showPassword = signal<boolean>(false);
 
   readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
