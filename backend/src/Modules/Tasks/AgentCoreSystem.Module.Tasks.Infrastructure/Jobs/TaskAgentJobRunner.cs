@@ -8,20 +8,30 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AgentCoreSystem.Module.Agents.Application.Common;
+using AgentCoreSystem.Module.Agents.Application.Tools.Commands;
+using AgentCoreSystem.Module.Agents.Application.Tools.DTOs;
+using AgentCoreSystem.Module.Agents.Application.Tools.Queries;
+using AgentCoreSystem.Module.Agents.Domain.Enums;
 using AgentCoreSystem.Module.Organization.Application.Contracts;
+using AgentCoreSystem.Module.Organization.Domain.Entities;
+using AgentCoreSystem.Module.Organization.Domain.Enums;
 using AgentCoreSystem.Module.Tasks.Application.Contracts;
 using AgentCoreSystem.Module.Tasks.Application.Tasks.DTOs;
 using AgentCoreSystem.Module.Tasks.Domain.Enums;
+using AgentCoreSystem.Shared.Infrastructure.Http;
 using AgentCoreSystem.Shared.Infrastructure.LLM;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace AgentCoreSystem.Module.Tasks.Infrastructure.Jobs
 {
     /// <summary>
-    /// Trình thực thi tác vụ ngầm cho Nhân sự AI thông qua Hangfire Worker.
+    /// Trình thực thi tác vụ ngầm cho Nhân sự AI thông qua Hangfire Worker hỗ trợ Tool Calling.
     /// </summary>
     public class TaskAgentJobRunner(
         ITasksDbContext dbContext,
@@ -29,8 +39,12 @@ namespace AgentCoreSystem.Module.Tasks.Infrastructure.Jobs
         ILLMClient llmClient,
         IArtifactStorageService storageService,
         ITasksRealtimeNotifier realtimeNotifier,
+        ISender mediator,
+        IRestApiExecutor restApiExecutor,
         ILogger<TaskAgentJobRunner> logger) : ITaskAgentJobRunner
     {
+        private const int MaxToolIterations = 5;
+
         /// <inheritdoc />
         public async Task ExecuteTaskAsync(Guid taskId, CancellationToken cancellationToken = default)
         {
@@ -88,9 +102,10 @@ namespace AgentCoreSystem.Module.Tasks.Infrastructure.Jobs
                 string modelName = "gemini-2.5-flash";
                 decimal temperature = 0.7m;
 
+                AgentProfile? profile = null;
                 if (member?.AgentProfileId.HasValue == true)
                 {
-                    var profile = await orgDbContext.AgentProfiles
+                    profile = await orgDbContext.AgentProfiles
                         .FirstOrDefaultAsync(p => p.Id == member.AgentProfileId.Value, cancellationToken);
 
                     if (profile != null)
@@ -118,14 +133,145 @@ namespace AgentCoreSystem.Module.Tasks.Infrastructure.Jobs
                     new("user", userPrompt.ToString())
                 };
 
-                // Thu thập kết quả từ LLM
-                var outputBuilder = new StringBuilder();
-                await foreach (var chunk in llmClient.StreamChatAsync(modelName, messages, temperature, cancellationToken))
+                // Truy vấn danh sách công cụ được phân quyền cho Agent (nếu có profile)
+                var activeTools = new List<ToolDefinitionDto>();
+                if (profile != null)
                 {
-                    outputBuilder.Append(chunk);
+                    try
+                    {
+                        var toolsResult = await mediator.Send(new GetAgentToolsQuery(profile.Id, MaskSecrets: false), cancellationToken);
+                        if (toolsResult is { IsSuccess: true, Value: not null })
+                        {
+                            activeTools = toolsResult.Value;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Không thể truy vấn danh sách công cụ của Agent {ProfileId}", profile.Id);
+                    }
                 }
 
-                var finalContent = outputBuilder.ToString();
+                var toolPayloads = activeTools.Count > 0
+                    ? activeTools.Select(t => new LlmToolDefinitionPayload(
+                        t.Name,
+                        t.Description,
+                        t.ParametersSchema,
+                        "function")).ToList()
+                    : null;
+
+                string finalContent = string.Empty;
+
+                if (toolPayloads is { Count: > 0 } && profile != null)
+                {
+                    int iterations = 0;
+                    while (iterations < MaxToolIterations)
+                    {
+                        iterations++;
+
+                        var response = await llmClient.ChatWithToolsAsync(
+                            modelName,
+                            messages,
+                            toolPayloads,
+                            temperature,
+                            cancellationToken);
+
+                        if (response.HasToolCalls && response.ToolCalls != null && response.ToolCalls.Count > 0)
+                        {
+                            messages.Add(new ChatMessagePayload(
+                                Role: "assistant",
+                                Content: response.Content,
+                                ToolCalls: response.ToolCalls));
+
+                            foreach (var call in response.ToolCalls)
+                            {
+                                var matchedTool = activeTools.FirstOrDefault(t =>
+                                    t.Name.Equals(call.Name, StringComparison.OrdinalIgnoreCase));
+
+                                bool isSafe = matchedTool != null &&
+                                    (profile.ToolExecutionMode == ToolExecutionMode.Auto ||
+                                     (profile.ToolExecutionMode == ToolExecutionMode.SemiAuto && !matchedTool.RequiresConfirmation));
+
+                                if (isSafe && matchedTool != null)
+                                {
+                                    var execResult = await ExecuteToolCallAsync(matchedTool, call, cancellationToken);
+                                    var toolOutput = execResult.IsSuccess
+                                        ? execResult.ResponsePayload
+                                        : (execResult.ErrorMessage ?? "Tool execution failed.");
+
+                                    try
+                                    {
+                                        await mediator.Send(new RecordToolExecutionCommand(
+                                            ToolDefinitionId: matchedTool.Id,
+                                            AgentProfileId: profile.Id,
+                                            CallerType: ToolCallerType.Task,
+                                            ExecutionSourceId: task.Id,
+                                            InputArguments: call.Arguments,
+                                            ResponsePayload: execResult.ResponsePayload,
+                                            StatusCode: execResult.StatusCode,
+                                            DurationMs: execResult.DurationMs,
+                                            IsSuccess: execResult.IsSuccess,
+                                            ErrorMessage: execResult.ErrorMessage), cancellationToken);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        logger.LogWarning(ex, "Không thể ghi nhật ký thực thi công cụ {ToolName} cho tác vụ {TaskId}", call.Name, task.Id);
+                                    }
+
+                                    messages.Add(new ChatMessagePayload(
+                                        Role: "tool",
+                                        Content: toolOutput,
+                                        ToolCallId: call.Id));
+                                }
+                                else
+                                {
+                                    var warningComment = matchedTool != null && matchedTool.RequiresConfirmation
+                                        ? $"Công cụ '{call.Name}' yêu cầu phê duyệt từ con người (RequiresConfirmation = true) nên không thể thực thi tự động trong tác vụ ngầm."
+                                        : $"Công cụ '{call.Name}' không được phép thực thi tự động trong tác vụ ngầm theo chế độ {profile.ToolExecutionMode}.";
+
+                                    logger.LogWarning("Tác vụ {TaskId}: {Warning}", task.Id, warningComment);
+
+                                    task.AddActivityLog(
+                                        agentAssignment.AssigneeMemberId,
+                                        "ToolConfirmationRequired",
+                                        warningComment);
+
+                                    const string skippedMessage = "Tool execution skipped: This tool requires confirmation and cannot be executed autonomously in a non-interactive background task.";
+
+                                    messages.Add(new ChatMessagePayload(
+                                        Role: "tool",
+                                        Content: skippedMessage,
+                                        ToolCallId: call.Id));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            finalContent = response.Content ?? string.Empty;
+                            break;
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(finalContent))
+                    {
+                        var lastAssistantMsg = messages.LastOrDefault(m => m.Role == "assistant" && !string.IsNullOrWhiteSpace(m.Content));
+                        if (lastAssistantMsg != null)
+                        {
+                            finalContent = lastAssistantMsg.Content!;
+                        }
+                    }
+                }
+                else
+                {
+                    // Thu thập kết quả từ LLM via StreamChatAsync nếu không có công cụ
+                    var outputBuilder = new StringBuilder();
+                    await foreach (var chunk in llmClient.StreamChatAsync(modelName, messages, temperature, cancellationToken))
+                    {
+                        outputBuilder.Append(chunk);
+                    }
+
+                    finalContent = outputBuilder.ToString();
+                }
+
                 if (string.IsNullOrWhiteSpace(finalContent))
                 {
                     finalContent = $"# {task.Title}\n\nAgent đã hoàn thành tác vụ nhưng không có dữ liệu phản hồi trả về.";
@@ -217,6 +363,44 @@ namespace AgentCoreSystem.Module.Tasks.Infrastructure.Jobs
                     agentAssignment.AssigneeMemberId,
                     cancellationToken);
             }
+        }
+
+        /// <summary>
+        /// Thực thi lệnh gọi API bên ngoài cho công cụ được kích hoạt.
+        /// </summary>
+        /// <param name="toolDef">Định nghĩa cấu hình công cụ.</param>
+        /// <param name="toolCall">Payload chi tiết lượt gọi công cụ từ LLM.</param>
+        /// <param name="ct">Token hủy tác vụ.</param>
+        /// <returns>Kết quả thực thi REST API <see cref="RestApiExecutionResult"/>.</returns>
+        private async Task<RestApiExecutionResult> ExecuteToolCallAsync(
+            ToolDefinitionDto toolDef,
+            LlmToolCallPayload toolCall,
+            CancellationToken ct)
+        {
+            var headers = SecretMaskingHelper.ParseHeaders(toolDef.HeadersConfig);
+            IDictionary<string, object?>? arguments = null;
+            if (!string.IsNullOrWhiteSpace(toolCall.Arguments))
+            {
+                try
+                {
+                    arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(toolCall.Arguments);
+                }
+                catch (JsonException)
+                {
+                    arguments = new Dictionary<string, object?>();
+                }
+            }
+
+            var req = new RestApiExecutionRequest
+            {
+                Url = toolDef.EndpointUrl,
+                Method = toolDef.HttpMethod,
+                Headers = headers,
+                Arguments = arguments,
+                TimeoutSeconds = toolDef.TimeoutSeconds
+            };
+
+            return await restApiExecutor.ExecuteAsync(req, ct);
         }
     }
 }

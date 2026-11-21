@@ -292,6 +292,29 @@ namespace AgentCoreSystem.Module.Tasks.Domain.Entities
             return Result.Success();
         }
 
+        /// <summary>
+        /// Ghi nhận thêm một bản ghi nhật ký hoạt động tùy chỉnh cho tác vụ (ví dụ cảnh báo yêu cầu phê duyệt công cụ).
+        /// </summary>
+        /// <param name="actorMemberId">Mã định danh thành viên hoặc Agent thực hiện thao tác.</param>
+        /// <param name="actionType">Loại hành động hoặc phân loại cảnh báo.</param>
+        /// <param name="comment">Nội dung ghi chú chi tiết về sự kiện.</param>
+        /// <returns>Kết quả thực hiện <see cref="Result.Success"/>.</returns>
+        public Result AddActivityLog(
+            Guid actorMemberId,
+            string actionType,
+            string? comment)
+        {
+            _activityLogs.Add(new TaskActivityLog(
+                Id,
+                actorMemberId,
+                actionType,
+                Status,
+                Status,
+                comment));
+
+            return Result.Success();
+        }
+
         private void RecordStatusChange(TaskItemStatus newStatus, Guid actorMemberId, string? comment)
         {
             var oldStatus = Status;

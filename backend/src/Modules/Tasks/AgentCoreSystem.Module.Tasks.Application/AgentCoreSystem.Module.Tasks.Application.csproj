@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AgentCoreSystem.Module.Tasks.Domain\AgentCoreSystem.Module.Tasks.Domain.csproj" />
     <ProjectReference Include="..\..\Organization\AgentCoreSystem.Module.Organization.Application\AgentCoreSystem.Module.Organization.Application.csproj" />
+    <ProjectReference Include="..\..\Agents\AgentCoreSystem.Module.Agents.Application\AgentCoreSystem.Module.Agents.Application.csproj" />
     <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Application\AgentCoreSystem.Shared.Application.csproj" />
   </ItemGroup>
 

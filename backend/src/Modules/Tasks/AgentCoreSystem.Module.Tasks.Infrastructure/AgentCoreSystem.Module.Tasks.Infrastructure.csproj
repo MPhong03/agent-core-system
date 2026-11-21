@@ -4,6 +4,7 @@
     <ProjectReference Include="..\AgentCoreSystem.Module.Tasks.Domain\AgentCoreSystem.Module.Tasks.Domain.csproj" />
     <ProjectReference Include="..\AgentCoreSystem.Module.Tasks.Application\AgentCoreSystem.Module.Tasks.Application.csproj" />
     <ProjectReference Include="..\..\Organization\AgentCoreSystem.Module.Organization.Application\AgentCoreSystem.Module.Organization.Application.csproj" />
+    <ProjectReference Include="..\..\Agents\AgentCoreSystem.Module.Agents.Application\AgentCoreSystem.Module.Agents.Application.csproj" />
     <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Persistence\AgentCoreSystem.Shared.Persistence.csproj" />
     <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Infrastructure\AgentCoreSystem.Shared.Infrastructure.csproj" />
   </ItemGroup>
