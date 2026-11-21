@@ -5,6 +5,7 @@
 
 using AgentCoreSystem.Module.Tasks.Application.Contracts;
 using AgentCoreSystem.Module.Tasks.Domain.Entities;
+using AgentCoreSystem.Shared.Kernel.Primitives;
 using AgentCoreSystem.Shared.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,6 +52,27 @@ namespace AgentCoreSystem.Module.Tasks.Infrastructure.Persistence
 
             modelBuilder.HasDefaultSchema(SchemaName);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(TasksDbContext).Assembly);
+        }
+
+        /// <inheritdoc />
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                if (entry.State == EntityState.Modified &&
+                    entry.Entity is TaskAssignment or TaskArtifact or TaskActivityLog)
+                {
+                    // Các thực thể phụ thuộc (assignments, artifacts, logs) được sinh mã UUIDv7 từ constructor.
+                    // Khi gắn vào thực thể TaskItem đã được track, ChangeTracker mặc định gán Modified do khóa đã có giá trị.
+                    // Chuyển sang Added nếu thực thể chưa từng có UpdatedDate (mới tạo).
+                    if (entry.Entity is BaseEntity baseEntity && baseEntity.UpdatedDate == null)
+                    {
+                        entry.State = EntityState.Added;
+                    }
+                }
+            }
+
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }
