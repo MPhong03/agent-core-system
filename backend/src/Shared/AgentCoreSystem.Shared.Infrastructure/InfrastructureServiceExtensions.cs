@@ -5,6 +5,7 @@
 
 using AgentCoreSystem.Shared.Infrastructure.Caching;
 using AgentCoreSystem.Shared.Infrastructure.Hangfire;
+using AgentCoreSystem.Shared.Infrastructure.Http;
 using AgentCoreSystem.Shared.Infrastructure.LLM;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,15 @@ namespace AgentCoreSystem.Shared.Infrastructure
             // LLM Infrastructure
             services.AddLlmInfrastructure(configuration);
 
+            // HTTP & REST API Tool Execution
+            services.AddHttpInfrastructure();
+
+            return services;
+        }
+
+        public static IServiceCollection AddHttpInfrastructure(this IServiceCollection services)
+        {
+            services.AddHttpClient<IRestApiExecutor, RestApiExecutor>();
             return services;
         }
 
