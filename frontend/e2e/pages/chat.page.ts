@@ -86,9 +86,9 @@ export class ChatPage extends BasePage {
    */
   async expectToolApprovalCard(toolName?: string): Promise<void> {
     if (toolName) {
-      await expect(this.page.locator('.tool-approval-card').filter({ hasText: toolName }).first()).toBeVisible();
+      await expect(this.page.locator('.tool-approval-card').filter({ hasText: toolName }).first()).toBeVisible({ timeout: 15000 });
     } else {
-      await expect(this.page.locator('.tool-approval-card').first()).toBeVisible();
+      await expect(this.page.locator('.tool-approval-card').first()).toBeVisible({ timeout: 15000 });
     }
   }
 

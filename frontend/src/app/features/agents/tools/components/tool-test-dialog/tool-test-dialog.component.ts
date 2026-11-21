@@ -49,6 +49,7 @@ import { AppBadgeComponent } from '../../../../../shared/components/badge/badge.
     AppBadgeComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [':host { display: block; }'],
   template: `
     <app-modal
       [isOpen]="isOpen()"

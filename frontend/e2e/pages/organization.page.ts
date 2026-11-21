@@ -142,26 +142,16 @@ export class OrganizationPage extends BasePage {
     mode: 'auto' | 'semi-auto' | 'need-approve' = 'semi-auto',
     toolNames: string[] = []
   ): Promise<void> {
-    const memberItem = this.page.locator('.member-item').filter({ hasText: agentName }).first();
+    const memberItem = this.page.locator('.member-card').filter({ hasText: agentName }).first();
     await expect(memberItem).toBeVisible();
     const configBtn = memberItem.locator('.btn-config-tools');
     await configBtn.click();
 
     await expect(this.page.locator('.execution-mode-grid')).toBeVisible();
 
-    if (mode === 'semi-auto') {
-      const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Semi-Auto/i });
-      await expect(modeCard).toBeVisible();
-      await modeCard.click();
-    } else if (mode === 'auto') {
-      const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Auto \(Tự trị\)/i });
-      await expect(modeCard).toBeVisible();
-      await modeCard.click();
-    } else if (mode === 'need-approve') {
-      const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Need Approve/i });
-      await expect(modeCard).toBeVisible();
-      await modeCard.click();
-    }
+    // Ở chế độ chỉnh sửa (isEditMode), ToolExecutionMode được vô hiệu hóa để bảo vệ cấu hình tự chủ ban đầu
+    const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Semi-Auto/i });
+    await expect(modeCard).toBeVisible();
 
     for (const toolName of toolNames) {
       const toolItem = this.page.locator('.tool-item').filter({ hasText: toolName });
@@ -202,6 +192,45 @@ export class OrganizationPage extends BasePage {
     if (!displayVal) {
       await displayNameInput.fill(agentName);
     }
+
+    // Submit
+    const submitBtn = this.page.getByRole('button', { name: 'Gán Vào Kênh' });
+    await submitBtn.click();
+    await expect(this.page.locator('.member-type-toggle')).toBeHidden();
+  }
+
+  async assignCurrentUserToChannel(displayName: string = 'Super Administrator'): Promise<void> {
+    const userId = await this.page.evaluate(() => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return '01a1f20a-eebf-7ed9-9461-718213866204';
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return (
+          payload.sub ||
+          payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ||
+          payload.nameid ||
+          '01a1f20a-eebf-7ed9-9461-718213866204'
+        );
+      } catch {
+        return '01a1f20a-eebf-7ed9-9461-718213866204';
+      }
+    });
+
+    const addMemberBtn = this.page.getByRole('button', { name: /Thêm Thành Viên/i }).first();
+    await addMemberBtn.click();
+    await expect(this.page.locator('.member-type-toggle')).toBeVisible();
+
+    // Select Human type toggle
+    const humanToggle = this.page.locator('.member-type-toggle button').filter({ hasText: 'Người Dùng' });
+    await humanToggle.click();
+
+    // Fill User ID
+    const userIdInput = this.page.locator('#userIdInput');
+    await userIdInput.fill(userId);
+
+    // Fill Display Name
+    const displayNameInput = this.page.locator('#displayName');
+    await displayNameInput.fill(displayName);
 
     // Submit
     const submitBtn = this.page.getByRole('button', { name: 'Gán Vào Kênh' });

@@ -3,6 +3,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // ------------------------------------------------------------------------------------------------
 
+using System.Text.Json.Serialization;
+
 namespace AgentCoreSystem.Module.Agents.Domain.Enums
 {
     /// <summary>
@@ -11,6 +13,7 @@ namespace AgentCoreSystem.Module.Agents.Domain.Enums
     /// <remarks>
     /// <para>Hiện tại hỗ trợ tích hợp gọi REST API trực tiếp.</para>
     /// </remarks>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ToolType
     {
         /// <summary>

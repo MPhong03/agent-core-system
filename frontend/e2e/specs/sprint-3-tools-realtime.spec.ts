@@ -15,6 +15,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import * as http from 'http';
 import { LoginPage } from '../pages/login.page';
 import { OrganizationPage } from '../pages/organization.page';
 import { ChatPage } from '../pages/chat.page';
@@ -25,6 +26,164 @@ test.describe('Sprint 3 E2E: No-Code Tool Builder & Function Calling Approval Fl
   let orgPage: OrganizationPage;
   let chatPage: ChatPage;
   let toolsPage: ToolsPage;
+  let mockLlmServer: http.Server | null = null;
+
+  test.beforeAll(async () => {
+    mockLlmServer = http.createServer((req, res) => {
+      if (req.method === 'POST') {
+        let body = '';
+        req.on('data', (chunk) => {
+          body += chunk;
+        });
+        req.on('end', () => {
+          try {
+            const payload = JSON.parse(body || '{}');
+            const messages = payload.messages || [];
+            const tools = payload.tools || [];
+            const lastMsg = messages[messages.length - 1];
+            const lastContent = (lastMsg?.content || '').toString();
+            const lastRole = lastMsg?.role || '';
+
+            // 1. SSE Stream handling
+            if (payload.stream) {
+              res.writeHead(200, {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                Connection: 'keep-alive',
+              });
+              res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: 'Xin chào, tôi là AI trợ lý.' } }] })}\n\n`);
+              res.write('data: [DONE]\n\n');
+              res.end();
+              return;
+            }
+
+            // 2. Resumption sau khi thực thi Tool (Message role == 'tool')
+            if (lastRole === 'tool' || messages.some((m: any) => m.role === 'tool')) {
+              const responseData = {
+                id: 'chatcmpl-mock-' + Date.now(),
+                object: 'chat.completion',
+                choices: [
+                  {
+                    index: 0,
+                    finish_reason: 'stop',
+                    message: {
+                      role: 'assistant',
+                      content: 'Tôi đã hoàn tất yêu cầu của bạn dựa trên kết quả thực thi công cụ.',
+                    },
+                  },
+                ],
+              };
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify(responseData));
+              return;
+            }
+
+            // 3. Kích hoạt Tool Tra cứu Thời tiết (GET tool)
+            if (/thời tiết|weather/i.test(lastContent)) {
+              const weatherTool = tools.find((t: any) => /weather|thời tiết/i.test(t.function?.name || '')) || tools[0];
+              const toolName = weatherTool?.function?.name || 'get_weather';
+              const responseData = {
+                id: 'chatcmpl-mock-' + Date.now(),
+                object: 'chat.completion',
+                choices: [
+                  {
+                    index: 0,
+                    finish_reason: 'tool_calls',
+                    message: {
+                      role: 'assistant',
+                      content: null,
+                      tool_calls: [
+                        {
+                          id: 'call_weather_' + Date.now(),
+                          type: 'function',
+                          function: {
+                            name: toolName,
+                            arguments: JSON.stringify({ location: 'Hà Nội' }),
+                          },
+                        },
+                      ],
+                    },
+                  },
+                ],
+              };
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify(responseData));
+              return;
+            }
+
+            // 4. Kích hoạt Tool Hủy đơn hàng (POST tool nhạy cảm -> Yêu cầu duyệt)
+            if (/hủy|cancel|ORD-/i.test(lastContent)) {
+              const orderTool = tools.find((t: any) => /order|cancel|hủy/i.test(t.function?.name || '')) || tools[1] || tools[0];
+              const toolName = orderTool?.function?.name || 'cancel_order';
+              const responseData = {
+                id: 'chatcmpl-mock-' + Date.now(),
+                object: 'chat.completion',
+                choices: [
+                  {
+                    index: 0,
+                    finish_reason: 'tool_calls',
+                    message: {
+                      role: 'assistant',
+                      content: 'Tôi nhận được yêu cầu hủy đơn hàng. Vui lòng xác nhận để tiếp tục.',
+                      tool_calls: [
+                        {
+                          id: 'call_order_' + Date.now(),
+                          type: 'function',
+                          function: {
+                            name: toolName,
+                            arguments: JSON.stringify({ orderId: 'ORD-9999', reason: 'Yêu cầu từ người dùng' }),
+                          },
+                        },
+                      ],
+                    },
+                  },
+                ],
+              };
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify(responseData));
+              return;
+            }
+
+            // 5. Default fallback
+            const defaultResponse = {
+              id: 'chatcmpl-mock-' + Date.now(),
+              object: 'chat.completion',
+              choices: [
+                {
+                  index: 0,
+                  finish_reason: 'stop',
+                  message: {
+                    role: 'assistant',
+                    content: 'Tôi là AI trợ lý, sẵn sàng hỗ trợ bạn.',
+                  },
+                },
+              ],
+            };
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(defaultResponse));
+          } catch {
+            res.writeHead(400);
+            res.end();
+          }
+        });
+      } else {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok' }));
+      }
+    });
+
+    await new Promise<void>((resolve) => {
+      mockLlmServer?.listen(11434, '127.0.0.1', () => resolve());
+    });
+  });
+
+  test.afterAll(async () => {
+    if (mockLlmServer) {
+      await new Promise<void>((resolve) => {
+        mockLlmServer?.close(() => resolve());
+      });
+    }
+  });
 
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);
@@ -89,7 +248,7 @@ test.describe('Sprint 3 E2E: No-Code Tool Builder & Function Calling Approval Fl
 
       // Mở hộp thoại chạy thử nghiệm (Sandbox Test Dialog)
       await toolsPage.openTestDialog(weatherToolDisplay);
-      await expect(page.locator('app-tool-test-dialog')).toBeVisible();
+      await expect(toolsPage.executeTestButton).toBeVisible();
 
       // Nhập tham số thử nghiệm dạng JSON và thực thi
       await toolsPage.runTest(JSON.stringify({ location: 'Hà Nội' }));
@@ -161,9 +320,17 @@ test.describe('Sprint 3 E2E: No-Code Tool Builder & Function Calling Approval Fl
       await orgPage.selectChannel(channelName);
       await expect(page.locator('.channel-header-bar h2')).toContainText(channelName);
 
+      // Gán Admin user vào kênh để có quyền gửi tin nhắn
+      await orgPage.assignCurrentUserToChannel('Super Administrator');
+
       // Gán Agent vừa tạo vào Kênh nhóm
       await orgPage.assignAgentToChannel(agentName);
-      const memberItem = page.locator('.member-item').filter({ hasText: agentName }).first();
+
+      // Chuyển sang Tab Thành Viên để xem danh sách thành viên kênh
+      const membersTabBtn = page.getByRole('button', { name: /Thành Viên/i }).first();
+      await membersTabBtn.click();
+
+      const memberItem = page.locator('.member-card').filter({ hasText: agentName }).first();
       await expect(memberItem).toBeVisible();
 
       // Xác thực nút Cấu hình công cụ (.btn-config-tools) và chỉnh sửa cấu hình

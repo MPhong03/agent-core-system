@@ -38,6 +38,7 @@ export interface ChannelMemberOption {
                 id="title"
                 type="text"
                 [(ngModel)]="title"
+                (input)="title = $any($event.target).value"
                 name="title"
                 required
                 placeholder="Nhập tên công việc cần thực hiện..."
@@ -50,6 +51,7 @@ export interface ChannelMemberOption {
                 id="description"
                 rows="4"
                 [(ngModel)]="description"
+                (input)="description = $any($event.target).value"
                 name="description"
                 placeholder="Mô tả cụ thể các yêu cầu hoặc mục tiêu đầu ra..."
               ></textarea>
@@ -92,7 +94,7 @@ export interface ChannelMemberOption {
 
           <div class="modal-footer">
             <button type="button" class="btn-secondary" (click)="close.emit()">Hủy</button>
-            <button type="submit" class="btn-primary" [disabled]="!title.trim()">
+            <button type="submit" class="btn-primary" [disabled]="!title.trim()" (click)="onSubmit()">
               Tạo Tác Vụ
             </button>
           </div>

@@ -46,7 +46,9 @@ export class ToolsPage extends BasePage {
     this.endpointUrlInput = page.locator('input[formControlName="endpointUrl"]');
     this.schemaTextarea = page.locator('textarea[formControlName="parametersSchema"]');
     this.confirmationCheckbox = page.locator('input[formControlName="requiresConfirmation"]');
-    this.submitToolButton = page.getByRole('button', { name: /Đăng ký công cụ|Lưu thay đổi/i });
+    this.submitToolButton = page.getByRole('button', {
+      name: /Tạo mới Công cụ|Cập nhật Công cụ|Đăng ký công cụ|Lưu thay đổi/i,
+    });
     this.cancelToolButton = page.getByRole('button', { name: /Hủy bỏ/i });
 
     // Tool Test Dialog
@@ -61,7 +63,7 @@ export class ToolsPage extends BasePage {
    */
   async closeTestDialog(): Promise<void> {
     await this.closeTestDialogButton.click();
-    await expect(this.page.locator('app-tool-test-dialog')).toBeHidden();
+    await expect(this.executeTestButton).toBeHidden();
   }
 
   /**
