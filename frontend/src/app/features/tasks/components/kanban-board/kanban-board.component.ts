@@ -307,6 +307,20 @@ import { ReviewGateModalComponent } from '../review-gate-modal/review-gate-modal
         padding-bottom: 8px;
         border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 
+        :host-context(.dark) & {
+          border-bottom-color: #2e3a47;
+
+          .col-title h3 {
+            color: #ffffff;
+          }
+
+          .count-badge:not(.highlight) {
+            background: #313d4a;
+            color: #dee4ee;
+            border-color: #2e3a47;
+          }
+        }
+
         .col-title {
           display: flex;
           align-items: center;

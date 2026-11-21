@@ -66,7 +66,7 @@ import { AppIconComponent } from '../../shared/components/icon/icon.component';
         </div>
 
         <!-- Navigation Menu -->
-        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 custom-scrollbar">
+        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 custom-scrollbar" (click)="isMobileSidebarOpen.set(false)">
           <!-- Overview Section -->
           @if (!isSidebarCollapsed()) {
             <div class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-bodydark2">

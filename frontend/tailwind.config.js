@@ -45,6 +45,13 @@ module.exports = {
         card: '0px 1px 3px rgba(0, 0, 0, 0.12)',
         'card-2': '0px 1px 2px rgba(0, 0, 0, 0.05)',
       },
+      spacing: {
+        6.5: '1.625rem',
+        8.5: '2.125rem',
+      },
+      zIndex: {
+        99999: '99999',
+      },
     },
   },
   plugins: [],
