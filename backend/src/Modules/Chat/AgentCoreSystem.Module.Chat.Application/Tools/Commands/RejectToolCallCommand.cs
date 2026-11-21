@@ -9,8 +9,12 @@ using System.Threading.Tasks;
 using AgentCoreSystem.Module.Chat.Application.Contracts;
 using AgentCoreSystem.Module.Chat.Domain.Entities;
 using AgentCoreSystem.Module.Chat.Domain.Enums;
+using AgentCoreSystem.Module.Organization.Application.Members.Queries;
+using AgentCoreSystem.Module.Organization.Domain.Enums;
+using AgentCoreSystem.Shared.Application.Contracts;
 using AgentCoreSystem.Shared.Application.Messaging;
 using AgentCoreSystem.Shared.Kernel.Primitives;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
@@ -27,7 +31,9 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
     /// </summary>
     public class RejectToolCallCommandHandler(
         IChatDbContext dbContext,
-        IMessageDispatcherService messageDispatcher)
+        ISender sender,
+        IMessageDispatcherService messageDispatcher,
+        ICurrentUser? currentUser = null)
         : ICommandHandler<RejectToolCallCommand, bool>
     {
         /// <inheritdoc />
@@ -62,10 +68,29 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
                     $"Yêu cầu gọi công cụ '{request.PendingToolCallId}' đã hết hạn chờ phê duyệt."));
             }
 
-            // 1. Đánh dấu đã từ chối
+            // 1. Kiểm tra quyền của người dùng hiện tại (phải là thành viên người dùng thực MemberType.Human trong kênh)
+            if (currentUser?.UserId is { } currentUserId && currentUserId != Guid.Empty)
+            {
+                var memberResult = await sender.Send(new GetMemberByUserIdAndChannelQuery(currentUserId, pendingCall.ChannelId), cancellationToken);
+                if (memberResult.IsFailure)
+                {
+                    return Result.Failure<bool>(Error.Forbidden(
+                        "ToolCall.Forbidden",
+                        "Người dùng không thuộc kênh trò chuyện này."));
+                }
+
+                if (memberResult.Value.Type != MemberType.Human)
+                {
+                    return Result.Failure<bool>(Error.Forbidden(
+                        "ToolCall.OnlyHumanAllowed",
+                        "Chỉ thành viên người dùng thực mới có quyền từ chối công cụ."));
+                }
+            }
+
+            // 2. Đánh dấu đã từ chối
             pendingCall.Reject();
 
-            // 2. Lưu tin nhắn thông báo từ chối vào DB
+            // 3. Lưu tin nhắn thông báo từ chối vào DB
             var rejectionContent = string.IsNullOrWhiteSpace(request.Reason)
                 ? "User rejected tool execution."
                 : $"User rejected tool execution: {request.Reason}";
@@ -85,7 +110,7 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
             dbContext.Messages.Add(toolMessage);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            // 3. Tiếp tục chu trình hội thoại để Agent phản hồi lịch sự
+            // 4. Tiếp tục chu trình hội thoại để Agent phản hồi lịch sự
             await messageDispatcher.ResumeAfterToolCallAsync(pendingCall.Id, cancellationToken);
 
             return Result.Success(true);

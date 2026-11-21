@@ -3,9 +3,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // ------------------------------------------------------------------------------------------------
 
+using AgentCoreSystem.Shared.Application.Contracts;
 using AgentCoreSystem.Shared.Infrastructure.Caching;
 using AgentCoreSystem.Shared.Infrastructure.Hangfire;
 using AgentCoreSystem.Shared.Infrastructure.Http;
+using AgentCoreSystem.Shared.Infrastructure.Identity;
 using AgentCoreSystem.Shared.Infrastructure.LLM;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +20,10 @@ namespace AgentCoreSystem.Shared.Infrastructure
             this IServiceCollection services, 
             IConfiguration configuration)
         {
+            // Identity / Context
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUser, CurrentUser>();
+
             // Caching
             services.AddMemoryCache();
             services.AddSingleton<ICacheService, MemoryCacheService>();

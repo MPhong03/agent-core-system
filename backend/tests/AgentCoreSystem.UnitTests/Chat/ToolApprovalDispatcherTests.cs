@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AgentCoreSystem.Module.Agents.Application.Tools.Commands;
 using AgentCoreSystem.Module.Agents.Application.Tools.DTOs;
 using AgentCoreSystem.Module.Agents.Application.Tools.Queries;
 using AgentCoreSystem.Module.Agents.Domain.Enums;
@@ -24,8 +25,10 @@ using AgentCoreSystem.Module.Chat.Presentation.Controllers.v1;
 using AgentCoreSystem.Module.Organization.Application.AgentProfiles.DTOs;
 using AgentCoreSystem.Module.Organization.Application.AgentProfiles.Queries.GetAgentProfiles;
 using AgentCoreSystem.Module.Organization.Application.Members.DTOs;
+using AgentCoreSystem.Module.Organization.Application.Members.Queries;
 using AgentCoreSystem.Module.Organization.Application.Members.Queries.GetChannelMembers;
 using AgentCoreSystem.Module.Organization.Domain.Enums;
+using AgentCoreSystem.Shared.Application.Contracts;
 using AgentCoreSystem.Shared.Application.Messaging;
 using AgentCoreSystem.Shared.Infrastructure.Http;
 using AgentCoreSystem.Shared.Infrastructure.LLM;
@@ -471,7 +474,8 @@ namespace AgentCoreSystem.UnitTests.Chat
             dbContext.PendingToolCalls.Add(pendingCall);
             await dbContext.SaveChangesAsync();
 
-            var handler = new RejectToolCallCommandHandler(dbContext, messageDispatcher);
+            var sender = Substitute.For<ISender>();
+            var handler = new RejectToolCallCommandHandler(dbContext, sender, messageDispatcher);
             var command = new RejectToolCallCommand(pendingCall.Id, "Hành động này quá nguy hiểm");
 
             // Act
@@ -564,6 +568,232 @@ namespace AgentCoreSystem.UnitTests.Chat
             var rejectApiRes = Assert.IsType<ApiResponse<bool>>(okReject.Value);
             Assert.True(rejectApiRes.Success);
             Assert.True(rejectApiRes.Data);
+        }
+
+        [Fact]
+        public async Task DispatchMessageAsync_MaxToolIterationsExceeded_ShouldEmitWarningAndComplete()
+        {
+            // Arrange
+            await using var dbContext = CreateInMemoryDbContext();
+            var sender = Substitute.For<ISender>();
+            var llmFactory = Substitute.For<ILLMProviderFactory>();
+            var llmClient = Substitute.For<ILLMClient>();
+            var hubContext = Substitute.For<IHubContext<SignalRChatHub>>();
+            var clients = Substitute.For<IHubClients>();
+            var clientProxy = Substitute.For<IClientProxy>();
+            var restApiExecutor = Substitute.For<IRestApiExecutor>();
+
+            hubContext.Clients.Returns(clients);
+            clients.Group(Arg.Any<string>()).Returns(clientProxy);
+
+            var channelId = Guid.NewGuid();
+            var agentMemberId = Guid.NewGuid();
+            var agentProfileId = Guid.NewGuid();
+
+            var memberDto = new MemberDto(
+                Id: agentMemberId,
+                ChannelId: channelId,
+                Type: MemberType.Agent,
+                UserId: null,
+                AgentProfileId: agentProfileId,
+                DisplayName: "LoopBot",
+                CreatedDate: DateTimeOffset.UtcNow);
+
+            var profileDto = new AgentProfileDto(
+                Id: agentProfileId,
+                Name: "LoopBot",
+                AvatarUrl: null,
+                Provider: ModelProviderType.OpenAI,
+                ModelName: "gpt-4o",
+                SystemPrompt: "Loop agent.",
+                Temperature: 0.2m,
+                PrivateMemoryNotes: null,
+                CreatedDate: DateTimeOffset.UtcNow,
+                ToolExecutionMode: ToolExecutionMode.Auto);
+
+            var sampleTool = CreateSampleTool("ping", requiresConfirmation: false);
+
+            sender.Send(Arg.Is<GetChannelMembersQuery>(q => q.ChannelId == channelId), Arg.Any<CancellationToken>())
+                .Returns(Result.Success<IReadOnlyList<MemberDto>>(new List<MemberDto> { memberDto }));
+
+            sender.Send(Arg.Any<GetAgentProfilesQuery>(), Arg.Any<CancellationToken>())
+                .Returns(Result.Success<IReadOnlyList<AgentProfileDto>>(new List<AgentProfileDto> { profileDto }));
+
+            sender.Send(Arg.Is<GetAgentToolsQuery>(q => q.AgentProfileId == agentProfileId), Arg.Any<CancellationToken>())
+                .Returns(Result.Success(new List<ToolDefinitionDto> { sampleTool }));
+
+            llmFactory.GetClient(Arg.Any<string>()).Returns(llmClient);
+
+            // Always returns a tool call to simulate an infinite loop
+            llmClient.ChatWithToolsAsync(
+                Arg.Any<string>(),
+                Arg.Any<IEnumerable<ChatMessagePayload>>(),
+                Arg.Any<IEnumerable<LlmToolDefinitionPayload>>(),
+                Arg.Any<decimal?>(),
+                Arg.Any<CancellationToken>())
+                .Returns(new LlmChatResponse(null, new List<LlmToolCallPayload> { new("call_loop", "ping", "{}") }));
+
+            restApiExecutor.ExecuteAsync(Arg.Any<RestApiExecutionRequest>(), Arg.Any<CancellationToken>())
+                .Returns(RestApiExecutionResult.Success(200, "pong", 10));
+
+            var dispatcher = new MessageDispatcherService(dbContext, sender, llmFactory, hubContext, restApiExecutor: restApiExecutor);
+
+            var userMessage = new ChatMessageDto(
+                Id: Guid.NewGuid(),
+                ChannelId: channelId,
+                SenderMemberId: Guid.NewGuid(),
+                SenderDisplayName: "Human User",
+                IsAgent: false,
+                Content: "Test loop",
+                CallDepth: 0,
+                ParentMessageId: null,
+                Mentions: new List<Guid> { agentMemberId },
+                CreatedDate: DateTimeOffset.UtcNow);
+
+            // Act
+            await dispatcher.DispatchMessageAsync(userMessage, new List<Guid> { agentMemberId });
+
+            // Assert
+            // RestApiExecutor called exactly 5 times (MaxToolIterations)
+            await restApiExecutor.Received(5).ExecuteAsync(Arg.Any<RestApiExecutionRequest>(), Arg.Any<CancellationToken>());
+
+            // Client receives ReceiveMessageCompleted explaining max tool iterations reached
+            await clientProxy.Received().SendCoreAsync(
+                "ReceiveMessageCompleted",
+                Arg.Is<object[]>(args => args.Any(a => a != null && a.ToString()!.Contains("tối đa"))),
+                Arg.Any<CancellationToken>());
+
+            // Database saved warning message
+            var messages = await dbContext.Messages.ToListAsync();
+            Assert.Contains(messages, m => m.Content.Contains("tối đa"));
+        }
+
+        [Fact]
+        public async Task ConfirmToolCallCommand_ShouldFail_WhenUserIsNotHumanMemberOfChannel()
+        {
+            // Arrange
+            await using var dbContext = CreateInMemoryDbContext();
+            var sender = Substitute.For<ISender>();
+            var restApiExecutor = Substitute.For<IRestApiExecutor>();
+            var messageDispatcher = Substitute.For<IMessageDispatcherService>();
+            var currentUser = Substitute.For<ICurrentUser>();
+
+            var currentUserId = Guid.NewGuid();
+            currentUser.UserId.Returns(currentUserId);
+
+            var channelId = Guid.NewGuid();
+            var assistantMsg = new ChatMessage(channelId, Guid.NewGuid(), "Agent", true, "Call tool", 1);
+            dbContext.Messages.Add(assistantMsg);
+
+            var pendingCall = new PendingToolCall(channelId, assistantMsg.Id, "call_1", "tool_1", "{}", DateTimeOffset.UtcNow.AddMinutes(5));
+            dbContext.PendingToolCalls.Add(pendingCall);
+            await dbContext.SaveChangesAsync();
+
+            // Scenario 1: User is not a member of the channel
+            sender.Send(Arg.Is<GetMemberByUserIdAndChannelQuery>(q => q.UserId == currentUserId && q.ChannelId == channelId), Arg.Any<CancellationToken>())
+                .Returns(Result.Failure<MemberDto>(Error.NotFound("Member.NotFound", "User not in channel")));
+
+            var handler = new ConfirmToolCallCommandHandler(dbContext, sender, restApiExecutor, messageDispatcher, currentUser);
+
+            // Act 1
+            var failResult = await handler.Handle(new ConfirmToolCallCommand(pendingCall.Id), CancellationToken.None);
+
+            // Assert 1
+            Assert.True(failResult.IsFailure);
+            Assert.Equal(ErrorType.Forbidden, failResult.Error.Type);
+
+            // Scenario 2: Member exists but is an Agent, not Human
+            var agentMember = new MemberDto(Guid.NewGuid(), channelId, MemberType.Agent, currentUserId, Guid.NewGuid(), "BotMember", DateTimeOffset.UtcNow);
+            sender.Send(Arg.Is<GetMemberByUserIdAndChannelQuery>(q => q.UserId == currentUserId && q.ChannelId == channelId), Arg.Any<CancellationToken>())
+                .Returns(Result.Success(agentMember));
+
+            // Act 2
+            var failAgentResult = await handler.Handle(new ConfirmToolCallCommand(pendingCall.Id), CancellationToken.None);
+
+            // Assert 2
+            Assert.True(failAgentResult.IsFailure);
+            Assert.Equal(ErrorType.Forbidden, failAgentResult.Error.Type);
+        }
+
+        [Fact]
+        public async Task RejectToolCallCommand_ShouldFail_WhenUserIsNotHumanMemberOfChannel()
+        {
+            // Arrange
+            await using var dbContext = CreateInMemoryDbContext();
+            var sender = Substitute.For<ISender>();
+            var messageDispatcher = Substitute.For<IMessageDispatcherService>();
+            var currentUser = Substitute.For<ICurrentUser>();
+
+            var currentUserId = Guid.NewGuid();
+            currentUser.UserId.Returns(currentUserId);
+
+            var channelId = Guid.NewGuid();
+            var assistantMsg = new ChatMessage(channelId, Guid.NewGuid(), "Agent", true, "Call tool", 1);
+            dbContext.Messages.Add(assistantMsg);
+
+            var pendingCall = new PendingToolCall(channelId, assistantMsg.Id, "call_2", "tool_2", "{}", DateTimeOffset.UtcNow.AddMinutes(5));
+            dbContext.PendingToolCalls.Add(pendingCall);
+            await dbContext.SaveChangesAsync();
+
+            sender.Send(Arg.Is<GetMemberByUserIdAndChannelQuery>(q => q.UserId == currentUserId && q.ChannelId == channelId), Arg.Any<CancellationToken>())
+                .Returns(Result.Failure<MemberDto>(Error.NotFound("Member.NotFound", "User not in channel")));
+
+            var handler = new RejectToolCallCommandHandler(dbContext, sender, messageDispatcher, currentUser);
+
+            // Act
+            var result = await handler.Handle(new RejectToolCallCommand(pendingCall.Id), CancellationToken.None);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(ErrorType.Forbidden, result.Error.Type);
+        }
+
+        [Fact]
+        public async Task ConfirmToolCallCommand_ShouldDispatchRecordToolExecutionCommand()
+        {
+            // Arrange
+            await using var dbContext = CreateInMemoryDbContext();
+            var sender = Substitute.For<ISender>();
+            var restApiExecutor = Substitute.For<IRestApiExecutor>();
+            var messageDispatcher = Substitute.For<IMessageDispatcherService>();
+
+            var channelId = Guid.NewGuid();
+            var agentMemberId = Guid.NewGuid();
+            var agentProfileId = Guid.NewGuid();
+
+            var assistantMsg = new ChatMessage(channelId, agentMemberId, "Agent", true, "Call tool", 1);
+            dbContext.Messages.Add(assistantMsg);
+
+            var pendingCall = new PendingToolCall(channelId, assistantMsg.Id, "call_log", "test_tool", "{\"x\":1}", DateTimeOffset.UtcNow.AddMinutes(5));
+            dbContext.PendingToolCalls.Add(pendingCall);
+            await dbContext.SaveChangesAsync();
+
+            var sampleTool = CreateSampleTool("test_tool", requiresConfirmation: true, url: "https://api.test.com/run");
+            sender.Send(Arg.Any<GetToolDefinitionsQuery>(), Arg.Any<CancellationToken>())
+                .Returns(Result.Success(new List<ToolDefinitionDto> { sampleTool }));
+
+            var memberDto = new MemberDto(agentMemberId, channelId, MemberType.Agent, null, agentProfileId, "Agent", DateTimeOffset.UtcNow);
+            sender.Send(Arg.Is<GetChannelMembersQuery>(q => q.ChannelId == channelId), Arg.Any<CancellationToken>())
+                .Returns(Result.Success<IReadOnlyList<MemberDto>>(new List<MemberDto> { memberDto }));
+
+            restApiExecutor.ExecuteAsync(Arg.Any<RestApiExecutionRequest>(), Arg.Any<CancellationToken>())
+                .Returns(RestApiExecutionResult.Success(200, "{\"ok\":true}", 45));
+
+            var handler = new ConfirmToolCallCommandHandler(dbContext, sender, restApiExecutor, messageDispatcher);
+
+            // Act
+            var result = await handler.Handle(new ConfirmToolCallCommand(pendingCall.Id), CancellationToken.None);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            await sender.Received(1).Send(
+                Arg.Is<RecordToolExecutionCommand>(cmd =>
+                    cmd.ToolDefinitionId == sampleTool.Id &&
+                    cmd.CallerType == ToolCallerType.Chat &&
+                    cmd.ExecutionSourceId == assistantMsg.Id &&
+                    cmd.IsSuccess == true &&
+                    cmd.StatusCode == 200),
+                Arg.Any<CancellationToken>());
         }
     }
 }

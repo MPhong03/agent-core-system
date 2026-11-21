@@ -10,10 +10,16 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AgentCoreSystem.Module.Agents.Application.Common;
+using AgentCoreSystem.Module.Agents.Application.Tools.Commands;
 using AgentCoreSystem.Module.Agents.Application.Tools.Queries;
+using AgentCoreSystem.Module.Agents.Domain.Enums;
 using AgentCoreSystem.Module.Chat.Application.Contracts;
 using AgentCoreSystem.Module.Chat.Domain.Entities;
 using AgentCoreSystem.Module.Chat.Domain.Enums;
+using AgentCoreSystem.Module.Organization.Application.Members.Queries;
+using AgentCoreSystem.Module.Organization.Application.Members.Queries.GetChannelMembers;
+using AgentCoreSystem.Module.Organization.Domain.Enums;
+using AgentCoreSystem.Shared.Application.Contracts;
 using AgentCoreSystem.Shared.Application.Messaging;
 using AgentCoreSystem.Shared.Infrastructure.Http;
 using AgentCoreSystem.Shared.Kernel.Primitives;
@@ -35,7 +41,8 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
         IChatDbContext dbContext,
         ISender sender,
         IRestApiExecutor restApiExecutor,
-        IMessageDispatcherService messageDispatcher)
+        IMessageDispatcherService messageDispatcher,
+        ICurrentUser? currentUser = null)
         : ICommandHandler<ConfirmToolCallCommand, bool>
     {
         /// <inheritdoc />
@@ -70,7 +77,26 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
                     $"Yêu cầu gọi công cụ '{request.PendingToolCallId}' đã hết hạn chờ phê duyệt."));
             }
 
-            // 1. Tìm thông tin định nghĩa công cụ để thực thi
+            // 1. Kiểm tra quyền của người dùng hiện tại (phải là thành viên người dùng thực MemberType.Human trong kênh)
+            if (currentUser?.UserId is { } currentUserId && currentUserId != Guid.Empty)
+            {
+                var memberResult = await sender.Send(new GetMemberByUserIdAndChannelQuery(currentUserId, pendingCall.ChannelId), cancellationToken);
+                if (memberResult.IsFailure)
+                {
+                    return Result.Failure<bool>(Error.Forbidden(
+                        "ToolCall.Forbidden",
+                        "Người dùng không thuộc kênh trò chuyện này."));
+                }
+
+                if (memberResult.Value.Type != MemberType.Human)
+                {
+                    return Result.Failure<bool>(Error.Forbidden(
+                        "ToolCall.OnlyHumanAllowed",
+                        "Chỉ thành viên người dùng thực mới có quyền phê duyệt công cụ."));
+                }
+            }
+
+            // 2. Tìm thông tin định nghĩa công cụ để thực thi
             var toolsResult = await sender.Send(new GetToolDefinitionsQuery(MaskSecrets: false), cancellationToken);
             var toolDef = toolsResult.Value?.FirstOrDefault(t => t.Name.Equals(pendingCall.ToolName, StringComparison.OrdinalIgnoreCase));
 
@@ -81,7 +107,7 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
                     $"Không tìm thấy định nghĩa công cụ '{pendingCall.ToolName}'."));
             }
 
-            // 2. Phân giải Headers và Arguments
+            // 3. Phân giải Headers và Arguments
             var headers = SecretMaskingHelper.ParseHeaders(toolDef.HeadersConfig);
             IDictionary<string, object?>? arguments = null;
             if (!string.IsNullOrWhiteSpace(pendingCall.ArgumentsJson))
@@ -96,7 +122,7 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
                 }
             }
 
-            // 3. Thực thi công cụ qua IRestApiExecutor
+            // 4. Thực thi công cụ qua IRestApiExecutor
             var execRequest = new RestApiExecutionRequest
             {
                 Url = toolDef.EndpointUrl,
@@ -111,10 +137,10 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
                 ? execResult.ResponsePayload
                 : (execResult.ErrorMessage ?? "Thực thi công cụ thất bại.");
 
-            // 4. Đánh dấu đã phê duyệt
+            // 5. Đánh dấu đã phê duyệt
             pendingCall.Confirm();
 
-            // 5. Lưu tin nhắn kết quả của tool vào DB
+            // 6. Lưu tin nhắn kết quả của tool vào DB
             var originalAssistantMsg = await dbContext.Messages
                 .FirstOrDefaultAsync(m => m.Id == pendingCall.ChatMessageId, cancellationToken);
 
@@ -130,7 +156,31 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
             dbContext.Messages.Add(toolMessage);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            // 6. Tiếp tục chu trình hội thoại với LLM
+            // 7. Ghi nhật ký thực thi công cụ (ToolExecutionLog)
+            try
+            {
+                var channelMembers = await sender.Send(new GetChannelMembersQuery(pendingCall.ChannelId), cancellationToken);
+                var agentMember = channelMembers.Value?.FirstOrDefault(m => m.Id == originalAssistantMsg?.SenderMemberId);
+                var agentProfileId = agentMember?.AgentProfileId ?? Guid.Empty;
+
+                await sender.Send(new RecordToolExecutionCommand(
+                    ToolDefinitionId: toolDef.Id,
+                    AgentProfileId: agentProfileId,
+                    CallerType: ToolCallerType.Chat,
+                    ExecutionSourceId: pendingCall.ChatMessageId,
+                    InputArguments: pendingCall.ArgumentsJson,
+                    ResponsePayload: execResult.ResponsePayload,
+                    StatusCode: execResult.StatusCode,
+                    DurationMs: execResult.DurationMs,
+                    IsSuccess: execResult.IsSuccess,
+                    ErrorMessage: execResult.ErrorMessage), cancellationToken);
+            }
+            catch
+            {
+                // Không gián đoạn luồng chính nếu ghi log gặp lỗi
+            }
+
+            // 8. Tiếp tục chu trình hội thoại với LLM
             await messageDispatcher.ResumeAfterToolCallAsync(pendingCall.Id, cancellationToken);
 
             return Result.Success(true);

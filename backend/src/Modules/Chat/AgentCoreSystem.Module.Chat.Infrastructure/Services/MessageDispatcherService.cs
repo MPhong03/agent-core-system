@@ -11,8 +11,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AgentCoreSystem.Module.Agents.Application.Common;
+using AgentCoreSystem.Module.Agents.Application.Tools.Commands;
 using AgentCoreSystem.Module.Agents.Application.Tools.DTOs;
 using AgentCoreSystem.Module.Agents.Application.Tools.Queries;
+using AgentCoreSystem.Module.Agents.Domain.Enums;
 using AgentCoreSystem.Module.Chat.Application.Contracts;
 using AgentCoreSystem.Module.Chat.Application.Messages.Commands;
 using AgentCoreSystem.Module.Chat.Application.Messages.DTOs;
@@ -160,6 +162,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                 return;
             }
 
+            var channelGroup = $"channel_{pendingCall.ChannelId}";
             var originalAssistantMsg = await dbContext.Messages
                 .FirstOrDefaultAsync(m => m.Id == pendingCall.ChatMessageId, ct);
 
@@ -167,6 +170,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
             if (channelMembersResult.IsFailure)
             {
                 logger?.LogWarning("Không thể lấy danh sách thành viên kênh {ChannelId}", pendingCall.ChannelId);
+                await NotifyClientResumeFailureAsync(channelGroup, Guid.Empty, "Agent", ct);
                 return;
             }
 
@@ -177,18 +181,21 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
             if (member == null || !member.AgentProfileId.HasValue)
             {
                 logger?.LogWarning("Không xác định được thành viên Agent tương ứng cho tin nhắn {MessageId}", pendingCall.ChatMessageId);
+                await NotifyClientResumeFailureAsync(channelGroup, Guid.Empty, "Agent", ct);
                 return;
             }
 
             var profilesResult = await sender.Send(new GetAgentProfilesQuery(), ct);
             if (profilesResult.IsFailure)
             {
+                await NotifyClientResumeFailureAsync(channelGroup, member.Id, member.DisplayName, ct);
                 return;
             }
 
             var profile = profilesResult.Value.FirstOrDefault(p => p.Id == member.AgentProfileId.Value);
             if (profile == null)
             {
+                await NotifyClientResumeFailureAsync(channelGroup, member.Id, member.DisplayName, ct);
                 return;
             }
 
@@ -249,7 +256,6 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
 
             var providerName = profile.Provider.ToString();
             var llmClient = llmProviderFactory.GetClient(providerName);
-            var channelGroup = $"channel_{pendingCall.ChannelId}";
 
             try
             {
@@ -282,6 +288,27 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
             catch (Exception ex)
             {
                 logger?.LogError(ex, "Lỗi khi tiếp tục hội thoại LLM sau phê duyệt công cụ cho kênh {ChannelId}", pendingCall.ChannelId);
+                await NotifyClientResumeFailureAsync(channelGroup, member.Id, member.DisplayName, ct);
+            }
+        }
+
+        private async Task NotifyClientResumeFailureAsync(
+            string channelGroup,
+            Guid memberId,
+            string memberDisplayName,
+            CancellationToken ct)
+        {
+            const string errorMessage = "[Hệ thống: Không thể hoàn tất câu trả lời sau khi xử lý công cụ.]";
+            var errorMsgId = Guid.CreateVersion7();
+            try
+            {
+                await hubContext.Clients
+                    .Group(channelGroup)
+                    .SendAsync("ReceiveMessageCompleted", errorMsgId, memberId, memberDisplayName, errorMessage, CancellationToken.None);
+            }
+            catch (Exception sendEx)
+            {
+                logger?.LogWarning(sendEx, "Không thể gửi ReceiveMessageCompleted khi xử lý lỗi ResumeAfterToolCallAsync");
             }
         }
 
@@ -350,7 +377,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                 }
 
                 // Nếu Agent không có công cụ nào -> Giữ nguyên luồng stream token văn bản thuần túy
-                if (activeTools == null || activeTools.Count == 0)
+                if (activeTools.Count == 0)
                 {
                     var fullContentBuilder = new StringBuilder();
 
@@ -401,6 +428,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
 
                 int iterations = 0;
                 var conversationPayload = new List<ChatMessagePayload>(payload);
+                bool completed = false;
 
                 while (iterations < MaxToolIterations)
                 {
@@ -473,7 +501,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
 
                             await dbContext.SaveChangesAsync(ct);
 
-                            // Phát sóng sự kiện ToolApprovalRequested ra SignalR group
+                            // Phát sóng sự kiện ToolApprovalRequested ra SignalR channelGroup chuẩn mực
                             if (primaryPendingCall != null)
                             {
                                 var approvalPayload = new ToolApprovalRequestPayload(
@@ -486,8 +514,6 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                                     primaryPendingCall.ExpiresAt);
 
                                 await hubContext.Clients.Group(channelGroup)
-                                    .SendAsync("ToolApprovalRequested", approvalPayload, ct);
-                                await hubContext.Clients.Group(userMessage.ChannelId.ToString())
                                     .SendAsync("ToolApprovalRequested", approvalPayload, ct);
                             }
 
@@ -521,13 +547,14 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
 
                             foreach (var call in response.ToolCalls)
                             {
-                                // Phát sóng ToolExecuting ra SignalR
+                                // Phát sóng ToolExecuting ra SignalR channelGroup chuẩn mực
                                 await hubContext.Clients.Group(channelGroup)
                                     .SendAsync("ToolExecuting", call.Id, call.Name, call.Arguments, ct);
-                                await hubContext.Clients.Group(userMessage.ChannelId.ToString())
-                                    .SendAsync("ToolExecuting", call.Id, call.Name, call.Arguments, ct);
 
-                                var toolOutput = await ExecuteToolCallAsync(activeTools, call, ct);
+                                var execResult = await ExecuteToolCallAsync(activeTools, call, ct);
+                                var toolOutput = execResult.IsSuccess
+                                    ? execResult.ResponsePayload
+                                    : (execResult.ErrorMessage ?? "Tool execution failed.");
 
                                 var toolMsg = new ChatMessage(
                                     userMessage.ChannelId,
@@ -539,6 +566,30 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                                     parentMessageId: assistantMsgId);
 
                                 dbContext.Messages.Add(toolMsg);
+
+                                // Ghi nhật ký ToolExecutionLog
+                                try
+                                {
+                                    var matchedTool = activeTools.FirstOrDefault(t => t.Name.Equals(call.Name, StringComparison.OrdinalIgnoreCase));
+                                    if (matchedTool != null)
+                                    {
+                                        await sender.Send(new RecordToolExecutionCommand(
+                                            ToolDefinitionId: matchedTool.Id,
+                                            AgentProfileId: profile.Id,
+                                            CallerType: ToolCallerType.Chat,
+                                            ExecutionSourceId: assistantMsgId,
+                                            InputArguments: call.Arguments,
+                                            ResponsePayload: execResult.ResponsePayload,
+                                            StatusCode: execResult.StatusCode,
+                                            DurationMs: execResult.DurationMs,
+                                            IsSuccess: execResult.IsSuccess,
+                                            ErrorMessage: execResult.ErrorMessage), ct);
+                                    }
+                                }
+                                catch
+                                {
+                                    // Bỏ qua lỗi ghi log để không gián đoạn luồng chat
+                                }
 
                                 conversationPayload.Add(new ChatMessagePayload(
                                     Role: "tool",
@@ -574,8 +625,34 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                         await hubContext.Clients.Group(channelGroup)
                             .SendAsync("ReceiveMessageCompleted", finalMsgId, member.Id, member.DisplayName, finalContent, ct);
 
+                        completed = true;
                         return;
                     }
+                }
+
+                // Nếu chạm giới hạn MaxToolIterations mà LLM vẫn tiếp tục yêu cầu tool calls
+                if (!completed)
+                {
+                    var maxIterMsgId = Guid.CreateVersion7();
+                    const string maxIterWarning = "[Hệ thống: Đã đạt số lần gọi công cụ tối đa (5 bước lặp). Tác vụ tạm dừng để tránh vòng lặp vô hạn.]";
+
+                    var warningMessage = new ChatMessage(
+                        userMessage.ChannelId,
+                        member.Id,
+                        member.DisplayName,
+                        isAgent: true,
+                        content: maxIterWarning,
+                        callDepth: userMessage.CallDepth + 1,
+                        parentMessageId: userMessage.Id,
+                        id: maxIterMsgId);
+
+                    dbContext.Messages.Add(warningMessage);
+                    await dbContext.SaveChangesAsync(ct);
+
+                    await hubContext.Clients.Group(channelGroup)
+                        .SendAsync("ReceiveMessageChunk", maxIterMsgId, member.Id, maxIterWarning, ct);
+                    await hubContext.Clients.Group(channelGroup)
+                        .SendAsync("ReceiveMessageCompleted", maxIterMsgId, member.Id, member.DisplayName, maxIterWarning, ct);
                 }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -625,7 +702,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
             }
         }
 
-        private async Task<string> ExecuteToolCallAsync(
+        private async Task<RestApiExecutionResult> ExecuteToolCallAsync(
             List<ToolDefinitionDto> activeTools,
             LlmToolCallPayload toolCall,
             CancellationToken ct)
@@ -633,7 +710,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
             var toolDef = activeTools.FirstOrDefault(t => t.Name.Equals(toolCall.Name, StringComparison.OrdinalIgnoreCase));
             if (toolDef == null || restApiExecutor == null)
             {
-                return $"Tool '{toolCall.Name}' is not available or executor is not configured.";
+                return RestApiExecutionResult.Failure($"Tool '{toolCall.Name}' is not available or executor is not configured.");
             }
 
             var headers = SecretMaskingHelper.ParseHeaders(toolDef.HeadersConfig);
@@ -659,8 +736,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                 TimeoutSeconds = toolDef.TimeoutSeconds
             };
 
-            var result = await restApiExecutor.ExecuteAsync(req, ct);
-            return result.IsSuccess ? result.ResponsePayload : (result.ErrorMessage ?? "Tool execution failed.");
+            return await restApiExecutor.ExecuteAsync(req, ct);
         }
     }
 }
