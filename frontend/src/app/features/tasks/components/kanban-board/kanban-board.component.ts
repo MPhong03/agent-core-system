@@ -38,7 +38,7 @@ import { ReviewGateModalComponent } from '../review-gate-modal/review-gate-modal
     ReviewGateModalComponent,
   ],
   template: `
-    <div class="kanban-wrapper">
+    <div class="kanban-wrapper kanban-board-container">
       <!-- Toolbar Header -->
       <div class="kanban-toolbar">
         <div class="toolbar-stats">
@@ -208,10 +208,14 @@ import { ReviewGateModalComponent } from '../review-gate-modal/review-gate-modal
       display: flex;
       flex-direction: column;
       height: 100%;
-      background: #F7F5F2;
+      background: #f1f5f9;
       padding: 16px;
       box-sizing: border-box;
       overflow: hidden;
+
+      :host-context(.dark) & {
+        background: #1a222c;
+      }
     }
 
     .kanban-toolbar {
@@ -226,21 +230,31 @@ import { ReviewGateModalComponent } from '../review-gate-modal/review-gate-modal
 
         .stat-pill {
           font-size: 11px;
-          background: #EBE7DF;
-          color: #4B5563;
+          background: #e2e8f0;
+          color: #64748b;
           padding: 4px 10px;
           border-radius: 6px;
 
+          :host-context(.dark) & {
+            background: #313d4a;
+            color: #dee4ee;
+          }
+
           &.in-review {
-            background: #EEF2FF;
-            color: #4338CA;
+            background: rgba(60, 80, 224, 0.15);
+            color: #3c50e0;
+
+            :host-context(.dark) & {
+              background: rgba(60, 80, 224, 0.3);
+              color: #80caee;
+            }
           }
         }
       }
 
       .btn-create-task {
-        background: #111827;
-        color: #FFFFFF;
+        background: #3c50e0;
+        color: #ffffff;
         border: none;
         padding: 6px 14px;
         border-radius: 6px;
@@ -250,7 +264,7 @@ import { ReviewGateModalComponent } from '../review-gate-modal/review-gate-modal
         transition: background 0.15s;
 
         &:hover {
-          background: #000000;
+          background: #2e41d1;
         }
       }
     }
@@ -264,17 +278,25 @@ import { ReviewGateModalComponent } from '../review-gate-modal/review-gate-modal
     }
 
     .kanban-column {
-      background: #EFECE6;
-      border: 1px solid #E1DBD1;
-      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
       padding: 12px;
       display: flex;
       flex-direction: column;
       min-height: 0;
 
+      :host-context(.dark) & {
+        background: #24303f;
+        border-color: #2e3a47;
+      }
+
       &.column-inreview {
-        background: #E9E6F7;
-        border-color: #C7D2FE;
+        border-color: #c7d2fe;
+
+        :host-context(.dark) & {
+          border-color: rgba(99, 102, 241, 0.4);
+        }
       }
 
       .col-header {
