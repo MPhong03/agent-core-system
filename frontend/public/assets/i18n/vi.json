@@ -4,6 +4,8 @@
     "SUBTITLE": "Hệ thống Quản lý Doanh nghiệp Modular Monolith"
   },
   "NAV": {
+    "OVERVIEW": "TỔNG QUAN",
+    "WORKSPACE": "KHÔNG GIAN LÀM VIỆC",
     "DASHBOARD": "Bảng Điều Khiển",
     "ORGANIZATION": "Tổ chức & Kênh nhóm",
     "SYSTEM_SECTION": "PHÂN HỆ HỆ THỐNG",
