@@ -56,4 +56,28 @@ export class ChatHttpService {
       params,
     });
   }
+
+  // ── Phê Duyệt / Từ Chối Cuộc Gọi Công Cụ (Human-in-the-Loop) ──
+
+  /**
+   * Xác nhận phê duyệt và cho phép tiếp tục thực thi cuộc gọi công cụ.
+   *
+   * @param callId Mã định danh yêu cầu gọi công cụ đang chờ duyệt (PendingToolCallId).
+   * @returns Luồng Observable chứa kết quả xác nhận dạng ApiResponse<boolean>.
+   */
+  confirmToolCall(callId: string): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(`${this.apiUrl}/chat/tool-calls/${callId}/confirm`, {});
+  }
+
+  /**
+   * Từ chối yêu cầu thực thi cuộc gọi công cụ đang chờ duyệt.
+   *
+   * @param callId Mã định danh yêu cầu gọi công cụ đang chờ duyệt (PendingToolCallId).
+   * @param reason Lý do từ chối (tùy chọn).
+   * @returns Luồng Observable chứa kết quả từ chối dạng ApiResponse<boolean>.
+   */
+  rejectToolCall(callId: string, reason?: string): Observable<ApiResponse<boolean>> {
+    const body = reason ? { reason } : {};
+    return this.http.post<ApiResponse<boolean>>(`${this.apiUrl}/chat/tool-calls/${callId}/reject`, body);
+  }
 }

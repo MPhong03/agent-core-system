@@ -37,18 +37,18 @@ export class KanbanPage extends BasePage {
     super(page);
     this.kanbanContainer = page.locator('.kanban-board-container');
     this.createTaskButton = page.locator('.btn-create-task');
-    this.todoColumn = page.locator('.kanban-column').filter({ hasText: 'CẦN LÀM' });
-    this.inProgressColumn = page.locator('.kanban-column').filter({ hasText: 'ĐANG XỬ LÝ' });
-    this.inReviewColumn = page.locator('.kanban-column').filter({ hasText: 'CHỜ DUYỆT' });
-    this.doneColumn = page.locator('.kanban-column').filter({ hasText: 'HOÀN THÀNH' });
+    this.todoColumn = page.locator('.kanban-column.column-todo');
+    this.inProgressColumn = page.locator('.kanban-column.column-inprogress');
+    this.inReviewColumn = page.locator('.kanban-column.column-inreview');
+    this.doneColumn = page.locator('.kanban-column.column-done');
     this.taskCards = page.locator('.task-card');
 
     this.createModal = page.locator('.modal-backdrop').filter({ hasText: 'Tạo Tác Vụ Mới' });
-    this.taskTitleInput = page.locator('input[placeholder*="Nhập tiêu đề tác vụ"]');
-    this.taskDescTextarea = page.locator('textarea[placeholder*="Mô tả chi tiết yêu cầu"]');
-    this.taskPrioritySelect = page.locator('.modal-body select').first();
-    this.taskAssigneeSelect = page.locator('.modal-body select').nth(1);
-    this.submitTaskButton = page.locator('.modal-footer .btn-primary');
+    this.taskTitleInput = this.createModal.locator('#title, input[placeholder*="tên công việc"]');
+    this.taskDescTextarea = this.createModal.locator('#description, textarea[placeholder*="yêu cầu"]');
+    this.taskPrioritySelect = this.createModal.locator('.modal-body select').first();
+    this.taskAssigneeSelect = this.createModal.locator('.modal-body select').nth(1);
+    this.submitTaskButton = this.createModal.locator('button[type="submit"], .modal-footer .btn-primary');
 
     this.reviewModal = page.locator('.modal-backdrop').filter({ hasText: 'Cổng Nghiệm Thu Tác Vụ' });
     this.reviewFeedbackTextarea = page.locator('.review-modal textarea');
@@ -73,8 +73,9 @@ export class KanbanPage extends BasePage {
   async fillAndSubmitTask(title: string, description: string) {
     await this.taskTitleInput.fill(title);
     await this.taskDescTextarea.fill(description);
+    await expect(this.submitTaskButton).toBeEnabled();
     await this.submitTaskButton.click();
-    await expect(this.createModal).toBeHidden();
+    await expect(this.createModal).toBeHidden({ timeout: 10000 });
   }
 
   async expectTaskInColumn(columnLocator: Locator, taskTitle: string) {

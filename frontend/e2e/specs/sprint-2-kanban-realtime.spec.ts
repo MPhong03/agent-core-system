@@ -81,6 +81,6 @@ test.describe('Sprint 2 E2E: Kanban Board & Human-in-the-Loop Review Gate', () =
     await kanbanPage.expectTaskInColumn(kanbanPage.todoColumn, taskTitle);
     const createdCard = kanbanPage.todoColumn.locator('.task-card').filter({ hasText: taskTitle });
     await expect(createdCard).toBeVisible();
-    await expect(createdCard.locator('.card-title')).toContainText(taskTitle);
+    await expect(createdCard.locator('.task-title, .card-title, h4').first()).toContainText(taskTitle);
   });
 });

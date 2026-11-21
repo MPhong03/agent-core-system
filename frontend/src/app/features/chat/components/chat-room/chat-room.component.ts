@@ -34,14 +34,21 @@ import {
   ElementRef,
   OnDestroy,
   AfterViewInit,
+  DestroyRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ChatStore } from '../../store/chat.store';
 import { OrganizationStore } from '../../../organization/store/organization.store';
 import { Member } from '../../../organization/models/organization.models';
 import { ChatBubbleComponent } from '../chat-bubble/chat-bubble.component';
 import { MentionPopoverComponent } from '../mention-popover/mention-popover.component';
+import { ToolApprovalCardComponent } from '../tool-approval-card/tool-approval-card.component';
+import { ToolExecutionBadgeComponent } from '../tool-execution-badge/tool-execution-badge.component';
+import { ChatHttpService } from '../../services/chat-http.service';
+import { ChatSignalRService } from '../../services/chat-signalr.service';
+import { ToolApprovalRequest, ToolExecutingEvent } from '../../models/chat.models';
 
 @Component({
   selector: 'app-chat-room',
@@ -51,6 +58,8 @@ import { MentionPopoverComponent } from '../mention-popover/mention-popover.comp
     FormsModule,
     ChatBubbleComponent,
     MentionPopoverComponent,
+    ToolApprovalCardComponent,
+    ToolExecutionBadgeComponent,
   ],
   templateUrl: './chat-room.component.html',
   styleUrls: ['./chat-room.component.scss'],
@@ -60,6 +69,9 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
   // ── Injections ──
   readonly chatStore = inject(ChatStore);
   readonly orgStore = inject(OrganizationStore);
+  readonly chatSignalrService = inject(ChatSignalRService);
+  readonly chatHttpService = inject(ChatHttpService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // ── View Children ──
   @ViewChild('messagesContainer') private readonly messagesContainerRef?: ElementRef<HTMLDivElement>;
@@ -84,6 +96,11 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
   readonly isMentionPopoverOpen = signal<boolean>(false);
   readonly mentionFilterText = signal<string>('');
   readonly selectedMentionIds = signal<Set<string>>(new Set());
+
+  // ── Tool Approvals & Executing State (Sprint 3 - Task 10) ──
+  readonly toolApprovalRequests = signal<ToolApprovalRequest[]>([]);
+  readonly executingTool = signal<ToolExecutingEvent | null>(null);
+  readonly submittingToolCallId = signal<string | null>(null);
 
   // ── Scroll Tracking & Throttling ──
   private isUserScrolledUp = false;
@@ -126,6 +143,8 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
       const targetChannelId = this.channelId();
       if (targetChannelId) {
         this.chatStore.joinChannel(targetChannelId);
+        this.toolApprovalRequests.set([]);
+        this.executingTool.set(null);
       }
     });
 
@@ -145,6 +164,47 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
         });
       }
     });
+
+    // 3. Lắng nghe sự kiện yêu cầu phê duyệt công cụ từ SignalR Hub
+    this.chatSignalrService.toolApprovalRequested$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((req) => {
+        if (!req.channelId || req.channelId === this.channelId()) {
+          this.toolApprovalRequests.update((list) => {
+            const idx = list.findIndex((r) => r.pendingToolCallId === req.pendingToolCallId);
+            if (idx >= 0) {
+              const updated = [...list];
+              updated[idx] = { ...updated[idx], ...req };
+              return updated;
+            }
+            return [...list, { ...req, status: req.status ?? 'pending' }];
+          });
+          setTimeout(() => this.scrollToBottom(true), 50);
+        }
+      });
+
+    // 4. Lắng nghe sự kiện công cụ đang được thực thi
+    this.chatSignalrService.toolExecuting$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((evt) => {
+        if (!evt.channelId || evt.channelId === this.channelId()) {
+          this.executingTool.set(evt);
+          setTimeout(() => this.scrollToBottom(true), 50);
+        }
+      });
+
+    // 5. Khi có tin nhắn mới hoặc tin nhắn hoàn tất từ Agent, ẩn badge thực thi công cụ
+    this.chatSignalrService.messageReceived$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.executingTool.set(null);
+      });
+
+    this.chatSignalrService.messageCompleted$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.executingTool.set(null);
+      });
   }
 
   ngAfterViewInit(): void {
@@ -292,6 +352,60 @@ export class ChatRoomComponent implements AfterViewInit, OnDestroy {
   }
 
   // ── Submit Message Action ──
+
+  /**
+   * Phê duyệt thực thi công cụ đang chờ duyệt qua ChatHttpService.
+   *
+   * @param callId Mã định danh yêu cầu gọi công cụ (PendingToolCallId).
+   */
+  confirmToolApproval(callId: string): void {
+    if (this.submittingToolCallId()) {
+      return;
+    }
+
+    this.submittingToolCallId.set(callId);
+    this.chatHttpService.confirmToolCall(callId).subscribe({
+      next: () => {
+        this.toolApprovalRequests.update((list) =>
+          list.map((r) =>
+            r.pendingToolCallId === callId ? { ...r, status: 'confirmed' } : r,
+          ),
+        );
+        this.submittingToolCallId.set(null);
+      },
+      error: (err) => {
+        console.error('[ChatRoomComponent] Lỗi khi xác nhận phê duyệt công cụ:', err);
+        this.submittingToolCallId.set(null);
+      },
+    });
+  }
+
+  /**
+   * Từ chối thực thi công cụ đang chờ duyệt qua ChatHttpService.
+   *
+   * @param event Thông tin gồm callId và lý do từ chối (tùy chọn).
+   */
+  rejectToolApproval(event: { callId: string; reason?: string }): void {
+    if (this.submittingToolCallId()) {
+      return;
+    }
+
+    this.submittingToolCallId.set(event.callId);
+    this.chatHttpService.rejectToolCall(event.callId, event.reason).subscribe({
+      next: () => {
+        this.toolApprovalRequests.update((list) =>
+          list.map((r) =>
+            r.pendingToolCallId === event.callId ? { ...r, status: 'rejected' } : r,
+          ),
+        );
+        this.submittingToolCallId.set(null);
+      },
+      error: (err) => {
+        console.error('[ChatRoomComponent] Lỗi khi từ chối công cụ:', err);
+        this.submittingToolCallId.set(null);
+      },
+    });
+  }
 
   /**
    * Gửi tin nhắn vào kênh làm việc qua ChatStore.

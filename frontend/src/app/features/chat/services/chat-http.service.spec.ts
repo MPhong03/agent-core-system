@@ -106,4 +106,49 @@ describe('ChatHttpService', () => {
       timestamp: '2026-11-19T10:00:00Z',
     });
   });
+
+  it('should send POST request to confirm tool call', () => {
+    const callId = '018f2345-6789-7def-8123-456789abcdef';
+
+    service.confirmToolCall(callId).subscribe((res) => {
+      expect(res.success).toBe(true);
+      expect(res.data).toBe(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      `${environment.apiUrl}/chat/tool-calls/${callId}/confirm`,
+    );
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush({
+      success: true,
+      message: 'Xác nhận thành công',
+      data: true,
+      timestamp: '2026-11-21T10:00:00Z',
+    });
+  });
+
+  it('should send POST request to reject tool call with reason', () => {
+    const callId = '018f2345-6789-7def-8123-456789abcdef';
+    const reason = 'Tham số rủi ro';
+
+    service.rejectToolCall(callId, reason).subscribe((res) => {
+      expect(res.success).toBe(true);
+      expect(res.data).toBe(true);
+    });
+
+    const req = httpTestingController.expectOne(
+      `${environment.apiUrl}/chat/tool-calls/${callId}/reject`,
+    );
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ reason });
+    req.flush({
+      success: true,
+      message: 'Từ chối thành công',
+      data: true,
+      timestamp: '2026-11-21T10:00:00Z',
+    });
+  });
 });

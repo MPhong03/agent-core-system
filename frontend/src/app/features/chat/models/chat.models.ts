@@ -80,3 +80,30 @@ export interface SendChatMessageRequest {
  * Trạng thái kết nối SignalR Hub thời gian thực.
  */
 export type SignalRConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
+
+// ── Models Phê Duyệt & Thực Thi Công Cụ (Sprint 3 - PBI-TOOL-01) ──
+
+/**
+ * Dữ liệu yêu cầu phê duyệt thực thi công cụ do AI Agent kích hoạt trong kênh trò chuyện.
+ */
+export interface ToolApprovalRequest {
+  pendingToolCallId: string;
+  channelId: string;
+  chatMessageId: string;
+  toolCallId: string;
+  toolName: string;
+  argumentsJson: string;
+  expiresAt: string;
+  status?: 'pending' | 'confirmed' | 'rejected';
+}
+
+/**
+ * Dữ liệu sự kiện khi một công cụ bắt đầu được thực thi trong kênh.
+ */
+export interface ToolExecutingEvent {
+  channelId: string;
+  toolName: string;
+  toolCallId?: string;
+  argumentsJson?: string;
+}
+

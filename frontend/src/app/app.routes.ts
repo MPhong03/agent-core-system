@@ -36,6 +36,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/organization/organization.routes').then((m) => m.ORGANIZATION_ROUTES),
       },
+      {
+        path: 'tools',
+        loadChildren: () =>
+          import('./features/agents/tools/tools.routes').then((m) => m.TOOLS_ROUTES),
+      },
     ],
   },
   {

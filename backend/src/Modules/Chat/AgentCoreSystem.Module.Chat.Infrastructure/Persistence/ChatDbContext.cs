@@ -42,6 +42,9 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Persistence
         /// <inheritdoc />
         public DbSet<MessageMention> MessageMentions => Set<MessageMention>();
 
+        /// <inheritdoc />
+        public DbSet<PendingToolCall> PendingToolCalls => Set<PendingToolCall>();
+
         // ── Model Configuration ──
 
         /// <inheritdoc />

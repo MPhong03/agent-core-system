@@ -30,6 +30,7 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
         /// <param name="systemPrompt">Chỉ dẫn hệ thống cốt lõi định hình vai trò.</param>
         /// <param name="temperature">Mức độ sáng tạo của mô hình (0.0 đến 2.0).</param>
         /// <param name="privateMemoryNotes">Ghi chú bộ nhớ riêng ban đầu.</param>
+        /// <param name="toolExecutionMode">Chế độ thực thi công cụ (mặc định SemiAuto).</param>
         public AgentProfile(
             string name,
             string? avatarUrl,
@@ -37,7 +38,8 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
             string modelName,
             string systemPrompt,
             decimal temperature = 0.7m,
-            string? privateMemoryNotes = null) : base()
+            string? privateMemoryNotes = null,
+            ToolExecutionMode toolExecutionMode = ToolExecutionMode.SemiAuto) : base()
         {
             Name = name;
             AvatarUrl = avatarUrl;
@@ -46,6 +48,7 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
             SystemPrompt = systemPrompt;
             Temperature = temperature;
             PrivateMemoryNotes = privateMemoryNotes;
+            ToolExecutionMode = toolExecutionMode;
             Members = new List<Member>();
         }
 
@@ -118,6 +121,16 @@ namespace AgentCoreSystem.Module.Organization.Domain.Entities
         /// <para>AI-NOTE: Vùng đệm ghi nhớ ngắn hạn và trung hạn riêng của Agent trước khi đồng bộ sang hệ thống bộ nhớ phân tán.</para>
         /// </remarks>
         public string? PrivateMemoryNotes { get; set; }
+
+        // ── Tool Calling & Autonomy ──
+
+        /// <summary>
+        /// Chế độ thực thi công cụ và mức độ tự chủ của Agent.
+        /// </summary>
+        /// <remarks>
+        /// <para>Mặc định là <see cref="ToolExecutionMode.SemiAuto"/> (bán tự động).</para>
+        /// </remarks>
+        public ToolExecutionMode ToolExecutionMode { get; set; } = ToolExecutionMode.SemiAuto;
 
         // ── Navigation ──
 

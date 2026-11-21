@@ -3,8 +3,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // ------------------------------------------------------------------------------------------------
 
+using AgentCoreSystem.Shared.Application.Contracts;
 using AgentCoreSystem.Shared.Infrastructure.Caching;
 using AgentCoreSystem.Shared.Infrastructure.Hangfire;
+using AgentCoreSystem.Shared.Infrastructure.Http;
+using AgentCoreSystem.Shared.Infrastructure.Identity;
 using AgentCoreSystem.Shared.Infrastructure.LLM;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +20,10 @@ namespace AgentCoreSystem.Shared.Infrastructure
             this IServiceCollection services, 
             IConfiguration configuration)
         {
+            // Identity / Context
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUser, CurrentUser>();
+
             // Caching
             services.AddMemoryCache();
             services.AddSingleton<ICacheService, MemoryCacheService>();
@@ -26,6 +33,25 @@ namespace AgentCoreSystem.Shared.Infrastructure
 
             // LLM Infrastructure
             services.AddLlmInfrastructure(configuration);
+
+            // HTTP & REST API Tool Execution
+            services.AddHttpInfrastructure();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Đăng ký dịch vụ thực thi REST API không trạng thái kèm cấu hình ngăn chặn SSRF qua HTTP Redirects.
+        /// </summary>
+        /// <param name="services">Tập hợp các dịch vụ Dependency Injection.</param>
+        /// <returns>Tập hợp các dịch vụ đã được cấu hình.</returns>
+        public static IServiceCollection AddHttpInfrastructure(this IServiceCollection services)
+        {
+            services.AddHttpClient<IRestApiExecutor, RestApiExecutor>()
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+                {
+                    AllowAutoRedirect = false
+                });
 
             return services;
         }

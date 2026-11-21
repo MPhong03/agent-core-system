@@ -9,6 +9,8 @@
     <ProjectReference Include="..\..\Modules\Chat\AgentCoreSystem.Module.Chat.Infrastructure\AgentCoreSystem.Module.Chat.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Tasks\AgentCoreSystem.Module.Tasks.Presentation\AgentCoreSystem.Module.Tasks.Presentation.csproj" />
     <ProjectReference Include="..\..\Modules\Tasks\AgentCoreSystem.Module.Tasks.Infrastructure\AgentCoreSystem.Module.Tasks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Agents\AgentCoreSystem.Module.Agents.Presentation\AgentCoreSystem.Module.Agents.Presentation.csproj" />
+    <ProjectReference Include="..\..\Modules\Agents\AgentCoreSystem.Module.Agents.Infrastructure\AgentCoreSystem.Module.Agents.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Shared\AgentCoreSystem.Shared.Infrastructure\AgentCoreSystem.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Shared\AgentCoreSystem.Shared.Persistence\AgentCoreSystem.Shared.Persistence.csproj" />
   </ItemGroup>

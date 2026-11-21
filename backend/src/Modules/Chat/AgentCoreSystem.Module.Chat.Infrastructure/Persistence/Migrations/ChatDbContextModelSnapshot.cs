@@ -105,6 +105,59 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Persistence.Migrations
                     b.ToTable("MessageMentions", "chat");
                 });
 
+            modelBuilder.Entity("AgentCoreSystem.Module.Chat.Domain.Entities.PendingToolCall", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ArgumentsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ChannelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChatMessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ToolCallId")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("ToolName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTimeOffset?>("UpdatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ToolCallId");
+
+                    b.HasIndex("ChannelId", "Status");
+
+                    b.ToTable("PendingToolCalls", "chat");
+                });
+
             modelBuilder.Entity("AgentCoreSystem.Module.Chat.Domain.Entities.MessageMention", b =>
                 {
                     b.HasOne("AgentCoreSystem.Module.Chat.Domain.Entities.ChatMessage", "Message")

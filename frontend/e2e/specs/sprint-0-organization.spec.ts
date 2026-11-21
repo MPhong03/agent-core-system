@@ -55,6 +55,12 @@ test.describe('Sprint 0 E2E: Organization & Agent Profiles', () => {
     // 8. Assign the created Agent into the channel
     await orgPage.assignAgentToChannel(agentName);
 
+    // Chuyển sang Tab Thành Viên để kiểm tra danh sách thành viên kênh
+    const membersTabBtn = page.getByRole('button', { name: /Thành Viên/i }).first();
+    if (await membersTabBtn.isVisible()) {
+      await membersTabBtn.click();
+    }
+
     // 9. Verify member appears with .badge-agent in the channel
     const memberCard = page.locator('.member-card').filter({ hasText: agentName });
     await expect(memberCard).toBeVisible();

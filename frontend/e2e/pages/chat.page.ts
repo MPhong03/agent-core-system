@@ -18,6 +18,10 @@ export class ChatPage extends BasePage {
   readonly mentionItems: Locator;
   readonly chatBubbles: Locator;
   readonly connectionPill: Locator;
+  readonly toolApprovalCard: Locator;
+  readonly confirmToolButton: Locator;
+  readonly rejectToolButton: Locator;
+  readonly toolExecutionBadge: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -29,6 +33,10 @@ export class ChatPage extends BasePage {
     this.mentionItems = page.locator('.mention-popover .member-item');
     this.chatBubbles = page.locator('.chat-bubble-container');
     this.connectionPill = page.locator('.connection-pill');
+    this.toolApprovalCard = page.locator('.tool-approval-card');
+    this.confirmToolButton = page.locator('[data-testid="confirm-tool-btn"]');
+    this.rejectToolButton = page.locator('[data-testid="reject-tool-btn"]');
+    this.toolExecutionBadge = page.locator('.tool-execution-badge');
   }
 
   /**
@@ -71,5 +79,45 @@ export class ChatPage extends BasePage {
   async expectMessagePresent(contentSnippet: string): Promise<void> {
     const bubble = this.chatBubbles.filter({ hasText: contentSnippet }).first();
     await expect(bubble).toBeVisible();
+  }
+
+  /**
+   * Expect a tool approval action card (Human-in-the-Loop) to be rendered
+   */
+  async expectToolApprovalCard(toolName?: string): Promise<void> {
+    if (toolName) {
+      await expect(this.page.locator('.tool-approval-card').filter({ hasText: toolName }).first()).toBeVisible({ timeout: 15000 });
+    } else {
+      await expect(this.page.locator('.tool-approval-card').first()).toBeVisible({ timeout: 15000 });
+    }
+  }
+
+  /**
+   * Click the approval button on a tool action card
+   */
+  async confirmToolApproval(): Promise<void> {
+    const confirmBtn = this.page.locator('[data-testid="confirm-tool-btn"]').first();
+    await expect(confirmBtn).toBeVisible();
+    await confirmBtn.click();
+  }
+
+  /**
+   * Click the reject button on a tool action card
+   */
+  async rejectToolApproval(): Promise<void> {
+    const rejectBtn = this.page.locator('[data-testid="reject-tool-btn"]').first();
+    await expect(rejectBtn).toBeVisible();
+    await rejectBtn.click();
+  }
+
+  /**
+   * Expect tool execution status badge to be visible
+   */
+  async expectToolExecutionBadge(toolName?: string): Promise<void> {
+    if (toolName) {
+      await expect(this.page.locator('.tool-execution-badge').filter({ hasText: toolName }).first()).toBeVisible();
+    } else {
+      await expect(this.page.locator('.tool-execution-badge').first()).toBeVisible();
+    }
   }
 }

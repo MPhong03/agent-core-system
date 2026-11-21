@@ -17,7 +17,9 @@ using AgentCoreSystem.Module.Tasks.Domain.Entities;
 using AgentCoreSystem.Module.Tasks.Domain.Enums;
 using AgentCoreSystem.Module.Tasks.Infrastructure.Jobs;
 using AgentCoreSystem.Module.Tasks.Infrastructure.Persistence;
+using AgentCoreSystem.Shared.Infrastructure.Http;
 using AgentCoreSystem.Shared.Infrastructure.LLM;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -79,12 +81,14 @@ namespace AgentCoreSystem.UnitTests.Tasks
                 .Returns("tsk-001/report.md");
 
             var notifier = Substitute.For<ITasksRealtimeNotifier>();
+            var mediator = Substitute.For<ISender>();
+            var restApiExecutor = Substitute.For<IRestApiExecutor>();
             var logger = Substitute.For<ILogger<TaskAgentJobRunner>>();
 
             await using var executeTaskContext = new TasksDbContext(tasksDbOptions);
             await using var executeOrgContext = new OrganizationDbContext(orgDbOptions);
 
-            var runner = new TaskAgentJobRunner(executeTaskContext, executeOrgContext, llmClient, storageService, notifier, logger);
+            var runner = new TaskAgentJobRunner(executeTaskContext, executeOrgContext, llmClient, storageService, notifier, mediator, restApiExecutor, logger);
 
             // Act
             await runner.ExecuteTaskAsync(task.Id, CancellationToken.None);
@@ -151,12 +155,14 @@ namespace AgentCoreSystem.UnitTests.Tasks
 
             var storageService = Substitute.For<IArtifactStorageService>();
             var notifier = Substitute.For<ITasksRealtimeNotifier>();
+            var mediator = Substitute.For<ISender>();
+            var restApiExecutor = Substitute.For<IRestApiExecutor>();
             var logger = Substitute.For<ILogger<TaskAgentJobRunner>>();
 
             await using var executeTaskContext = new TasksDbContext(tasksDbOptions);
             await using var executeOrgContext = new OrganizationDbContext(orgDbOptions);
 
-            var runner = new TaskAgentJobRunner(executeTaskContext, executeOrgContext, llmClient, storageService, notifier, logger);
+            var runner = new TaskAgentJobRunner(executeTaskContext, executeOrgContext, llmClient, storageService, notifier, mediator, restApiExecutor, logger);
 
             // Act
             await runner.ExecuteTaskAsync(task.Id, CancellationToken.None);

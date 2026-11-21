@@ -54,7 +54,8 @@ test.describe('Sprint 1 E2E: Realtime Chat Room & @Mention Router', () => {
     await orgPage.selectChannel(channelName);
     await expect(page.locator('.channel-header-bar h2')).toContainText(channelName);
 
-    // 8. Gán Agent vừa tạo vào Kênh
+    // 8. Gán Người dùng Admin và Agent vừa tạo vào Kênh
+    await orgPage.assignCurrentUserToChannel('Super Administrator');
     await orgPage.assignAgentToChannel(agentName);
 
     // Chuyển sang Tab "Phòng Chat Realtime" nếu chưa được kích hoạt

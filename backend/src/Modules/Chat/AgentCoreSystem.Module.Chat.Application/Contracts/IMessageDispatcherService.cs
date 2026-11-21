@@ -33,5 +33,19 @@ namespace AgentCoreSystem.Module.Chat.Application.Contracts
             ChatMessageDto userMessage,
             List<Guid> mentionedAgentIds,
             CancellationToken ct = default);
+
+        /// <summary>
+        /// Tiếp tục chu trình hội thoại với LLM sau khi yêu cầu gọi công cụ được người dùng phê duyệt hoặc từ chối.
+        /// </summary>
+        /// <remarks>
+        /// <para><strong>What:</strong> Tải lại ngữ cảnh hội thoại, nạp kết quả thực thi công cụ hoặc thông điệp từ chối vào lịch sử chat và gửi tới mô hình AI để hoàn tất câu trả lời.</para>
+        /// <para><strong>Why:</strong> Hiện thực hóa cơ chế Human-in-the-loop đối với các công cụ cần phê duyệt (NeedApprove/SemiAuto).</para>
+        /// </remarks>
+        /// <param name="pendingToolCallId">Mã định danh yêu cầu gọi công cụ đang chờ duyệt.</param>
+        /// <param name="ct">Mã hủy bỏ tác vụ.</param>
+        /// <returns>Tác vụ bất đồng bộ hoàn tất việc tiếp tục hội thoại.</returns>
+        Task ResumeAfterToolCallAsync(
+            Guid pendingToolCallId,
+            CancellationToken ct = default);
     }
 }

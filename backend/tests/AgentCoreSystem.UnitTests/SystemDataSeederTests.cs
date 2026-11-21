@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 using AgentCoreSystem.Module.System.Application.Common;
 using AgentCoreSystem.Module.System.Domain.Constants;
 using AgentCoreSystem.Module.System.Domain.Entities;
+using AgentCoreSystem.Module.System.Infrastructure.Persistence;
 using AgentCoreSystem.Module.System.Infrastructure.Persistence.Seeds;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -121,11 +123,17 @@ namespace AgentCoreSystem.UnitTests
         public async Task SeedAsync_When_Config_Is_Valid_Should_Create_Roles_And_SuperAdmin()
         {
             // Arrange
+            var optionsDb = new DbContextOptionsBuilder<SystemDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+            using var dbContext = new SystemDbContext(optionsDb);
+
             var roleManager = CreateRoleManager();
             roleManager.RoleExistsAsync(Arg.Any<string>()).Returns(Task.FromResult(false));
             roleManager.CreateAsync(Arg.Any<ApplicationRole>()).Returns(Task.FromResult(IdentityResult.Success));
 
             var userManager = CreateUserManager();
+            userManager.Users.Returns(dbContext.Users);
             userManager.FindByEmailAsync("admin@AgentCoreSystem.vn").Returns(Task.FromResult<ApplicationUser?>(null));
             userManager.CreateAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>()).Returns(Task.FromResult(IdentityResult.Success));
             userManager.AddToRoleAsync(Arg.Any<ApplicationUser>(), SystemRoles.SuperAdmin).Returns(Task.FromResult(IdentityResult.Success));

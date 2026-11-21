@@ -1,0 +1,9 @@
+<!-- Huy hiệu đang thực thi công cụ (Tool Execution Badge) -->
+<div class="tool-execution-badge" role="status" aria-live="polite">
+  <span class="gear-icon" aria-hidden="true">⚙️</span>
+  <span class="status-text">Đang thực thi công cụ</span>
+  @if (toolName()) {
+    <span class="tool-name-tag">{{ toolName() }}</span>
+  }
+  <span class="animated-dots" aria-hidden="true">...</span>
+</div>

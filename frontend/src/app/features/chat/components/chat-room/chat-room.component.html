@@ -85,6 +85,21 @@
         [streamingText]="streaming.content"
       ></app-chat-bubble>
     }
+
+    <!-- Danh sách các thẻ yêu cầu phê duyệt công cụ (Human-in-the-Loop Action Cards) -->
+    @for (req of toolApprovalRequests(); track req.pendingToolCallId) {
+      <app-tool-approval-card
+        [approvalRequest]="req"
+        [isSubmitting]="submittingToolCallId() === req.pendingToolCallId"
+        (confirmed)="confirmToolApproval($event)"
+        (rejected)="rejectToolApproval($event)"
+      ></app-tool-approval-card>
+    }
+
+    <!-- Huy hiệu hiển thị công cụ đang thực thi -->
+    @if (executingTool(); as tool) {
+      <app-tool-execution-badge [toolName]="tool.toolName"></app-tool-execution-badge>
+    }
   </main>
 
   <!-- Nút bấm nổi cuộn nhanh xuống đáy khi người dùng cuộn ngược đọc tin cũ -->

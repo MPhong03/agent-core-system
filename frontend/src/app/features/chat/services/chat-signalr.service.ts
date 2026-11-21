@@ -31,6 +31,8 @@ import {
   CompletedMessage,
   SignalRConnectionState,
   StreamingChunk,
+  ToolApprovalRequest,
+  ToolExecutingEvent,
 } from '../models/chat.models';
 
 @Injectable({
@@ -51,6 +53,8 @@ export class ChatSignalRService implements OnDestroy {
   private readonly messageChunkSubject = new Subject<StreamingChunk>();
   private readonly messageCompletedSubject = new Subject<CompletedMessage>();
   private readonly reconnectedSubject = new Subject<void>();
+  private readonly toolApprovalRequestedSubject = new Subject<ToolApprovalRequest>();
+  private readonly toolExecutingSubject = new Subject<ToolExecutingEvent>();
 
   readonly messageReceived$: Observable<ChatMessage> = this.messageReceivedSubject.asObservable();
   readonly messageChunkReceived$: Observable<StreamingChunk> =
@@ -58,6 +62,10 @@ export class ChatSignalRService implements OnDestroy {
   readonly messageCompleted$: Observable<CompletedMessage> =
     this.messageCompletedSubject.asObservable();
   readonly reconnected$: Observable<void> = this.reconnectedSubject.asObservable();
+  readonly toolApprovalRequested$: Observable<ToolApprovalRequest> =
+    this.toolApprovalRequestedSubject.asObservable();
+  readonly toolExecuting$: Observable<ToolExecutingEvent> =
+    this.toolExecutingSubject.asObservable();
 
   // ── Khởi Tạo Kết Nối & Quản Lý Vòng Đời Hub ──
 
@@ -214,6 +222,35 @@ export class ChatSignalRService implements OnDestroy {
       },
     );
 
+    // 4. Nhận yêu cầu phê duyệt công cụ từ AI Agent (Human-in-the-loop Action Card)
+    connection.on('ToolApprovalRequested', (request: ToolApprovalRequest) => {
+      this.toolApprovalRequestedSubject.next(request);
+    });
+
+    // 5. Nhận sự kiện bắt đầu thực thi công cụ
+    connection.on('ToolExecuting', (arg1: any, arg2?: any, arg3?: any) => {
+      if (typeof arg1 === 'object' && arg1 !== null) {
+        this.toolExecutingSubject.next({
+          channelId: arg1.channelId ?? this.currentChannelId ?? '',
+          toolName: arg1.toolName ?? '',
+          toolCallId: arg1.toolCallId,
+          argumentsJson: arg1.argumentsJson,
+        });
+      } else if (typeof arg2 === 'string') {
+        this.toolExecutingSubject.next({
+          channelId: this.currentChannelId ?? '',
+          toolCallId: typeof arg1 === 'string' ? arg1 : undefined,
+          toolName: arg2,
+          argumentsJson: typeof arg3 === 'string' ? arg3 : undefined,
+        });
+      } else if (typeof arg1 === 'string') {
+        this.toolExecutingSubject.next({
+          channelId: this.currentChannelId ?? '',
+          toolName: arg1,
+        });
+      }
+    });
+
     // Xử lý các trạng thái vòng đời kết nối socket
     connection.onreconnecting((error) => {
       console.warn('[ChatSignalRService] Đang thử kết nối lại SignalR Hub...', error);
@@ -252,6 +289,8 @@ export class ChatSignalRService implements OnDestroy {
     this.messageChunkSubject.complete();
     this.messageCompletedSubject.complete();
     this.reconnectedSubject.complete();
+    this.toolApprovalRequestedSubject.complete();
+    this.toolExecutingSubject.complete();
     this.disconnect().catch((err) =>
       console.warn('[ChatSignalRService] Lỗi khi hủy kết nối on destroy:', err),
     );

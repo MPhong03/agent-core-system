@@ -31,6 +31,7 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Requests
     /// <param name="SystemPrompt">Chỉ dẫn hệ thống cốt lõi.</param>
     /// <param name="Temperature">Độ sáng tạo của mô hình (0.0 đến 2.0).</param>
     /// <param name="PrivateMemoryNotes">Ghi chú bộ nhớ riêng ban đầu.</param>
+    /// <param name="ToolExecutionMode">Chế độ thực thi công cụ (Auto, SemiAuto, NeedApprove).</param>
     public record CreateAgentProfileRequest(
         string Name,
         string? AvatarUrl,
@@ -38,5 +39,6 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Requests
         string ModelName,
         string SystemPrompt,
         decimal Temperature = 0.7m,
-        string? PrivateMemoryNotes = null);
+        string? PrivateMemoryNotes = null,
+        ToolExecutionMode ToolExecutionMode = ToolExecutionMode.SemiAuto);
 }
