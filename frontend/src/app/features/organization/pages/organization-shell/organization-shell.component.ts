@@ -26,6 +26,7 @@ import {
   ChangeDetectionStrategy,
   inject,
   signal,
+  computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -40,6 +41,7 @@ import {
 import { OrganizationStore } from '../../store/organization.store';
 import { AgentProfileModalComponent } from '../../components/agent-profile-modal/agent-profile-modal.component';
 import { ChatRoomComponent } from '../../../chat/components/chat-room/chat-room.component';
+import { KanbanBoardComponent } from '../../../tasks/components/kanban-board/kanban-board.component';
 
 @Component({
   selector: 'app-organization-shell',
@@ -50,6 +52,7 @@ import { ChatRoomComponent } from '../../../chat/components/chat-room/chat-room.
     ReactiveFormsModule,
     AgentProfileModalComponent,
     ChatRoomComponent,
+    KanbanBoardComponent,
   ],
   templateUrl: './organization-shell.component.html',
   styleUrls: ['./organization-shell.component.scss'],
@@ -64,9 +67,17 @@ export class OrganizationShellComponent implements OnInit {
 
   // ── UI State Signals & Tabs ──
   /**
-   * Tab điều hướng trong giao diện kênh: 'chat' (Phòng chat realtime) hoặc 'members' (Danh sách thành viên).
+   * Tab điều hướng trong giao diện kênh: 'chat' (Phòng chat realtime), 'kanban' (Bảng công việc), 'members' (Danh sách thành viên).
    */
-  readonly activeChannelTab = signal<'chat' | 'members'>('chat');
+  readonly activeChannelTab = signal<'chat' | 'kanban' | 'members'>('chat');
+
+  readonly channelMembersForTasks = computed(() =>
+    this.store.channelMembers().map((m) => ({
+      id: m.id,
+      displayName: m.displayName,
+      isAgent: m.type === MemberType.Agent,
+    })),
+  );
 
   // Trạng thái bật/tắt các modal
   readonly isAgentModalOpen = signal<boolean>(false);
