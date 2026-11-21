@@ -5,132 +5,154 @@
 
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { AppCardComponent } from '../../shared/components/card/card.component';
+import { AppIconComponent } from '../../shared/components/icon/icon.component';
+import { AppButtonComponent } from '../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslatePipe,
+    AppCardComponent,
+    AppIconComponent,
+    AppButtonComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="dashboard-page">
-      <div class="welcome-card">
-        <h2>{{ 'DASHBOARD.WELCOME_TITLE' | translate }}</h2>
-        <p>{{ 'DASHBOARD.WELCOME_SUB' | translate }}</p>
+    <div class="space-y-6">
+      <!-- Welcome Hero Banner -->
+      <div class="relative overflow-hidden rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-8">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary dark:bg-primary/20 dark:text-secondary mb-3">
+            <app-icon name="shield" [size]="14" />
+            <span>AgentCore System v1.0</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-black dark:text-white tracking-tight">
+            {{ 'DASHBOARD.WELCOME_TITLE' | translate }}
+          </h2>
+          <p class="mt-2 text-sm text-body dark:text-bodydark leading-relaxed">
+            {{ 'DASHBOARD.WELCOME_SUB' | translate }}
+          </p>
+        </div>
       </div>
 
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon blue">⚡</div>
-          <div class="stat-info">
-            <span class="stat-label">{{ 'DASHBOARD.CARD_BACKEND' | translate }}</span>
-            <span class="stat-value">Modular Monolith</span>
-            <span class="stat-desc">Schema [system] on SQL Server</span>
+      <!-- 4 Architectural Highlights / Stat Cards -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
+        <!-- Backend Card -->
+        <div class="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-colors">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-secondary">
+            <app-icon name="database" [size]="24" />
+          </div>
+          <div class="min-w-0">
+            <span class="text-xs font-medium text-body dark:text-bodydark uppercase tracking-wider block">
+              {{ 'DASHBOARD.CARD_BACKEND' | translate }}
+            </span>
+            <h4 class="text-base font-bold text-black dark:text-white truncate mt-0.5">
+              Modular Monolith
+            </h4>
+            <span class="text-[11px] text-body dark:text-bodydark truncate block mt-0.5">
+              Schema [system] SQL Server
+            </span>
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon green">🍃</div>
-          <div class="stat-info">
-            <span class="stat-label">{{ 'DASHBOARD.CARD_JOBS' | translate }}</span>
-            <span class="stat-value">Hangfire + MongoDB</span>
-            <span class="stat-desc">Fail-fast connection strings</span>
+        <!-- Jobs Card -->
+        <div class="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-colors">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-success/10 text-success dark:bg-success/20 dark:text-meta-3">
+            <app-icon name="server" [size]="24" />
+          </div>
+          <div class="min-w-0">
+            <span class="text-xs font-medium text-body dark:text-bodydark uppercase tracking-wider block">
+              {{ 'DASHBOARD.CARD_JOBS' | translate }}
+            </span>
+            <h4 class="text-base font-bold text-black dark:text-white truncate mt-0.5">
+              Hangfire + MongoDB
+            </h4>
+            <span class="text-[11px] text-body dark:text-bodydark truncate block mt-0.5">
+              Fail-fast connections
+            </span>
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon purple">🚀</div>
-          <div class="stat-info">
-            <span class="stat-label">{{ 'DASHBOARD.CARD_API' | translate }}</span>
-            <span class="stat-value">v1.0 RESTful</span>
-            <span class="stat-desc">RFC 7807 &amp; i18n vi-VN/en-US</span>
+        <!-- API Card -->
+        <div class="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-colors">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-info/10 text-info dark:bg-info/20 dark:text-meta-5">
+            <app-icon name="code" [size]="24" />
+          </div>
+          <div class="min-w-0">
+            <span class="text-xs font-medium text-body dark:text-bodydark uppercase tracking-wider block">
+              {{ 'DASHBOARD.CARD_API' | translate }}
+            </span>
+            <h4 class="text-base font-bold text-black dark:text-white truncate mt-0.5">
+              v1.0 RESTful API
+            </h4>
+            <span class="text-[11px] text-body dark:text-bodydark truncate block mt-0.5">
+              RFC 7807 & i18n
+            </span>
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon orange">🅰️</div>
-          <div class="stat-info">
-            <span class="stat-label">{{ 'DASHBOARD.CARD_FRONTEND' | translate }}</span>
-            <span class="stat-value">Angular Standalone</span>
-            <span class="stat-desc">Signals + OnPush + i18n</span>
+        <!-- Frontend Card -->
+        <div class="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-colors">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning dark:bg-warning/20 dark:text-meta-6">
+            <app-icon name="shield" [size]="24" />
+          </div>
+          <div class="min-w-0">
+            <span class="text-xs font-medium text-body dark:text-bodydark uppercase tracking-wider block">
+              {{ 'DASHBOARD.CARD_FRONTEND' | translate }}
+            </span>
+            <h4 class="text-base font-bold text-black dark:text-white truncate mt-0.5">
+              Angular Standalone
+            </h4>
+            <span class="text-[11px] text-body dark:text-bodydark truncate block mt-0.5">
+              Signals + OnPush + TailAdmin
+            </span>
           </div>
         </div>
+      </div>
+
+      <!-- Quick Access Modules Grid -->
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+        <!-- Workspace Quick Card -->
+        <app-card title="Không Gian Làm Việc & Kênh Nhóm" subtitle="Cây phòng ban, Kanban Board và Real-time Chat">
+          <div class="space-y-3">
+            <p class="text-xs text-body dark:text-bodydark leading-relaxed">
+              Truy cập vào không gian làm việc tập trung để quản lý các tác vụ Kanban, phê duyệt Review Gate, và tương tác thời gian thực với các Agents thông qua SignalR.
+            </p>
+            <div class="pt-2">
+              <a routerLink="/organization">
+                <app-button variant="primary" size="sm">
+                  <app-icon name="organization" [size]="16" class="mr-2" />
+                  Mở Không Gian Làm Việc
+                </app-button>
+              </a>
+            </div>
+          </div>
+        </app-card>
+
+        <!-- System Administration Quick Card -->
+        <app-card title="Quản Trị Người Dùng & Phân Quyền" subtitle="Quản lý tài khoản, vai trò và lịch sử kiểm toán">
+          <div class="space-y-3">
+            <p class="text-xs text-body dark:text-bodydark leading-relaxed">
+              Tra cứu danh sách nhân sự, phân quyền vai trò bảo mật (SuperAdmin, Admin, Employee) và theo dõi toàn bộ nhật ký thay đổi của hệ thống.
+            </p>
+            <div class="pt-2">
+              <a routerLink="/system/users">
+                <app-button variant="secondary" size="sm">
+                  <app-icon name="users" [size]="16" class="mr-2" />
+                  Quản Trị Người Dùng
+                </app-button>
+              </a>
+            </div>
+          </div>
+        </app-card>
       </div>
     </div>
   `,
-  styles: [
-    `
-      .welcome-card {
-        background: linear-gradient(135deg, #1e293b, #0f172a);
-        color: #fff;
-        padding: 24px;
-        border-radius: 12px;
-        margin-bottom: 24px;
-      }
-      .welcome-card h2 {
-        margin: 0 0 8px 0;
-        font-size: 1.5rem;
-      }
-      .welcome-card p {
-        margin: 0;
-        color: #94a3b8;
-      }
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 16px;
-      }
-      .stat-card {
-        background: #fff;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-      .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-      }
-      .stat-icon.blue {
-        background-color: #dbeafe;
-      }
-      .stat-icon.green {
-        background-color: #dcfce7;
-      }
-      .stat-icon.purple {
-        background-color: #f3e8ff;
-      }
-      .stat-icon.orange {
-        background-color: #ffedd5;
-      }
-      .stat-info {
-        display: flex;
-        flex-direction: column;
-      }
-      .stat-label {
-        font-size: 0.75rem;
-        color: #64748b;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-      .stat-value {
-        font-size: 1.15rem;
-        color: #0f172a;
-        font-weight: 700;
-        margin: 2px 0;
-      }
-      .stat-desc {
-        font-size: 0.75rem;
-        color: #94a3b8;
-      }
-    `,
-  ],
 })
 export class DashboardComponent {}
