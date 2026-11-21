@@ -54,6 +54,23 @@ namespace AgentCoreSystem.Module.Agents.Application.Tools.Commands
         {
             var requestedToolIds = new HashSet<Guid>(request.ToolDefinitionIds);
 
+            // Kiểm tra các công cụ được yêu cầu phải tồn tại và đang hoạt động
+            if (requestedToolIds.Count > 0)
+            {
+                var validToolIds = await dbContext.Tools
+                    .Where(t => requestedToolIds.Contains(t.Id) && t.IsActive && !t.IsDeleted)
+                    .Select(t => t.Id)
+                    .ToListAsync(cancellationToken);
+
+                var missingIds = requestedToolIds.Except(validToolIds).ToList();
+                if (missingIds.Count > 0)
+                {
+                    return Result.Failure(Error.NotFound(
+                        "Tool.NotFound",
+                        $"Không tìm thấy hoặc công cụ không còn hoạt động: {string.Join(", ", missingIds)}"));
+                }
+            }
+
             var existingAccesses = await dbContext.AgentToolAccesses
                 .Where(a => a.AgentProfileId == request.AgentProfileId)
                 .ToListAsync(cancellationToken);

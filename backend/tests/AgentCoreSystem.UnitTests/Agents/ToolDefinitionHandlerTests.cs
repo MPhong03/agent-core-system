@@ -17,6 +17,7 @@ using AgentCoreSystem.Module.Agents.Domain.Entities;
 using AgentCoreSystem.Module.Agents.Domain.Enums;
 using AgentCoreSystem.Module.Agents.Infrastructure.Persistence;
 using AgentCoreSystem.Shared.Infrastructure.Http;
+using AgentCoreSystem.Shared.Kernel.Primitives;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Xunit;
@@ -518,6 +519,58 @@ namespace AgentCoreSystem.UnitTests.Agents
             }
         }
 
+        [Fact]
+        public async Task AssignAgentToolsCommand_WhenToolDoesNotExist_ShouldReturnNotFound()
+        {
+            // Arrange
+            var options = CreateInMemoryOptions();
+            var nonExistentToolId = Guid.NewGuid();
+            var agentProfileId = Guid.NewGuid();
+
+            await using var context = new AgentsDbContext(options);
+            var handler = new AssignAgentToolsCommandHandler(context);
+            var command = new AssignAgentToolsCommand(agentProfileId, [nonExistentToolId]);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.True(result.IsFailure);
+            Assert.Equal(ErrorType.NotFound, result.Error.Type);
+            Assert.Equal("Tool.NotFound", result.Error.Code);
+        }
+
+        [Fact]
+        public async Task AssignAgentToolsCommand_WhenToolIsInactive_ShouldReturnNotFound()
+        {
+            // Arrange
+            var options = CreateInMemoryOptions();
+            var inactiveTool = ToolDefinition.Create("inactive_tool", "Inactive", "Desc", ToolType.RestApi, "https://api.example.com", "GET").Value;
+            inactiveTool.Deactivate();
+
+            var agentProfileId = Guid.NewGuid();
+
+            await using (var context = new AgentsDbContext(options))
+            {
+                context.Tools.Add(inactiveTool);
+                await context.SaveChangesAsync();
+            }
+
+            await using (var context = new AgentsDbContext(options))
+            {
+                var handler = new AssignAgentToolsCommandHandler(context);
+                var command = new AssignAgentToolsCommand(agentProfileId, [inactiveTool.Id]);
+
+                // Act
+                var result = await handler.Handle(command, CancellationToken.None);
+
+                // Assert
+                Assert.True(result.IsFailure);
+                Assert.Equal(ErrorType.NotFound, result.Error.Type);
+                Assert.Equal("Tool.NotFound", result.Error.Code);
+            }
+        }
+
         // ── 6. Query Tests ──
 
         [Fact]
@@ -705,6 +758,23 @@ namespace AgentCoreSystem.UnitTests.Agents
             Assert.Equal("Bearer secret_key", dict["Authorization"]);
             Assert.Equal("text/plain", dict["Accept"]);
             Assert.Equal("added", dict["X-New"]);
+        }
+
+        [Fact]
+        public void SecretMaskingHelper_MergeHeaders_ShouldRetainOriginalSecrets_CaseInsensitive()
+        {
+            var existingHeadersJson = "{\"Authorization\":\"Bearer secret_key\",\"apiKey\":\"my-api-key\"}";
+            var incomingHeadersJson = "{\"authorization\":\"••••••••\",\"APIKEY\":\"••••••••\"}";
+
+            var mergedJson = SecretMaskingHelper.MergeHeadersJson(existingHeadersJson, incomingHeadersJson);
+            var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(mergedJson);
+
+            Assert.NotNull(dict);
+            Assert.True(dict.TryGetValue("authorization", out var authVal) || dict.TryGetValue("Authorization", out authVal));
+            Assert.Equal("Bearer secret_key", authVal);
+
+            Assert.True(dict.TryGetValue("APIKEY", out var apiVal) || dict.TryGetValue("apiKey", out apiVal));
+            Assert.Equal("my-api-key", apiVal);
         }
     }
 }

@@ -15,6 +15,8 @@ namespace AgentCoreSystem.Module.Agents.Presentation
         /// <summary>
         /// Đăng ký các controller thuộc phân hệ Agents vào bộ container dịch vụ của ứng dụng.
         /// </summary>
+        /// <param name="services">Tập hợp các dịch vụ ứng dụng.</param>
+        /// <returns>Tập hợp dịch vụ sau khi đã đăng ký.</returns>
         public static IServiceCollection AddAgentsPresentation(this IServiceCollection services)
         {
             services.AddControllers()

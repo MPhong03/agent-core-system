@@ -158,7 +158,11 @@ namespace AgentCoreSystem.Module.Agents.Application.Common
             {
                 try
                 {
-                    existingDict = JsonSerializer.Deserialize<Dictionary<string, string>>(existingHeadersJson);
+                    var parsed = JsonSerializer.Deserialize<Dictionary<string, string>>(existingHeadersJson);
+                    if (parsed != null)
+                    {
+                        existingDict = new Dictionary<string, string>(parsed, StringComparer.OrdinalIgnoreCase);
+                    }
                 }
                 catch (JsonException)
                 {
@@ -169,7 +173,10 @@ namespace AgentCoreSystem.Module.Agents.Application.Common
             Dictionary<string, string>? incomingDict;
             try
             {
-                incomingDict = JsonSerializer.Deserialize<Dictionary<string, string>>(incomingHeadersJson);
+                var parsedIncoming = JsonSerializer.Deserialize<Dictionary<string, string>>(incomingHeadersJson);
+                incomingDict = parsedIncoming != null
+                    ? new Dictionary<string, string>(parsedIncoming, StringComparer.OrdinalIgnoreCase)
+                    : null;
             }
             catch (JsonException)
             {
