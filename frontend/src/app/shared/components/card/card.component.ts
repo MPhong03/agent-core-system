@@ -13,21 +13,21 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark transition-colors duration-200"
+      class="rounded-xl border border-stroke bg-white shadow-xs dark:border-strokedark dark:bg-boxdark transition-colors duration-200"
       [class]="customClass()"
     >
       @if (title() || hasHeaderContent) {
         <div
-          class="border-b border-stroke py-4 px-6.5 dark:border-strokedark flex items-center justify-between"
+          class="border-b border-stroke py-4 px-6 dark:border-strokedark flex items-center justify-between"
         >
           <div>
             @if (title()) {
-              <h3 class="font-medium text-black dark:text-white text-base">
+              <h3 class="font-semibold text-black dark:text-white text-base tracking-tight">
                 {{ title() }}
               </h3>
             }
             @if (subtitle()) {
-              <p class="text-xs text-body dark:text-bodydark mt-0.5">
+              <p class="text-xs text-body dark:text-bodydark mt-1">
                 {{ subtitle() }}
               </p>
             }
@@ -38,7 +38,7 @@ import { CommonModule } from '@angular/common';
         </div>
       }
 
-      <div [class.p-6.5]="!noPadding()" [class.p-0]="noPadding()">
+      <div [class.p-6]="!noPadding()" [class.p-0]="noPadding()">
         <ng-content />
       </div>
 

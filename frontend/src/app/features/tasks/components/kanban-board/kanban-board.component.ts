@@ -208,14 +208,10 @@ import { ReviewGateModalComponent } from '../review-gate-modal/review-gate-modal
       display: flex;
       flex-direction: column;
       height: 100%;
-      background: #f1f5f9;
-      padding: 16px;
+      background: transparent;
+      padding: 0;
       box-sizing: border-box;
       overflow: hidden;
-
-      :host-context(.dark) & {
-        background: #1a222c;
-      }
     }
 
     .kanban-toolbar {
@@ -256,9 +252,9 @@ import { ReviewGateModalComponent } from '../review-gate-modal/review-gate-modal
         background: #3c50e0;
         color: #ffffff;
         border: none;
-        padding: 6px 14px;
-        border-radius: 6px;
-        font-size: 12px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
         font-weight: 600;
         cursor: pointer;
         transition: background 0.15s;
@@ -271,17 +267,19 @@ import { ReviewGateModalComponent } from '../review-gate-modal/review-gate-modal
 
     .kanban-columns {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(4, minmax(260px, 1fr));
+      gap: 16px;
       flex: 1;
       min-height: 0;
+      overflow-x: auto;
+      padding-bottom: 8px;
     }
 
     .kanban-column {
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       min-height: 0;

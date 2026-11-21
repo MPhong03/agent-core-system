@@ -24,9 +24,9 @@ import { AppButtonComponent } from '../../shared/components/button/button.compon
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="space-y-6">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <!-- Welcome Hero Banner -->
-      <div class="relative overflow-hidden rounded-sm border border-stroke bg-white p-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:p-8">
+      <div class="relative overflow-hidden rounded-xl border border-stroke bg-white p-6 sm:p-8 shadow-xs dark:border-strokedark dark:bg-boxdark">
         <div class="max-w-2xl">
           <div class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary dark:bg-primary/20 dark:text-secondary mb-3">
             <app-icon name="shield" [size]="14" />
@@ -42,74 +42,74 @@ import { AppButtonComponent } from '../../shared/components/button/button.compon
       </div>
 
       <!-- 4 Architectural Highlights / Stat Cards -->
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <!-- Backend Card -->
-        <div class="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-colors">
-          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-secondary">
+        <div class="rounded-xl border border-stroke bg-white p-5 shadow-xs dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-all hover:shadow-card">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-secondary">
             <app-icon name="database" [size]="24" />
           </div>
           <div class="min-w-0">
-            <span class="text-xs font-medium text-body dark:text-bodydark uppercase tracking-wider block">
+            <span class="text-xs font-semibold text-body dark:text-bodydark uppercase tracking-wider block">
               {{ 'DASHBOARD.CARD_BACKEND' | translate }}
             </span>
             <h4 class="text-base font-bold text-black dark:text-white truncate mt-0.5">
               Modular Monolith
             </h4>
-            <span class="text-[11px] text-body dark:text-bodydark truncate block mt-0.5">
+            <span class="text-xs text-body dark:text-bodydark truncate block mt-0.5 font-mono">
               Schema [system] SQL Server
             </span>
           </div>
         </div>
 
         <!-- Jobs Card -->
-        <div class="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-colors">
-          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-success/10 text-success dark:bg-success/20 dark:text-meta-3">
+        <div class="rounded-xl border border-stroke bg-white p-5 shadow-xs dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-all hover:shadow-card">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success dark:bg-success/20 dark:text-meta-3">
             <app-icon name="server" [size]="24" />
           </div>
           <div class="min-w-0">
-            <span class="text-xs font-medium text-body dark:text-bodydark uppercase tracking-wider block">
+            <span class="text-xs font-semibold text-body dark:text-bodydark uppercase tracking-wider block">
               {{ 'DASHBOARD.CARD_JOBS' | translate }}
             </span>
             <h4 class="text-base font-bold text-black dark:text-white truncate mt-0.5">
               Hangfire + MongoDB
             </h4>
-            <span class="text-[11px] text-body dark:text-bodydark truncate block mt-0.5">
+            <span class="text-xs text-body dark:text-bodydark truncate block mt-0.5 font-mono">
               Fail-fast connections
             </span>
           </div>
         </div>
 
         <!-- API Card -->
-        <div class="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-colors">
-          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-info/10 text-info dark:bg-info/20 dark:text-meta-5">
+        <div class="rounded-xl border border-stroke bg-white p-5 shadow-xs dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-all hover:shadow-card">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-info/10 text-info dark:bg-info/20 dark:text-meta-5">
             <app-icon name="code" [size]="24" />
           </div>
           <div class="min-w-0">
-            <span class="text-xs font-medium text-body dark:text-bodydark uppercase tracking-wider block">
+            <span class="text-xs font-semibold text-body dark:text-bodydark uppercase tracking-wider block">
               {{ 'DASHBOARD.CARD_API' | translate }}
             </span>
             <h4 class="text-base font-bold text-black dark:text-white truncate mt-0.5">
               v1.0 RESTful API
             </h4>
-            <span class="text-[11px] text-body dark:text-bodydark truncate block mt-0.5">
+            <span class="text-xs text-body dark:text-bodydark truncate block mt-0.5 font-mono">
               RFC 7807 & i18n
             </span>
           </div>
         </div>
 
         <!-- Frontend Card -->
-        <div class="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-colors">
-          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-warning/10 text-warning dark:bg-warning/20 dark:text-meta-6">
+        <div class="rounded-xl border border-stroke bg-white p-5 shadow-xs dark:border-strokedark dark:bg-boxdark flex items-center gap-4 transition-all hover:shadow-card">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning dark:bg-warning/20 dark:text-meta-6">
             <app-icon name="shield" [size]="24" />
           </div>
           <div class="min-w-0">
-            <span class="text-xs font-medium text-body dark:text-bodydark uppercase tracking-wider block">
+            <span class="text-xs font-semibold text-body dark:text-bodydark uppercase tracking-wider block">
               {{ 'DASHBOARD.CARD_FRONTEND' | translate }}
             </span>
             <h4 class="text-base font-bold text-black dark:text-white truncate mt-0.5">
               Angular Standalone
             </h4>
-            <span class="text-[11px] text-body dark:text-bodydark truncate block mt-0.5">
+            <span class="text-xs text-body dark:text-bodydark truncate block mt-0.5 font-mono">
               Signals + OnPush + TailAdmin
             </span>
           </div>
@@ -117,7 +117,7 @@ import { AppButtonComponent } from '../../shared/components/button/button.compon
       </div>
 
       <!-- Quick Access Modules Grid -->
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <!-- Workspace Quick Card -->
         <app-card title="Không Gian Làm Việc & Kênh Nhóm" subtitle="Cây phòng ban, Kanban Board và Real-time Chat">
           <div class="space-y-3">

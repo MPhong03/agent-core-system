@@ -63,13 +63,13 @@ import { AppIconComponent } from '../../../shared/components/icon/icon.component
       </div>
 
       <!-- Login Card Container -->
-      <div class="w-full max-w-md rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6 sm:p-8.5">
+      <div class="w-full max-w-md rounded-2xl border border-stroke bg-white shadow-card dark:border-strokedark dark:bg-boxdark p-7 sm:p-9">
         <!-- Brand Header -->
         <div class="text-center mb-7">
           <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white font-bold text-2xl shadow-sm">
             A
           </div>
-          <h2 class="text-xl sm:text-2xl font-bold text-black dark:text-white">
+          <h2 class="text-xl sm:text-2xl font-bold text-black dark:text-white tracking-tight">
             {{ 'AUTH.LOGIN_TITLE' | translate }}
           </h2>
           <p class="text-xs sm:text-sm text-body dark:text-bodydark mt-1">
@@ -79,17 +79,17 @@ import { AppIconComponent } from '../../../shared/components/icon/icon.component
 
         <!-- Error Notification Banner -->
         @if (errorMessage()) {
-          <div class="mb-5 flex items-center gap-3 rounded-md bg-danger/10 border border-danger/20 p-3 text-xs text-danger dark:bg-danger/20 dark:border-danger/30">
+          <div class="mb-5 flex items-center gap-3 rounded-lg bg-danger/10 border border-danger/20 p-3.5 text-xs text-danger dark:bg-danger/20 dark:border-danger/30">
             <app-icon name="close" [size]="16" class="shrink-0 text-danger" />
             <span>{{ errorMessage() }}</span>
           </div>
         }
 
         <!-- Login Form -->
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4.5">
           <!-- Email Input -->
           <div>
-            <label class="mb-2 block text-xs font-medium text-black dark:text-white">
+            <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
               {{ 'AUTH.EMAIL' | translate }}
             </label>
             <div class="relative">
@@ -97,9 +97,9 @@ import { AppIconComponent } from '../../../shared/components/icon/icon.component
                 type="email"
                 formControlName="email"
                 placeholder="name@example.com"
-                class="w-full rounded-md border border-stroke bg-transparent py-2.5 pl-4 pr-10 text-sm text-black outline-none transition-colors focus:border-primary focus-visible:shadow-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                class="w-full h-11 rounded-lg border border-stroke bg-transparent pl-4 pr-11 text-sm text-black outline-none transition-colors focus:border-primary focus-visible:shadow-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
               />
-              <span class="absolute right-3.5 top-3 text-body dark:text-bodydark">
+              <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-body dark:text-bodydark">
                 <app-icon name="mail" [size]="18" />
               </span>
             </div>
@@ -110,7 +110,7 @@ import { AppIconComponent } from '../../../shared/components/icon/icon.component
 
           <!-- Password Input -->
           <div>
-            <label class="mb-2 block text-xs font-medium text-black dark:text-white">
+            <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
               {{ 'AUTH.PASSWORD' | translate }}
             </label>
             <div class="relative">
@@ -118,12 +118,12 @@ import { AppIconComponent } from '../../../shared/components/icon/icon.component
                 [type]="showPassword() ? 'text' : 'password'"
                 formControlName="password"
                 placeholder="••••••••"
-                class="w-full rounded-md border border-stroke bg-transparent py-2.5 pl-4 pr-10 text-sm text-black outline-none transition-colors focus:border-primary focus-visible:shadow-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                class="w-full h-11 rounded-lg border border-stroke bg-transparent pl-4 pr-11 text-sm text-black outline-none transition-colors focus:border-primary focus-visible:shadow-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
               />
               <button
                 type="button"
                 (click)="showPassword.set(!showPassword())"
-                class="absolute right-3.5 top-3 text-body hover:text-black dark:text-bodydark dark:hover:text-white transition-colors"
+                class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-body hover:text-black dark:text-bodydark dark:hover:text-white transition-colors"
                 tabindex="-1"
               >
                 <app-icon [name]="showPassword() ? 'eye-slash' : 'eye'" [size]="18" />
@@ -136,6 +136,7 @@ import { AppIconComponent } from '../../../shared/components/icon/icon.component
             <app-button
               type="submit"
               variant="primary"
+              size="lg"
               [fullWidth]="true"
               [loading]="isLoading()"
               [disabled]="form.invalid || isLoading()"

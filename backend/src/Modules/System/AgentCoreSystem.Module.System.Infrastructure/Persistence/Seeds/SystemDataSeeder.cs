@@ -9,6 +9,7 @@ using AgentCoreSystem.Module.System.Application.Common;
 using AgentCoreSystem.Module.System.Domain.Constants;
 using AgentCoreSystem.Module.System.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -64,8 +65,28 @@ namespace AgentCoreSystem.Module.System.Infrastructure.Persistence.Seeds
             }
 
             var adminEmail = superAdminConfig.Email.Trim();
-            var existingSuperAdmin = await userManager.FindByEmailAsync(adminEmail);
-            if (existingSuperAdmin == null)
+            var normalizedEmail = adminEmail.ToUpperInvariant();
+            var existingSuperAdmin = await userManager.Users
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail || u.NormalizedUserName == normalizedEmail);
+
+            if (existingSuperAdmin != null)
+            {
+                if (existingSuperAdmin.IsDeleted)
+                {
+                    existingSuperAdmin.IsDeleted = false;
+                    existingSuperAdmin.DeletedDate = null;
+                    existingSuperAdmin.IsActive = true;
+                    await userManager.UpdateAsync(existingSuperAdmin);
+                    logger.LogInformation("Tài khoản SuperAdmin ({Email}) đã được tự động khôi phục và kích hoạt lại.", adminEmail);
+                }
+
+                if (!await userManager.IsInRoleAsync(existingSuperAdmin, SystemRoles.SuperAdmin))
+                {
+                    await userManager.AddToRoleAsync(existingSuperAdmin, SystemRoles.SuperAdmin);
+                }
+            }
+            else
             {
                 var fullName = string.IsNullOrWhiteSpace(superAdminConfig.FullName)
                     ? "Super Administrator"

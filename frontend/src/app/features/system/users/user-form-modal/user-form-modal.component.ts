@@ -50,20 +50,20 @@ import { AppIconComponent } from '../../../../shared/components/icon/icon.compon
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
         <!-- Full Name -->
         <div>
-          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+          <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
             {{ 'MODAL.FULL_NAME' | translate }} <span class="text-danger">*</span>
           </label>
           <input
             type="text"
             formControlName="fullName"
             placeholder="Nguyễn Văn A"
-            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+            class="w-full h-10 rounded-lg border border-stroke bg-transparent px-3.5 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
           />
         </div>
 
         <!-- Email -->
         <div>
-          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+          <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
             {{ 'MODAL.EMAIL' | translate }} <span class="text-danger">*</span>
           </label>
           <input
@@ -72,46 +72,46 @@ import { AppIconComponent } from '../../../../shared/components/icon/icon.compon
             placeholder="example@agentcore.vn"
             [readonly]="isEditMode()"
             [class.opacity-60]="isEditMode()"
-            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+            class="w-full h-10 rounded-lg border border-stroke bg-transparent px-3.5 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
           />
         </div>
 
         <!-- Password (Create mode only) -->
         @if (!isEditMode()) {
           <div>
-            <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+            <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
               {{ 'MODAL.PASSWORD' | translate }} <span class="text-danger">*</span>
             </label>
             <input
               type="password"
               formControlName="password"
               placeholder="••••••••"
-              class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+              class="w-full h-10 rounded-lg border border-stroke bg-transparent px-3.5 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
             />
           </div>
         }
 
         <!-- Phone Number -->
         <div>
-          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+          <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
             {{ 'MODAL.PHONE' | translate }}
           </label>
           <input
             type="text"
             formControlName="phoneNumber"
             placeholder="0912345678"
-            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+            class="w-full h-10 rounded-lg border border-stroke bg-transparent px-3.5 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
           />
         </div>
 
         <!-- Roles Selection -->
         <div>
-          <label class="mb-2 block text-xs font-medium text-black dark:text-white">
+          <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
             {{ 'MODAL.ROLES' | translate }} <span class="text-danger">*</span>
           </label>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             @for (role of availableRoles; track role) {
-              <label class="flex items-center gap-2 p-2.5 rounded-md border border-stroke dark:border-strokedark hover:bg-gray-2 dark:hover:bg-meta-4 cursor-pointer text-xs font-medium text-black dark:text-white transition-colors">
+              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-stroke dark:border-strokedark hover:bg-gray-2 dark:hover:bg-meta-4 cursor-pointer text-xs font-medium text-black dark:text-white transition-colors">
                 <input
                   type="checkbox"
                   [checked]="hasRole(role)"

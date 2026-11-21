@@ -97,9 +97,9 @@ import { TaskItem } from '../../models/task.model';
     .task-card {
       background: #FFFFFF;
       border: 1px solid #E2E8F0;
-      border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 10px;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
       cursor: pointer;
       transition: all 0.15s ease-in-out;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -112,8 +112,8 @@ import { TaskItem } from '../../models/task.model';
       }
 
       &:hover {
-        border-color: #C8C3BA;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.06);
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
       }
 
       &.in-progress {

@@ -15,7 +15,7 @@ import { AppIconComponent } from '../../../../shared/components/icon/icon.compon
   imports: [CommonModule, AppCardComponent, AppBadgeComponent, AppIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="space-y-6">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <!-- Page Header -->
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-black dark:text-white tracking-tight">
@@ -27,7 +27,7 @@ import { AppIconComponent } from '../../../../shared/components/icon/icon.compon
       </div>
 
       <!-- Roles Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
         <!-- SuperAdmin Card -->
         <app-card>
           <div class="space-y-3">

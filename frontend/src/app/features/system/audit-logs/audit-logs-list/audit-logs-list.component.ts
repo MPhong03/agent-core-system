@@ -15,7 +15,7 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
   imports: [CommonModule, AppCardComponent, AppIconComponent, AppBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="space-y-6">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <!-- Page Header -->
       <div>
         <h2 class="text-xl sm:text-2xl font-bold text-black dark:text-white tracking-tight">

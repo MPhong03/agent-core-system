@@ -183,13 +183,13 @@ import { AppIconComponent } from '../../shared/components/icon/icon.component';
       <!-- Main Content Area -->
       <div class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
         <!-- Topbar Header -->
-        <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-stroke bg-white px-4 md:px-6 shadow-card dark:border-strokedark dark:bg-boxdark">
+        <header class="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-b border-stroke bg-white px-4 sm:px-6 lg:px-8 shadow-xs dark:border-strokedark dark:bg-boxdark">
           <div class="flex items-center gap-3">
             <!-- Mobile Menu Toggle -->
             <button
               type="button"
               (click)="isMobileSidebarOpen.set(!isMobileSidebarOpen())"
-              class="flex h-9 w-9 items-center justify-center rounded-md border border-stroke text-body hover:bg-gray-2 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4 lg:hidden"
+              class="flex h-9 w-9 items-center justify-center rounded-lg border border-stroke text-body hover:bg-gray-2 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4 lg:hidden"
             >
               <app-icon name="menu" [size]="20" />
             </button>
@@ -201,7 +201,7 @@ import { AppIconComponent } from '../../shared/components/icon/icon.component';
           </div>
 
           <!-- Topbar Actions -->
-          <div class="flex items-center gap-2 md:gap-3">
+          <div class="flex items-center gap-2.5 sm:gap-3">
             <!-- Dark / Light Mode Toggle -->
             <button
               type="button"
@@ -250,7 +250,7 @@ import { AppIconComponent } from '../../shared/components/icon/icon.component';
         </header>
 
         <!-- Page Content Viewport -->
-        <main class="flex-1 p-4 md:p-6 lg:p-8">
+        <main class="flex-1 flex flex-col min-w-0">
           <router-outlet></router-outlet>
         </main>
       </div>

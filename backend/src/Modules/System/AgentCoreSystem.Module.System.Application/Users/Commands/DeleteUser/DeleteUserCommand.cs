@@ -39,6 +39,13 @@ namespace AgentCoreSystem.Module.System.Application.Users.Commands.DeleteUser
                 return Result.Failure(Error.NotFound("User.NotFound", $"Không tìm thấy người dùng có mã định danh: '{request.Id}'."));
             }
 
+            // AI-NOTE: 🔴 Bảo vệ tài khoản SuperAdmin không bị xóa mềm nhằm tránh rủi ro System Lockout
+            var isSuperAdmin = await userManager.IsInRoleAsync(user, "SuperAdmin");
+            if (isSuperAdmin)
+            {
+                return Result.Failure(Error.Conflict("User.SuperAdminProtected", "Không thể xóa tài khoản Quản trị viên cấp cao (SuperAdmin) nhằm đảm bảo an toàn hệ thống."));
+            }
+
             user.IsDeleted = true;
             user.DeletedDate = DateTimeOffset.UtcNow;
             user.IsActive = false;

@@ -58,13 +58,13 @@ export class AppButtonComponent {
 
   readonly buttonClasses = computed(() => {
     const base =
-      'inline-flex items-center justify-center font-medium rounded-md transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
+      'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
     
-    // Sizing
+    // Sizing (Ergonomic height & horizontal padding)
     const sizeMap: Record<ButtonSize, string> = {
-      sm: 'px-3 py-1.5 text-xs',
-      md: 'px-5 py-2 text-sm',
-      lg: 'px-6 py-2.5 text-base',
+      sm: 'h-8.5 px-3 text-xs gap-1.5',
+      md: 'h-10 px-4 text-sm gap-2',
+      lg: 'h-11 px-5 text-base gap-2.5',
     };
 
     // Variants (8-state responsive TailAdmin styling)

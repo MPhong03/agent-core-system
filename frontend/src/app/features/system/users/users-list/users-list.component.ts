@@ -32,7 +32,7 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="space-y-6">
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <!-- Page Header -->
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -52,28 +52,30 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
         </div>
       </div>
 
-      <!-- Filter Bar -->
-      <div class="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark flex flex-col sm:flex-row items-center gap-3">
-        <div class="relative flex-1 w-full">
-          <input
-            type="text"
-            [(ngModel)]="searchKeyword"
-            (keyup.enter)="onSearch()"
-            [placeholder]="'USERS.SEARCH_PLACEHOLDER' | translate"
-            class="w-full rounded-md border border-stroke bg-transparent py-2.5 pl-10 pr-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
-          />
-          <span class="absolute left-3.5 top-3 text-body dark:text-bodydark">
-            <app-icon name="search" [size]="18" />
-          </span>
+      <!-- Unified Data Table Card -->
+      <div class="rounded-xl border border-stroke bg-white shadow-xs dark:border-strokedark dark:bg-boxdark overflow-hidden">
+        <!-- Integrated Toolbar Header -->
+        <div class="p-5 border-b border-stroke dark:border-strokedark flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="relative flex-1 w-full max-w-md">
+            <input
+              type="text"
+              [(ngModel)]="searchKeyword"
+              (keyup.enter)="onSearch()"
+              [placeholder]="'USERS.SEARCH_PLACEHOLDER' | translate"
+              class="w-full h-10 rounded-lg border border-stroke bg-transparent pl-10 pr-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+            />
+            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-body dark:text-bodydark">
+              <app-icon name="search" [size]="18" />
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2.5 w-full sm:w-auto">
+            <app-button variant="secondary" size="md" (click)="onSearch()" class="w-full sm:w-auto">
+              {{ 'USERS.BTN_SEARCH' | translate }}
+            </app-button>
+          </div>
         </div>
 
-        <app-button variant="secondary" size="md" (click)="onSearch()" class="w-full sm:w-auto">
-          {{ 'USERS.BTN_SEARCH' | translate }}
-        </app-button>
-      </div>
-
-      <!-- TailAdmin Data Table Card -->
-      <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark overflow-hidden">
         @if (userService.isLoading()) {
           <div class="p-8 text-center text-sm text-body dark:text-bodydark flex items-center justify-center gap-2">
             <app-icon name="refresh" [size]="20" class="animate-spin text-primary" />
@@ -84,22 +86,22 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
             <table class="w-full table-auto">
               <thead>
                 <tr class="bg-gray-2 text-left dark:bg-meta-4">
-                  <th class="py-4 px-4 sm:px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
+                  <th class="py-3.5 px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
                     {{ 'USERS.COL_NAME' | translate }}
                   </th>
-                  <th class="py-4 px-4 sm:px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
+                  <th class="py-3.5 px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
                     {{ 'USERS.COL_EMAIL' | translate }}
                   </th>
-                  <th class="py-4 px-4 sm:px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
+                  <th class="py-3.5 px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
                     {{ 'USERS.COL_ROLE' | translate }}
                   </th>
-                  <th class="py-4 px-4 sm:px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
+                  <th class="py-3.5 px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
                     {{ 'USERS.COL_STATUS' | translate }}
                   </th>
-                  <th class="py-4 px-4 sm:px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
+                  <th class="py-3.5 px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider">
                     {{ 'USERS.COL_CREATED' | translate }}
                   </th>
-                  <th class="py-4 px-4 sm:px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider text-right">
+                  <th class="py-3.5 px-6 font-semibold text-xs text-black dark:text-white uppercase tracking-wider text-right">
                     {{ 'USERS.COL_ACTIONS' | translate }}
                   </th>
                 </tr>
@@ -108,7 +110,7 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
                 @for (user of userService.users(); track user.id) {
                   <tr class="hover:bg-gray-2/50 dark:hover:bg-meta-4/20 transition-colors">
                     <!-- User Info Cell -->
-                    <td class="py-4 px-4 sm:px-6">
+                    <td class="py-4 px-6">
                       <div class="flex items-center gap-3">
                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-white font-semibold text-xs border border-primary/20">
                           {{ user.fullName.slice(0, 2).toUpperCase() }}
@@ -125,12 +127,12 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
                     </td>
 
                     <!-- Email Cell -->
-                    <td class="py-4 px-4 sm:px-6 text-sm text-body dark:text-bodydark font-medium">
+                    <td class="py-4 px-6 text-sm text-body dark:text-bodydark font-medium">
                       {{ user.email }}
                     </td>
 
                     <!-- Roles Cell -->
-                    <td class="py-4 px-4 sm:px-6">
+                    <td class="py-4 px-6">
                       <div class="flex flex-wrap gap-1.5">
                         @for (role of user.roles; track role) {
                           <app-badge [variant]="role === 'SuperAdmin' ? 'danger' : role === 'Admin' ? 'primary' : 'neutral'" size="sm">
@@ -141,23 +143,23 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
                     </td>
 
                     <!-- Status Cell -->
-                    <td class="py-4 px-4 sm:px-6">
+                    <td class="py-4 px-6">
                       <app-badge [variant]="user.isActive ? 'success' : 'danger'" size="sm">
                         {{ user.isActive ? ('USERS.STATUS_ACTIVE' | translate) : ('USERS.STATUS_LOCKED' | translate) }}
                       </app-badge>
                     </td>
 
                     <!-- Created Date Cell -->
-                    <td class="py-4 px-4 sm:px-6 text-xs text-body dark:text-bodydark">
+                    <td class="py-4 px-6 text-xs text-body dark:text-bodydark">
                       {{ user.createdDate | date: 'dd/MM/yyyy HH:mm' }}
                     </td>
 
                     <!-- Actions Cell -->
-                    <td class="py-4 px-4 sm:px-6 text-right">
+                    <td class="py-4 px-6 text-right">
                       <div class="flex items-center justify-end gap-1.5">
                         <button
                           type="button"
-                          class="flex h-8 w-8 items-center justify-center rounded-md text-body hover:bg-gray-2 hover:text-black dark:text-bodydark dark:hover:bg-meta-4 dark:hover:text-white transition-colors"
+                          class="flex h-8 w-8 items-center justify-center rounded-lg text-body hover:bg-gray-2 hover:text-black dark:text-bodydark dark:hover:bg-meta-4 dark:hover:text-white transition-colors"
                           title="Đổi mật khẩu"
                           (click)="openPasswordModal(user)"
                         >
@@ -165,7 +167,7 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
                         </button>
                         <button
                           type="button"
-                          class="flex h-8 w-8 items-center justify-center rounded-md text-body hover:bg-gray-2 hover:text-primary dark:text-bodydark dark:hover:bg-meta-4 dark:hover:text-primary transition-colors"
+                          class="flex h-8 w-8 items-center justify-center rounded-lg text-body hover:bg-gray-2 hover:text-primary dark:text-bodydark dark:hover:bg-meta-4 dark:hover:text-primary transition-colors"
                           title="Chỉnh sửa"
                           (click)="openEditModal(user)"
                           *appHasRole="['SuperAdmin', 'Admin']"
@@ -174,8 +176,9 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
                         </button>
                         <button
                           type="button"
-                          class="flex h-8 w-8 items-center justify-center rounded-md text-body hover:bg-danger/10 hover:text-danger dark:text-bodydark dark:hover:bg-danger/20 dark:hover:text-danger transition-colors"
-                          title="Xóa mềm"
+                          class="flex h-8 w-8 items-center justify-center rounded-lg text-body hover:bg-danger/10 hover:text-danger dark:text-bodydark dark:hover:bg-danger/20 dark:hover:text-danger transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          [title]="isSuperAdmin(user) ? 'Không thể xóa tài khoản Quản trị viên tối cao (SuperAdmin)' : 'Xóa mềm'"
+                          [disabled]="isSuperAdmin(user)"
                           (click)="confirmDelete(user)"
                           *appHasRole="['SuperAdmin', 'Admin']"
                         >
@@ -197,7 +200,7 @@ import { AppBadgeComponent } from '../../../../shared/components/badge/badge.com
         }
 
         <!-- Table Footer -->
-        <div class="border-t border-stroke py-3.5 px-4 sm:px-6 dark:border-strokedark flex items-center justify-between text-xs text-body dark:text-bodydark">
+        <div class="border-t border-stroke py-4 px-6 dark:border-strokedark flex items-center justify-between text-xs text-body dark:text-bodydark">
           <span>{{ 'USERS.TOTAL' | translate }} <strong class="text-black dark:text-white">{{ userService.totalCount() }}</strong></span>
         </div>
       </div>
@@ -262,6 +265,10 @@ export class UsersListComponent implements OnInit {
         error: (err) => alert(err.detail || 'Xóa người dùng thất bại.'),
       });
     }
+  }
+
+  isSuperAdmin(user: UserDto): boolean {
+    return user.roles.includes('SuperAdmin');
   }
 
   onModalSaved(): void {

@@ -28,7 +28,7 @@ export type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
         (click)="onBackdropClick($event)"
       >
         <div
-          class="relative w-full rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark animate-in fade-in zoom-in-95 duration-150"
+          class="relative w-full rounded-xl border border-stroke bg-white shadow-xl dark:border-strokedark dark:bg-boxdark animate-in fade-in zoom-in-95 duration-150 overflow-hidden"
           [class]="modalWidthClass()"
           (click)="$event.stopPropagation()"
         >
@@ -36,13 +36,13 @@ export type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
           <div
             class="flex items-center justify-between border-b border-stroke py-4 px-6 dark:border-strokedark"
           >
-            <h3 class="font-medium text-black dark:text-white text-base">
+            <h3 class="font-semibold text-black dark:text-white text-base tracking-tight">
               {{ title() }}
             </h3>
             <button
               type="button"
               (click)="close.emit()"
-              class="flex h-8 w-8 items-center justify-center rounded-sm text-body hover:bg-gray-2 hover:text-black dark:text-bodydark dark:hover:bg-meta-4 dark:hover:text-white transition-colors"
+              class="flex h-8 w-8 items-center justify-center rounded-lg text-body hover:bg-gray-2 hover:text-black dark:text-bodydark dark:hover:bg-meta-4 dark:hover:text-white transition-colors"
               aria-label="Close modal"
             >
               <app-icon name="close" [size]="18" />
@@ -56,7 +56,7 @@ export type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
           <!-- Footer -->
           <div
-            class="border-t border-stroke py-3.5 px-6 dark:border-strokedark flex items-center justify-end gap-3"
+            class="border-t border-stroke py-4 px-6 dark:border-strokedark flex items-center justify-end gap-3"
           >
             <ng-content select="[modal-footer]" />
           </div>

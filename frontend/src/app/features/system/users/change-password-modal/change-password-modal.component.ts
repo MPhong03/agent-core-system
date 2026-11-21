@@ -48,38 +48,38 @@ import { AppIconComponent } from '../../../../shared/components/icon/icon.compon
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
         <div>
-          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+          <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
             {{ 'MODAL.CURRENT_PASSWORD' | translate }} <span class="text-danger">*</span>
           </label>
           <input
             type="password"
             formControlName="currentPassword"
             placeholder="••••••••"
-            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+            class="w-full h-10 rounded-lg border border-stroke bg-transparent px-3.5 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
           />
         </div>
 
         <div>
-          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+          <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
             {{ 'MODAL.NEW_PASSWORD' | translate }} <span class="text-danger">*</span>
           </label>
           <input
             type="password"
             formControlName="newPassword"
             placeholder="Tối thiểu 6 ký tự"
-            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+            class="w-full h-10 rounded-lg border border-stroke bg-transparent px-3.5 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
           />
         </div>
 
         <div>
-          <label class="mb-1.5 block text-xs font-medium text-black dark:text-white">
+          <label class="mb-1.5 block text-xs font-semibold text-black dark:text-white">
             {{ 'MODAL.CONFIRM_PASSWORD' | translate }} <span class="text-danger">*</span>
           </label>
           <input
             type="password"
             formControlName="confirmPassword"
             placeholder="Nhập lại mật khẩu mới"
-            class="w-full rounded-md border border-stroke bg-transparent py-2.5 px-4 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+            class="w-full h-10 rounded-lg border border-stroke bg-transparent px-3.5 text-sm text-black outline-none transition-colors focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
           />
         </div>
       </form>
