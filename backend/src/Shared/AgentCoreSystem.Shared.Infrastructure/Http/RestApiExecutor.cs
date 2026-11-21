@@ -21,6 +21,11 @@ namespace AgentCoreSystem.Shared.Infrastructure.Http
         Func<string, CancellationToken, Task<IPAddress[]>>? dnsResolver = null)
         : IRestApiExecutor
     {
+        /// <summary>
+        /// Giới hạn dung lượng phản hồi tối đa (2MB) chống tràn bộ nhớ và quá tải LLM context.
+        /// </summary>
+        public const int MaxResponseBytes = 2 * 1024 * 1024;
+
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -108,10 +113,12 @@ namespace AgentCoreSystem.Shared.Infrastructure.Http
                 using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
                 linkedCts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 
-                var response = await httpClient.SendAsync(httpRequest, linkedCts.Token);
+                using var response = await httpClient.SendAsync(httpRequest, linkedCts.Token);
+
+                // 8. Đọc nội dung phản hồi có giới hạn kích thước tối đa 2MB và gắn token timeout
+                var content = await ReadBoundedContentAsync(response.Content, linkedCts.Token);
                 sw.Stop();
 
-                var content = await response.Content.ReadAsStringAsync(ct);
                 var statusCode = (int)response.StatusCode;
 
                 if (response.IsSuccessStatusCode)
@@ -233,6 +240,43 @@ namespace AgentCoreSystem.Shared.Infrastructure.Http
             {
                 throw new InvalidOperationException($"SSRF Protection: Failed to resolve hostname '{host}': {ex.Message}", ex);
             }
+        }
+
+        /// <summary>
+        /// Đọc nội dung phản hồi an toàn, khống chế tối đa 2MB tránh tràn bộ nhớ.
+        /// </summary>
+        private static async Task<string> ReadBoundedContentAsync(HttpContent? content, CancellationToken ct)
+        {
+            if (content == null)
+            {
+                return string.Empty;
+            }
+
+            await using var stream = await content.ReadAsStreamAsync(ct);
+            var buffer = new byte[64 * 1024];
+            using var ms = new MemoryStream();
+            int bytesRead;
+
+            while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, Math.Min(buffer.Length, MaxResponseBytes + 1 - (int)ms.Length)), ct)) > 0)
+            {
+                ms.Write(buffer, 0, bytesRead);
+                if (ms.Length > MaxResponseBytes)
+                {
+                    break;
+                }
+            }
+
+            var isTruncated = ms.Length > MaxResponseBytes;
+            var rawBytes = ms.ToArray();
+            var usableLength = isTruncated ? MaxResponseBytes : rawBytes.Length;
+            var resultText = Encoding.UTF8.GetString(rawBytes, 0, usableLength);
+
+            if (isTruncated)
+            {
+                resultText += " [TRUNCATED: Response payload exceeded 2MB limit]";
+            }
+
+            return resultText;
         }
 
         /// <summary>

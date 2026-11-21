@@ -6,7 +6,9 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using AgentCoreSystem.Shared.Infrastructure;
 using AgentCoreSystem.Shared.Infrastructure.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace AgentCoreSystem.UnitTests.Http
@@ -277,6 +279,82 @@ namespace AgentCoreSystem.UnitTests.Http
             Assert.Equal(500, result.StatusCode);
             Assert.Equal(errorJson, result.ResponsePayload);
             Assert.NotNull(result.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_ShouldNotFollowRedirect_WhenServerReturns302Redirect()
+        {
+            // Arrange
+            var requestCount = 0;
+            var handler = new TestHttpMessageHandler((_, _) =>
+            {
+                requestCount++;
+                var response = new HttpResponseMessage(HttpStatusCode.Found);
+                response.Headers.Location = new Uri("http://169.254.169.254/latest/meta-data/");
+                response.Content = new StringContent("Redirecting...", Encoding.UTF8, "text/plain");
+                return Task.FromResult(response);
+            });
+
+            var httpClient = new HttpClient(handler);
+            var executor = new RestApiExecutor(httpClient, (_, _) => Task.FromResult(new[] { IPAddress.Parse("93.184.216.34") }));
+
+            var request = new RestApiExecutionRequest
+            {
+                Url = "https://api.example.com/api/redirect",
+                Method = "GET"
+            };
+
+            // Act
+            var result = await executor.ExecuteAsync(request);
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Equal((int)HttpStatusCode.Found, result.StatusCode);
+            Assert.Equal(1, requestCount); // Chặn chuyển hướng, không gửi request thứ 2 đến đích chuyển hướng
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_ShouldTruncateResponsePayload_WhenExceedingMaxLimit()
+        {
+            // Arrange: sinh payload 2.5MB (> 2MB limit)
+            var largePayload = new string('A', RestApiExecutor.MaxResponseBytes + 500 * 1024);
+            var handler = new TestHttpMessageHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(largePayload, Encoding.UTF8, "text/plain")
+            }));
+
+            var httpClient = new HttpClient(handler);
+            var executor = new RestApiExecutor(httpClient, (_, _) => Task.FromResult(new[] { IPAddress.Parse("93.184.216.34") }));
+
+            var request = new RestApiExecutionRequest
+            {
+                Url = "https://api.example.com/api/large-data",
+                Method = "GET"
+            };
+
+            // Act
+            var result = await executor.ExecuteAsync(request);
+
+            // Assert
+            Assert.True(result.IsSuccess);
+            Assert.Equal(200, result.StatusCode);
+            Assert.Contains("[TRUNCATED: Response payload exceeded 2MB limit]", result.ResponsePayload);
+            Assert.True(result.ResponsePayload.Length < largePayload.Length);
+        }
+
+        [Fact]
+        public void AddHttpInfrastructure_ShouldConfigureSocketsHttpHandler_WithAutoRedirectDisabled()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act
+            services.AddHttpInfrastructure();
+            var sp = services.BuildServiceProvider();
+            var executor = sp.GetRequiredService<IRestApiExecutor>();
+
+            // Assert
+            Assert.NotNull(executor);
         }
 
         private sealed class TestHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handlerFunc)

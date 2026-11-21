@@ -34,9 +34,19 @@ namespace AgentCoreSystem.Shared.Infrastructure
             return services;
         }
 
+        /// <summary>
+        /// Đăng ký dịch vụ thực thi REST API không trạng thái kèm cấu hình ngăn chặn SSRF qua HTTP Redirects.
+        /// </summary>
+        /// <param name="services">Tập hợp các dịch vụ Dependency Injection.</param>
+        /// <returns>Tập hợp các dịch vụ đã được cấu hình.</returns>
         public static IServiceCollection AddHttpInfrastructure(this IServiceCollection services)
         {
-            services.AddHttpClient<IRestApiExecutor, RestApiExecutor>();
+            services.AddHttpClient<IRestApiExecutor, RestApiExecutor>()
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+                {
+                    AllowAutoRedirect = false
+                });
+
             return services;
         }
 
