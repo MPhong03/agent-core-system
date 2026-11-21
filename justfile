@@ -77,6 +77,10 @@ test-e2e-chat:
 test-e2e-kanban:
     cd frontend; npx playwright test e2e/specs/sprint-2-kanban-realtime.spec.ts
 
+# Chạy End-to-End Tests cho No-Code Tool Builder & Function Calling (Sprint 3)
+test-e2e-tools:
+    cd frontend; npx playwright test e2e/specs/sprint-3-tools-realtime.spec.ts
+
 # -----------------------------------------------------------------------------
 # 4. EF Core Migrations (Hỗ trợ Kiến trúc Schema-per-module)
 # -----------------------------------------------------------------------------

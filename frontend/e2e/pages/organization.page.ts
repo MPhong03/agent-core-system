@@ -92,6 +92,93 @@ export class OrganizationPage extends BasePage {
     await expect(this.agentNameInput).toBeHidden();
   }
 
+  /**
+   * Tạo Agent Profile kèm cấu hình chế độ thực thi công cụ và phân quyền công cụ (Sprint 3)
+   */
+  async createAgentProfileWithTools(
+    name: string,
+    modelName: string,
+    prompt: string,
+    mode: 'auto' | 'semi-auto' | 'need-approve' = 'semi-auto',
+    toolNames: string[] = []
+  ): Promise<void> {
+    await this.addAgentButton.click();
+    await expect(this.agentNameInput).toBeVisible();
+    await this.agentNameInput.fill(name);
+    await this.modelNameInput.fill(modelName);
+    await this.systemPromptInput.fill(prompt);
+
+    // Chọn chế độ thực thi công cụ (ToolExecutionMode)
+    if (mode === 'semi-auto') {
+      const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Semi-Auto/i });
+      if (await modeCard.isVisible()) {
+        await modeCard.click();
+      }
+    } else if (mode === 'auto') {
+      const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Auto \(Tự trị\)/i });
+      if (await modeCard.isVisible()) {
+        await modeCard.click();
+      }
+    } else if (mode === 'need-approve') {
+      const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Need Approve/i });
+      if (await modeCard.isVisible()) {
+        await modeCard.click();
+      }
+    }
+
+    // Chọn danh sách công cụ được phân quyền
+    for (const toolName of toolNames) {
+      const toolItem = this.page.locator('.tool-item').filter({ hasText: toolName });
+      if (await toolItem.isVisible()) {
+        await toolItem.click();
+      }
+    }
+
+    await this.submitAgentButton.click();
+    await expect(this.agentNameInput).toBeHidden();
+  }
+
+  /**
+   * Chỉnh sửa cấu hình công cụ của Agent Member trong kênh nhóm
+   */
+  async configureMemberAgentTools(
+    agentName: string,
+    mode: 'auto' | 'semi-auto' | 'need-approve' = 'semi-auto',
+    toolNames: string[] = []
+  ): Promise<void> {
+    const memberItem = this.page.locator('.member-item').filter({ hasText: agentName }).first();
+    await expect(memberItem).toBeVisible();
+    const configBtn = memberItem.locator('.btn-config-tools');
+    await configBtn.click();
+
+    await expect(this.page.locator('.execution-mode-grid')).toBeVisible();
+
+    if (mode === 'semi-auto') {
+      const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Semi-Auto/i });
+      await modeCard.click();
+    } else if (mode === 'auto') {
+      const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Auto \(Tự trị\)/i });
+      await modeCard.click();
+    } else if (mode === 'need-approve') {
+      const modeCard = this.page.locator('.execution-mode-card').filter({ hasText: /Need Approve/i });
+      await modeCard.click();
+    }
+
+    for (const toolName of toolNames) {
+      const toolItem = this.page.locator('.tool-item').filter({ hasText: toolName });
+      if (await toolItem.isVisible()) {
+        const isChecked = await toolItem.locator('input[type="checkbox"]').isChecked();
+        if (!isChecked) {
+          await toolItem.click();
+        }
+      }
+    }
+
+    const saveBtn = this.page.getByRole('button', { name: /Lưu Cấu Hình/i });
+    await saveBtn.click();
+    await expect(this.page.locator('.execution-mode-grid')).toBeHidden();
+  }
+
   async assignAgentToChannel(agentName: string): Promise<void> {
     const addMemberBtn = this.page.getByRole('button', { name: /Thêm Thành Viên/i }).first();
     await addMemberBtn.click();
