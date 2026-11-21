@@ -4,6 +4,8 @@
     "SUBTITLE": "Modular Monolith Agent Core System Management System"
   },
   "NAV": {
+    "OVERVIEW": "OVERVIEW",
+    "WORKSPACE": "WORKSPACE",
     "DASHBOARD": "Dashboard",
     "ORGANIZATION": "Organization & Channels",
     "SYSTEM_SECTION": "SYSTEM MODULE",

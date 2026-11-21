@@ -3,115 +3,254 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  */
 
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { I18nService } from '../i18n/i18n.service';
+import { ThemeService } from '../services/theme.service';
 import { HasRoleDirective } from '../../shared/directives/has-role.directive';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { AppIconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, HasRoleDirective, TranslatePipe],
+  imports: [CommonModule, RouterModule, HasRoleDirective, TranslatePipe, AppIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="layout-container">
+    <div class="flex h-screen overflow-hidden bg-whiten text-body dark:bg-boxdark-2 dark:text-bodydark font-sans">
+      <!-- Mobile Backdrop -->
+      @if (isMobileSidebarOpen()) {
+        <div
+          class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity"
+          (click)="isMobileSidebarOpen.set(false)"
+        ></div>
+      }
+
       <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="logo-icon">A</div>
-          <span class="logo-text">AgentCore</span>
+      <aside
+        class="fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-white dark:bg-boxdark border-r border-stroke dark:border-strokedark transition-all duration-300 ease-in-out lg:static lg:translate-x-0"
+        [class.w-64]="!isSidebarCollapsed()"
+        [class.w-20]="isSidebarCollapsed()"
+        [class.translate-x-0]="isMobileSidebarOpen()"
+        [class.-translate-x-full]="!isMobileSidebarOpen()"
+      >
+        <!-- Brand / Logo Area -->
+        <div class="flex h-16 items-center justify-between px-5 border-b border-stroke dark:border-strokedark">
+          <a routerLink="/dashboard" class="flex items-center gap-3 overflow-hidden">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-white font-bold text-lg shadow-sm">
+              A
+            </div>
+            @if (!isSidebarCollapsed()) {
+              <div class="flex flex-col">
+                <span class="text-base font-bold text-black dark:text-white tracking-wide leading-none">
+                  AgentCore
+                </span>
+                <span class="text-[11px] font-medium text-body dark:text-bodydark mt-1">
+                  System Platform
+                </span>
+              </div>
+            }
+          </a>
+
+          <!-- Collapse button for desktop -->
+          <button
+            type="button"
+            (click)="toggleSidebarCollapse()"
+            class="hidden lg:flex h-8 w-8 items-center justify-center rounded-md text-body hover:bg-gray-2 dark:hover:bg-meta-4 hover:text-black dark:hover:text-white transition-colors"
+            [title]="isSidebarCollapsed() ? 'Mở rộng menu' : 'Thu gọn menu'"
+          >
+            <app-icon [name]="isSidebarCollapsed() ? 'chevron-right' : 'menu'" [size]="18" />
+          </button>
         </div>
 
-        <nav class="nav-menu">
-          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
-            <span class="nav-icon">📊</span>
-            <span>{{ 'NAV.DASHBOARD' | translate }}</span>
+        <!-- Navigation Menu -->
+        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 custom-scrollbar" (click)="isMobileSidebarOpen.set(false)">
+          <!-- Overview Section -->
+          @if (!isSidebarCollapsed()) {
+            <div class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-bodydark2">
+              {{ 'NAV.OVERVIEW' | translate }}
+            </div>
+          }
+          <a
+            routerLink="/dashboard"
+            routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white font-semibold"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body dark:text-bodydark hover:bg-gray-2 dark:hover:bg-meta-4 hover:text-black dark:hover:text-white transition-colors"
+            [title]="'NAV.DASHBOARD' | translate"
+          >
+            <app-icon name="dashboard" [size]="20" />
+            @if (!isSidebarCollapsed()) {
+              <span class="truncate">{{ 'NAV.DASHBOARD' | translate }}</span>
+            }
           </a>
 
-          <a routerLink="/organization" routerLinkActive="active" class="nav-item">
-            <span class="nav-icon">🏢</span>
-            <span>{{ 'NAV.ORGANIZATION' | translate }}</span>
+          <!-- Workspace Section -->
+          @if (!isSidebarCollapsed()) {
+            <div class="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-bodydark2">
+              {{ 'NAV.WORKSPACE' | translate }}
+            </div>
+          }
+          <a
+            routerLink="/organization"
+            routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white font-semibold"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body dark:text-bodydark hover:bg-gray-2 dark:hover:bg-meta-4 hover:text-black dark:hover:text-white transition-colors"
+            [title]="'NAV.ORGANIZATION' | translate"
+          >
+            <app-icon name="organization" [size]="20" />
+            @if (!isSidebarCollapsed()) {
+              <span class="truncate">{{ 'NAV.ORGANIZATION' | translate }}</span>
+            }
           </a>
 
-          <div class="nav-header">{{ 'NAV.SYSTEM_SECTION' | translate }}</div>
+          <!-- System Section -->
+          @if (!isSidebarCollapsed()) {
+            <div class="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-bodydark2">
+              {{ 'NAV.SYSTEM_SECTION' | translate }}
+            </div>
+          }
 
-          <a routerLink="/system/users" routerLinkActive="active" class="nav-item">
-            <span class="nav-icon">👥</span>
-            <span>{{ 'NAV.USERS' | translate }}</span>
+          <a
+            routerLink="/system/users"
+            routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white font-semibold"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body dark:text-bodydark hover:bg-gray-2 dark:hover:bg-meta-4 hover:text-black dark:hover:text-white transition-colors"
+            [title]="'NAV.USERS' | translate"
+          >
+            <app-icon name="users" [size]="20" />
+            @if (!isSidebarCollapsed()) {
+              <span class="truncate">{{ 'NAV.USERS' | translate }}</span>
+            }
           </a>
 
           <a
             routerLink="/system/roles"
-            routerLinkActive="active"
-            class="nav-item"
+            routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white font-semibold"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body dark:text-bodydark hover:bg-gray-2 dark:hover:bg-meta-4 hover:text-black dark:hover:text-white transition-colors"
             *appHasRole="['SuperAdmin', 'Admin']"
+            [title]="'NAV.ROLES' | translate"
           >
-            <span class="nav-icon">🛡️</span>
-            <span>{{ 'NAV.ROLES' | translate }}</span>
+            <app-icon name="roles" [size]="20" />
+            @if (!isSidebarCollapsed()) {
+              <span class="truncate">{{ 'NAV.ROLES' | translate }}</span>
+            }
           </a>
 
           <a
             routerLink="/system/audit-logs"
-            routerLinkActive="active"
-            class="nav-item"
+            routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white font-semibold"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body dark:text-bodydark hover:bg-gray-2 dark:hover:bg-meta-4 hover:text-black dark:hover:text-white transition-colors"
             *appHasRole="['SuperAdmin']"
+            [title]="'NAV.AUDIT_LOGS' | translate"
           >
-            <span class="nav-icon">📜</span>
-            <span>{{ 'NAV.AUDIT_LOGS' | translate }}</span>
+            <app-icon name="audit" [size]="20" />
+            @if (!isSidebarCollapsed()) {
+              <span class="truncate">{{ 'NAV.AUDIT_LOGS' | translate }}</span>
+            }
           </a>
         </nav>
 
-        <div class="sidebar-footer">
-          <div class="user-brief">
-            <div class="avatar">{{ userInitials() }}</div>
-            <div class="user-meta">
-              <div class="name">{{ authService.currentUser()?.fullName || 'Người dùng' }}</div>
-              <div class="role">{{ activeRole() }}</div>
+        <!-- Sidebar Footer / User Profile Card -->
+        <div class="border-t border-stroke dark:border-strokedark p-3.5 bg-gray-2/50 dark:bg-meta-4/20">
+          <div class="flex items-center justify-between gap-2 overflow-hidden">
+            <div class="flex items-center gap-3 overflow-hidden min-w-0">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary dark:bg-primary/30 dark:text-white font-semibold text-xs border border-primary/30">
+                {{ userInitials() }}
+              </div>
+              @if (!isSidebarCollapsed()) {
+                <div class="truncate">
+                  <div class="truncate text-xs font-semibold text-black dark:text-white">
+                    {{ authService.currentUser()?.fullName || 'Người dùng' }}
+                  </div>
+                  <div class="truncate text-[11px] text-body dark:text-bodydark">
+                    {{ activeRole() }}
+                  </div>
+                </div>
+              }
             </div>
+
+            <button
+              type="button"
+              (click)="authService.logout()"
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-body hover:bg-danger/10 hover:text-danger dark:text-bodydark dark:hover:bg-danger/20 dark:hover:text-danger transition-colors"
+              [title]="'NAV.LOGOUT' | translate"
+            >
+              <app-icon name="logout" [size]="18" />
+            </button>
           </div>
-          <button
-            (click)="authService.logout()"
-            class="btn-logout"
-            [title]="'NAV.LOGOUT' | translate"
-          >
-            🚪
-          </button>
         </div>
       </aside>
 
       <!-- Main Content Area -->
-      <div class="content-wrapper">
-        <header class="topbar">
-          <div class="topbar-title">{{ 'APP.TITLE' | translate }}</div>
+      <div class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+        <!-- Topbar Header -->
+        <header class="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-b border-stroke bg-white px-4 sm:px-6 lg:px-8 shadow-xs dark:border-strokedark dark:bg-boxdark">
+          <div class="flex items-center gap-3">
+            <!-- Mobile Menu Toggle -->
+            <button
+              type="button"
+              (click)="isMobileSidebarOpen.set(!isMobileSidebarOpen())"
+              class="flex h-9 w-9 items-center justify-center rounded-lg border border-stroke text-body hover:bg-gray-2 dark:border-strokedark dark:text-bodydark dark:hover:bg-meta-4 lg:hidden"
+            >
+              <app-icon name="menu" [size]="20" />
+            </button>
 
-          <div class="topbar-actions">
+            <!-- App Title / Breadcrumb -->
+            <div class="font-semibold text-black dark:text-white text-base md:text-lg tracking-tight">
+              {{ 'APP.TITLE' | translate }}
+            </div>
+          </div>
+
+          <!-- Topbar Actions -->
+          <div class="flex items-center gap-2.5 sm:gap-3">
+            <!-- Dark / Light Mode Toggle -->
+            <button
+              type="button"
+              (click)="themeService.toggleTheme()"
+              class="flex h-9 w-9 items-center justify-center rounded-full border border-stroke bg-gray-2 text-body hover:text-black dark:border-strokedark dark:bg-meta-4 dark:text-bodydark dark:hover:text-white transition-colors"
+              [title]="themeService.isDark() ? 'Chuyển sang giao diện Sáng' : 'Chuyển sang giao diện Tối'"
+            >
+              <app-icon [name]="themeService.isDark() ? 'sun' : 'moon'" [size]="18" />
+            </button>
+
             <!-- Language Switcher Pill -->
-            <div class="lang-switcher">
+            <div class="flex items-center rounded-full border border-stroke bg-gray-2 p-0.5 dark:border-strokedark dark:bg-meta-4 text-xs font-semibold">
               <button
-                [class.active]="i18nService.currentLang() === 'vi'"
+                type="button"
+                [class.bg-white]="i18nService.currentLang() === 'vi'"
+                [class.text-primary]="i18nService.currentLang() === 'vi'"
+                [class.shadow-sm]="i18nService.currentLang() === 'vi'"
+                [class.dark:bg-boxdark]="i18nService.currentLang() === 'vi'"
+                [class.dark:text-white]="i18nService.currentLang() === 'vi'"
                 (click)="i18nService.setLanguage('vi')"
+                class="rounded-full px-2.5 py-1 text-body dark:text-bodydark transition-all"
                 title="Tiếng Việt"
               >
-                🇻🇳 VI
+                VI
               </button>
               <button
-                [class.active]="i18nService.currentLang() === 'en'"
+                type="button"
+                [class.bg-white]="i18nService.currentLang() === 'en'"
+                [class.text-primary]="i18nService.currentLang() === 'en'"
+                [class.shadow-sm]="i18nService.currentLang() === 'en'"
+                [class.dark:bg-boxdark]="i18nService.currentLang() === 'en'"
+                [class.dark:text-white]="i18nService.currentLang() === 'en'"
                 (click)="i18nService.setLanguage('en')"
+                class="rounded-full px-2.5 py-1 text-body dark:text-bodydark transition-all"
                 title="English"
               >
-                🇬🇧 EN
+                EN
               </button>
             </div>
 
-            <span class="badge version-badge">API v1.0</span>
-            <span class="badge role-badge">{{ activeRole() }}</span>
+            <!-- Role Indicator Pill -->
+            <span class="hidden sm:inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary dark:bg-primary/20 dark:text-secondary">
+              {{ activeRole() }}
+            </span>
           </div>
         </header>
 
-        <main class="page-content">
+        <!-- Page Content Viewport -->
+        <main class="flex-1 flex flex-col min-w-0">
           <router-outlet></router-outlet>
         </main>
       </div>
@@ -119,226 +258,12 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
   `,
   styles: [
     `
-      .layout-container {
-        display: flex;
-        height: 100vh;
-        width: 100vw;
-        overflow: hidden;
-        font-family:
-          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        background-color: #f8fafc;
-        color: #1e293b;
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
       }
-
-      .sidebar {
-        width: 260px;
-        background-color: #0f172a;
-        color: #f8fafc;
-        display: flex;
-        flex-direction: column;
-        flex-shrink: 0;
-        border-right: 1px solid #1e293b;
-      }
-
-      .brand {
-        height: 64px;
-        display: flex;
-        align-items: center;
-        padding: 0 20px;
-        gap: 12px;
-        border-bottom: 1px solid #1e293b;
-      }
-
-      .logo-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 1.25rem;
-        color: #fff;
-      }
-
-      .logo-text {
-        font-size: 1.15rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-      }
-
-      .nav-menu {
-        flex: 1;
-        padding: 16px 12px;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .nav-header {
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: #64748b;
-        padding: 16px 12px 6px;
-        letter-spacing: 0.05em;
-      }
-
-      .nav-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 12px;
-        border-radius: 6px;
-        color: #94a3b8;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-      }
-
-      .nav-item:hover {
-        background-color: #1e293b;
-        color: #f8fafc;
-      }
-
-      .nav-item.active {
-        background-color: #2563eb;
-        color: #ffffff;
-        font-weight: 600;
-      }
-
-      .sidebar-footer {
-        padding: 16px;
-        border-top: 1px solid #1e293b;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #0b1120;
-      }
-
-      .user-brief {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        overflow: hidden;
-      }
-
-      .avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background-color: #3b82f6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        color: #fff;
-        font-size: 0.85rem;
-      }
-
-      .user-meta .name {
-        font-size: 0.85rem;
-        font-weight: 600;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-      }
-
-      .user-meta .role {
-        font-size: 0.75rem;
-        color: #94a3b8;
-      }
-
-      .btn-logout {
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-        cursor: pointer;
-        padding: 6px;
-        border-radius: 6px;
-        transition: background 0.2s;
-      }
-
-      .btn-logout:hover {
-        background-color: #1e293b;
-      }
-
-      .content-wrapper {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-
-      .topbar {
-        height: 64px;
-        background-color: #ffffff;
-        border-bottom: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 24px;
-      }
-
-      .topbar-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #334155;
-      }
-
-      .topbar-actions {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .lang-switcher {
-        display: flex;
-        background-color: #f1f5f9;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        overflow: hidden;
-      }
-
-      .lang-switcher button {
-        background: none;
-        border: none;
-        padding: 4px 10px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #475569;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .lang-switcher button.active {
-        background-color: #2563eb;
-        color: #ffffff;
-      }
-
-      .badge {
-        padding: 4px 10px;
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.4);
         border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-      }
-
-      .version-badge {
-        background-color: #e0f2fe;
-        color: #0369a1;
-      }
-
-      .role-badge {
-        background-color: #f1f5f9;
-        color: #475569;
-      }
-
-      .page-content {
-        flex: 1;
-        padding: 24px;
-        overflow-y: auto;
       }
     `,
   ],
@@ -346,6 +271,14 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 export class MainLayoutComponent {
   readonly authService = inject(AuthService);
   readonly i18nService = inject(I18nService);
+  readonly themeService = inject(ThemeService);
+
+  readonly isSidebarCollapsed = signal<boolean>(false);
+  readonly isMobileSidebarOpen = signal<boolean>(false);
+
+  toggleSidebarCollapse(): void {
+    this.isSidebarCollapsed.update((v) => !v);
+  }
 
   userInitials(): string {
     const name = this.authService.currentUser()?.fullName || 'User';

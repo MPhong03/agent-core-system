@@ -96,19 +96,24 @@ import { TaskItem } from '../../models/task.model';
   styles: [`
     .task-card {
       background: #FFFFFF;
-      border: 1px solid #E5E0D8;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 10px;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
       cursor: pointer;
       transition: all 0.15s ease-in-out;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
       position: relative;
       overflow: hidden;
 
+      :host-context(.dark) & {
+        background: #1a222c;
+        border-color: #2e3a47;
+      }
+
       &:hover {
-        border-color: #C8C3BA;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.06);
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
       }
 
       &.in-progress {
@@ -118,6 +123,10 @@ import { TaskItem } from '../../models/task.model';
       &.in-review {
         border: 1px solid #818CF8;
         background: #FDFEFE;
+
+        :host-context(.dark) & {
+          background: #24303f;
+        }
       }
     }
 
@@ -180,6 +189,10 @@ import { TaskItem } from '../../models/task.model';
       color: #1F2937;
       margin: 0 0 6px 0;
       line-height: 1.35;
+
+      :host-context(.dark) & {
+        color: #ffffff;
+      }
     }
 
     .task-desc {
@@ -191,6 +204,10 @@ import { TaskItem } from '../../models/task.model';
       -webkit-box-orient: vertical;
       overflow: hidden;
       line-height: 1.4;
+
+      :host-context(.dark) & {
+        color: #aeb7c0;
+      }
     }
 
     .review-gate-box {
