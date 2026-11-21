@@ -103,6 +103,18 @@ import { AppIconComponent } from '../../shared/components/icon/icon.component';
             }
           </a>
 
+          <a
+            routerLink="/tools"
+            routerLinkActive="bg-primary/10 text-primary dark:bg-primary/20 dark:text-white font-semibold"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-body dark:text-bodydark hover:bg-gray-2 dark:hover:bg-meta-4 hover:text-black dark:hover:text-white transition-colors"
+            [title]="'NAV.TOOLS' | translate"
+          >
+            <app-icon name="code" [size]="20" />
+            @if (!isSidebarCollapsed()) {
+              <span class="truncate">{{ 'NAV.TOOLS' | translate }}</span>
+            }
+          </a>
+
           <!-- System Section -->
           @if (!isSidebarCollapsed()) {
             <div class="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-bodydark2">
