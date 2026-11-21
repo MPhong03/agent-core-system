@@ -135,11 +135,13 @@ namespace AgentCoreSystem.UnitTests.Tasks
             }
 
             var llmClient = Substitute.For<ILLMClient>();
+#pragma warning disable CS0162
             async IAsyncEnumerable<string> ThrowStream()
             {
-                await Task.Yield();
                 throw new InvalidOperationException("API Key hết hạn");
+                yield break;
             }
+#pragma warning restore CS0162
             llmClient.StreamChatAsync(
                 Arg.Any<string>(),
                 Arg.Any<IEnumerable<ChatMessagePayload>>(),

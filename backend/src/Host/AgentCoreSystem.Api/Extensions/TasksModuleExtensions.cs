@@ -5,7 +5,10 @@
 
 using AgentCoreSystem.Module.Tasks.Application;
 using AgentCoreSystem.Module.Tasks.Infrastructure;
+using AgentCoreSystem.Module.Tasks.Infrastructure.Realtime;
 using AgentCoreSystem.Module.Tasks.Presentation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,6 +31,16 @@ namespace AgentCoreSystem.Api.Extensions
             services.AddTasksPresentation();
 
             return services;
+        }
+
+        /// <summary>
+        /// Ánh xạ SignalR Hub cho phân hệ Tasks tại endpoint /hubs/tasks.
+        /// </summary>
+        public static IEndpointRouteBuilder MapTasksHub(this IEndpointRouteBuilder app)
+        {
+            app.MapHub<SignalRTasksHub>("/hubs/tasks");
+
+            return app;
         }
     }
 }

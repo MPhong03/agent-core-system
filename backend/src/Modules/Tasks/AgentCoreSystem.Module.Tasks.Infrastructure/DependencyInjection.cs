@@ -7,6 +7,7 @@ using System;
 using AgentCoreSystem.Module.Tasks.Application.Contracts;
 using AgentCoreSystem.Module.Tasks.Infrastructure.Jobs;
 using AgentCoreSystem.Module.Tasks.Infrastructure.Persistence;
+using AgentCoreSystem.Module.Tasks.Infrastructure.Realtime;
 using AgentCoreSystem.Module.Tasks.Infrastructure.Storage;
 using AgentCoreSystem.Shared.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,9 @@ namespace AgentCoreSystem.Module.Tasks.Infrastructure
 
             services.AddSingleton<IArtifactStorageService, LocalArtifactStorageService>();
             services.AddScoped<ITaskAgentJobRunner, TaskAgentJobRunner>();
+
+            services.AddSignalR();
+            services.AddScoped<ITasksRealtimeNotifier, TasksRealtimeNotifier>();
 
             return services;
         }

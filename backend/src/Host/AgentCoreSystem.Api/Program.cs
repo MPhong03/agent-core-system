@@ -201,6 +201,7 @@ namespace AgentCoreSystem.Api
 
             app.MapControllers();
             app.MapChatHub();
+            app.MapTasksHub();
 
             // 8. Tự động khởi tạo dữ liệu mẫu (Seeding)
             using (var scope = app.Services.CreateScope())
