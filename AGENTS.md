@@ -92,15 +92,35 @@ Trước khi tạo mới hoặc sửa đổi code, Agent **BẮT BUỘC** phải
 
 ---
 
-## 5. Cấu trúc Thư mục Dự án (Project Layout)
+## 5. Quy ước Vị trí Lưu trữ Specs & Plans (.agents/specs/ & .agents/plans/)
+Để duy trì tính nhất quán trên toàn bộ đội ngũ kỹ sư và các trợ lý AI (Antigravity, Cursor, Claude Code, Copilot, Codex...), toàn bộ tài liệu đặc tả thiết kế và kế hoạch thực thi phải tuân thủ nghiêm ngặt vị trí lưu trữ sau:
+
+1. **Design Specs (Tài liệu Thiết kế / Đặc tả)**:
+   - Vị trí: `.agents/specs/`
+   - Đặt tên file: `YYYY-MM-DD-<topic>-design.md` (ví dụ: `.agents/specs/2026-11-21-sprint-2-kanban-tasks-background-jobs-design.md`)
+   - Áp dụng khi dùng skill `brainstorming`, `/feature-kickstart`, hoặc bất kỳ luồng thiết kế kỹ thuật nào.
+2. **Implementation Plans (Kế hoạch Triển khai)**:
+   - Vị trí: `.agents/plans/`
+   - Đặt tên file: `YYYY-MM-DD-<feature-name>.md` (ví dụ: `.agents/plans/2026-11-21-sprint-2-kanban-tasks-background-jobs.md`)
+   - Áp dụng khi dùng skill `writing-plans`, `subagent-driven-development`, `executing-plans`, hoặc bất kỳ luồng lập kế hoạch nào.
+3. ⛔ **Điều Cấm & Cảnh Báo Cho Mọi AI**:
+   - ⛔ **CẤM** tạo thư mục `docs/superpowers/` hoặc lưu specs/plans ở thư mục gốc `docs/`.
+   - 🔴 **Ghi đè mặc định (Override Defaults)**: Mặc định của các global skill Superpowers (`docs/superpowers/specs/`, `docs/superpowers/plans/`) **bị vô hiệu hóa** và ghi đè hoàn toàn bởi quy ước dự án tại mục này. Mọi AI khi chạy trong repository này bắt buộc phải lưu file vào `.agents/specs/` và `.agents/plans/`.
+
+---
+
+## 6. Cấu trúc Thư mục Dự án (Project Layout)
 ```text
 PROJECT/
 ├── AGENTS.md                                     # Quy ước tối cao & Chỉ mục dành cho Agent
 ├── justfile                                      # Single Entry Point cho các lệnh Build, Test, Dev, Migrations
 ├── .agents/                                      # Không gian làm việc, rules và documents của Agent
-│   ├── rules/
-│   ├── skills/
-│   └── documents/
+│   ├── documents/                                # Tài liệu kiến trúc dài hạn (EF Core, Hangfire, Justfile...)
+│   ├── plans/                                    # Kế hoạch thực thi Sprint / Feature (Implementation Plans)
+│   ├── rules/                                    # Hệ thống 11 bộ quy chuẩn & Anti-AI-Slop (RULE-01 đến 14)
+│   ├── skills/                                   # Kỹ năng cục bộ (Local skills)
+│   ├── specs/                                    # Bản đặc tả thiết kế nghiệp vụ (Design Specs)
+│   └── workflows/                                # Quy trình tự động hóa cục bộ
 │
 ├── backend/                                      # .NET 9 Modular Monolith
 │   ├── AgentCoreSystem.slnx
