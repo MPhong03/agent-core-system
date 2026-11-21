@@ -8,7 +8,7 @@
 
 **Tech Stack:** .NET 9, EF Core (SQL Server schema `task`, UUIDv7), Hangfire (MongoDB storage), SignalR, MediatR, FluentValidation, OpenAPI v3, Angular 19+ Standalone, Angular Signals, `@angular/cdk/drag-drop`, Tailwind CSS / SCSS.
 
-**Spec:** [docs/superpowers/specs/2026-11-21-sprint-2-kanban-tasks-background-jobs-design.md](file:///c:/Workplaces/PROJECT/AgentCoreSystem/docs/superpowers/specs/2026-11-21-sprint-2-kanban-tasks-background-jobs-design.md)
+**Spec:** [.agents/specs/2026-11-21-sprint-2-kanban-tasks-background-jobs-design.md](file:///c:/Workplaces/PROJECT/AgentCoreSystem/.agents/specs/2026-11-21-sprint-2-kanban-tasks-background-jobs-design.md)
 
 ---
 

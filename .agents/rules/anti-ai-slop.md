@@ -115,7 +115,8 @@ Hệ thống gồm 14 tiêu chuẩn được phân loại theo **4 Trụ Cột K
 - Không để tài liệu nói một đằng nhưng code chạy một nẻo.
 
 #### RULE-13: Tuân Thủ Luật & Pattern Hiện Hữu
-- Ưu tiên cao nhất là tuân thủ các quy tắc trong `.agents/rules/`.
+- Ưu tiên cao nhất là tuân thủ các quy tắc trong `.agents/rules/` và chỉ dẫn tại `AGENTS.md`.
+- **Quy ước vị trí tài liệu AI**: Toàn bộ file Design Spec và Implementation Plan do AI sinh ra bắt buộc phải lưu tại `.agents/specs/` và `.agents/plans/`. Tuyệt đối cấm tạo thư mục `docs/superpowers/` hay vương vãi tài liệu quy trình ra ngoài thư mục gốc.
 - Nếu gặp bài toán mới chưa có quy định thành văn, phải khảo sát phong cách và pattern đã có sẵn trong các module trước đó của repo để làm theo, cấm tự ý chế biến style dị biệt.
 
 #### RULE-14: Diff Tập Trung, Không Lan Man

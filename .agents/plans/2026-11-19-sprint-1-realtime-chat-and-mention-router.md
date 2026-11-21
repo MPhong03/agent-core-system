@@ -8,7 +8,7 @@
 
 **Tech Stack:** .NET 9, EF Core (SQL Server schema `chat`, UUIDv7), SignalR, MediatR, FluentValidation, OpenAPI v3, Angular 19+ Standalone, Signals, SCSS, Microsoft.AspNetCore.SignalR.Client.
 
-**Spec:** [docs/superpowers/specs/2026-11-19-sprint-1-realtime-chat-and-mention-router-design.md](file:///c:/Workplaces/PROJECT/AgentCoreSystem/docs/superpowers/specs/2026-11-19-sprint-1-realtime-chat-and-mention-router-design.md)
+**Spec:** [.agents/specs/2026-11-19-sprint-1-realtime-chat-and-mention-router-design.md](file:///c:/Workplaces/PROJECT/AgentCoreSystem/.agents/specs/2026-11-19-sprint-1-realtime-chat-and-mention-router-design.md)
 
 ---
 

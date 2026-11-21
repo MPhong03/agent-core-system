@@ -4,7 +4,7 @@
 - **Ngày tạo:** 21/11/2026
 - **Trạng thái:** Bản hoàn thiện chờ phê duyệt (Final Draft for Approval)
 - **Dự án:** AgentCoreSystem (.NET 9 Modular Monolith & Angular Standalone)
-- **Tài liệu gốc tham chiếu:** [docs/superpowers/specs/2026-11-18-agent-core-system-design.md](file:///c:/Workplaces/PROJECT/AgentCoreSystem/docs/superpowers/specs/2026-11-18-agent-core-system-design.md)
+- **Tài liệu gốc tham chiếu:** [.agents/specs/2026-11-18-agent-core-system-design.md](file:///c:/Workplaces/PROJECT/AgentCoreSystem/.agents/specs/2026-11-18-agent-core-system-design.md)
 
 ---
 

@@ -8,7 +8,7 @@
 
 **Tech Stack:** .NET 9, EF Core (SQL Server schema `org`, UUIDv7), MediatR, FluentValidation, Asp.Versioning, OpenAPI v3, Angular 19+ Standalone, Signals, SCSS.
 
-**Spec:** [docs/superpowers/specs/2026-11-18-agent-core-system-design.md](file:///c:/Workplaces/PROJECT/AgentCoreSystem/docs/superpowers/specs/2026-11-18-agent-core-system-design.md)
+**Spec:** [.agents/specs/2026-11-18-agent-core-system-design.md](file:///c:/Workplaces/PROJECT/AgentCoreSystem/.agents/specs/2026-11-18-agent-core-system-design.md)
 
 ## Global Constraints
 - Bắt buộc sử dụng Block-scoped namespaces (`namespace AgentCoreSystem.Module.Organization { ... }`) cho toàn bộ file C#.
