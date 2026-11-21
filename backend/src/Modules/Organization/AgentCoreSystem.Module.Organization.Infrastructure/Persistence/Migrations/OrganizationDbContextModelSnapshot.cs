@@ -66,6 +66,11 @@ namespace AgentCoreSystem.Module.Organization.Infrastructure.Persistence.Migrati
                         .HasPrecision(3, 2)
                         .HasColumnType("decimal(3,2)");
 
+                    b.Property<int>("ToolExecutionMode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<DateTimeOffset?>("UpdatedDate")
                         .HasColumnType("datetimeoffset");
 

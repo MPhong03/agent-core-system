@@ -4,6 +4,7 @@
 // ------------------------------------------------------------------------------------------------
 
 using AgentCoreSystem.Module.Organization.Domain.Entities;
+using AgentCoreSystem.Module.Organization.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -45,6 +46,12 @@ namespace AgentCoreSystem.Module.Organization.Infrastructure.Persistence.Configu
 
             builder.Property(a => a.Temperature)
                 .HasPrecision(3, 2);
+
+            builder.Property(a => a.ToolExecutionMode)
+                .HasConversion<int>()
+                .HasDefaultValue(ToolExecutionMode.SemiAuto)
+                .HasSentinel(ToolExecutionMode.SemiAuto)
+                .IsRequired();
 
             builder.HasQueryFilter(a => !a.IsDeleted);
         }

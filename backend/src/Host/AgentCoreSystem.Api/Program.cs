@@ -79,7 +79,7 @@ namespace AgentCoreSystem.Api
 
             // 4. Cấu hình JWT Bearer Authentication (Tuân thủ Fail-Fast & Zero Hardcoded Secrets)
             var jwtSection = builder.Configuration.GetSection(JwtSettings.SectionName);
-            var jwtSettings = jwtSection.Get<JwtSettings>() 
+            var jwtSettings = jwtSection.Get<JwtSettings>()
                 ?? throw new InvalidOperationException("Lỗi cấu hình hệ thống: Thiếu section 'JwtSettings' trong cấu hình ứng dụng.");
 
             if (string.IsNullOrWhiteSpace(jwtSettings.Secret) || jwtSettings.Secret.Length < 32)
@@ -149,6 +149,7 @@ namespace AgentCoreSystem.Api
             builder.Services.AddOrganizationModule(builder.Configuration);
             builder.Services.AddChatModule(builder.Configuration);
             builder.Services.AddTasksModule(builder.Configuration);
+            builder.Services.AddAgentsModule(builder.Configuration);
 
             // 7. Cấu hình API Versioning (/api/v1/...)
             builder.Services.AddApiVersioning(options =>

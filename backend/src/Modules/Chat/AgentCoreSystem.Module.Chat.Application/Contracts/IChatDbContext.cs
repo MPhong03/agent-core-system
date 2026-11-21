@@ -41,6 +41,11 @@ namespace AgentCoreSystem.Module.Chat.Application.Contracts
         /// </summary>
         DbSet<MessageMention> MessageMentions { get; }
 
+        /// <summary>
+        /// Tập hợp các yêu cầu gọi công cụ đang chờ xác nhận trong kênh.
+        /// </summary>
+        DbSet<PendingToolCall> PendingToolCalls { get; }
+
         // ── Persistence Operations ──
 
         /// <summary>
