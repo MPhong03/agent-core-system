@@ -29,6 +29,7 @@ namespace AgentCoreSystem.Module.Organization.Application.AgentProfiles.Commands
     /// <param name="SystemPrompt">Chỉ dẫn hệ thống cốt lõi.</param>
     /// <param name="Temperature">Độ sáng tạo của mô hình (0.0 đến 2.0).</param>
     /// <param name="PrivateMemoryNotes">Ghi chú bộ nhớ riêng ban đầu.</param>
+    /// <param name="ToolExecutionMode">Chế độ thực thi công cụ (Auto, SemiAuto, NeedApprove).</param>
     public record CreateAgentProfileCommand(
         string Name,
         string? AvatarUrl,
@@ -36,7 +37,8 @@ namespace AgentCoreSystem.Module.Organization.Application.AgentProfiles.Commands
         string ModelName,
         string SystemPrompt,
         decimal Temperature = 0.7m,
-        string? PrivateMemoryNotes = null) : ICommand<Guid>;
+        string? PrivateMemoryNotes = null,
+        ToolExecutionMode ToolExecutionMode = ToolExecutionMode.SemiAuto) : ICommand<Guid>;
 
     /// <summary>
     /// Bộ xác thực tính hợp lệ của lệnh tạo hồ sơ Agent.
@@ -86,7 +88,8 @@ namespace AgentCoreSystem.Module.Organization.Application.AgentProfiles.Commands
                 request.ModelName,
                 request.SystemPrompt,
                 request.Temperature,
-                request.PrivateMemoryNotes);
+                request.PrivateMemoryNotes,
+                request.ToolExecutionMode);
 
             dbContext.AgentProfiles.Add(agentProfile);
             await dbContext.SaveChangesAsync(cancellationToken);

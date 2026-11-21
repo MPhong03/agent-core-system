@@ -133,4 +133,26 @@ export class ToolsService {
   setSelectedTool(tool: ToolDefinitionDto | null): void {
     this.selectedTool.set(tool);
   }
+
+  /**
+   * Lấy danh sách các công cụ được cấp quyền cho một Agent Profile.
+   */
+  getAgentTools(agentId: string): Observable<ApiResponse<ToolDefinitionDto[]>> {
+    return this.http.get<ApiResponse<ToolDefinitionDto[]>>(
+      `${environment.apiUrl}/agents/profiles/${agentId}/tools`,
+    );
+  }
+
+  /**
+   * Cập nhật danh sách công cụ được phân quyền cho một Agent Profile.
+   */
+  assignAgentTools(
+    agentId: string,
+    toolDefinitionIds: string[],
+  ): Observable<ApiResponse<string>> {
+    return this.http.put<ApiResponse<string>>(
+      `${environment.apiUrl}/agents/profiles/${agentId}/tools`,
+      { toolDefinitionIds },
+    );
+  }
 }

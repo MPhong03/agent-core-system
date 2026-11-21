@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) Phong Minh Dang <dangminhphong912@gmail.com>. All rights reserved.
+ * Licensed under the MIT License. See LICENSE in the project root for license information.
+ */
+
 .provider-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -91,4 +96,294 @@
   justify-content: space-between;
   font-size: 11px;
   color: #637282;
+}
+
+// ── Phần Mới: Tool Execution Mode Styles ──
+
+.section-header-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.5rem;
+
+  .section-hint {
+    font-size: 11.5px;
+    color: #637282;
+  }
+}
+
+.execution-mode-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+
+  @media (min-width: 540px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .execution-mode-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.75rem 0.65rem;
+    border: 1px solid #D8D6D3;
+    border-radius: 6px;
+    background: #FFFFFF;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      border-color: #637282;
+      background: #F7F5F2;
+    }
+
+    &.selected {
+      border-color: #0061FF;
+      background: #F0F5FF;
+      box-shadow: 0 0 0 1px #0061FF;
+
+      .mode-name {
+        color: #0061FF;
+        font-weight: 600;
+      }
+    }
+
+    .mode-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.35rem;
+      margin-bottom: 0.35rem;
+
+      .mode-radio-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+
+        .mode-radio {
+          accent-color: #0061FF;
+          cursor: pointer;
+        }
+
+        .mode-name {
+          font-size: 12px;
+          font-weight: 500;
+          color: #1E1919;
+          cursor: pointer;
+        }
+      }
+
+      .badge-recommended {
+        font-size: 10px;
+        font-weight: 600;
+        background: #0061FF;
+        color: #FFFFFF;
+        padding: 1px 5px;
+        border-radius: 4px;
+        white-space: nowrap;
+      }
+
+      .mode-tag {
+        font-size: 10px;
+        font-weight: 500;
+        color: #637282;
+        background: #F7F5F2;
+        border: 1px solid #EDECEA;
+        padding: 1px 5px;
+        border-radius: 4px;
+        white-space: nowrap;
+      }
+    }
+
+    .mode-desc {
+      font-size: 11px;
+      color: #637282;
+      line-height: 1.35;
+      margin: 0;
+    }
+  }
+}
+
+// ── Phần Mới: Phân Quyền Công Cụ (Assigned Tools) Styles ──
+
+.tools-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+
+  .section-subtitle {
+    font-size: 11.5px;
+    color: #637282;
+    margin: 0.15rem 0 0 0;
+  }
+
+  .tools-count-pill {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0061FF;
+    background: #F0F5FF;
+    border: 1px solid #B4D1FF;
+    padding: 2px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+}
+
+.tools-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: #637282;
+  font-size: 12px;
+}
+
+.tools-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  border: 1px dashed #D8D6D3;
+  border-radius: 6px;
+  background: #FAFAF9;
+  color: #637282;
+  text-align: center;
+  font-size: 12px;
+
+  svg {
+    stroke: #637282;
+  }
+}
+
+.tools-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+
+  .tool-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid #EDECEA;
+    border-radius: 6px;
+    background: #FFFFFF;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      border-color: #637282;
+      background: #F7F5F2;
+    }
+
+    &.checked {
+      border-color: #0061FF;
+      background: #F0F5FF;
+
+      .tool-name {
+        color: #0061FF;
+        font-weight: 600;
+      }
+    }
+
+    .tool-checkbox-wrap {
+      padding-top: 2px;
+
+      .tool-checkbox {
+        accent-color: #0061FF;
+        cursor: pointer;
+      }
+    }
+
+    .tool-content {
+      flex: 1;
+      min-width: 0;
+
+      .tool-title-row {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+
+        .tool-name {
+          font-size: 12.5px;
+          font-weight: 500;
+          color: #1E1919;
+          cursor: pointer;
+        }
+
+        .http-badge {
+          font-size: 10px;
+          font-weight: 700;
+          padding: 1px 5px;
+          border-radius: 3px;
+          font-family: monospace;
+
+          &.method-get {
+            background: #E6F4EA;
+            color: #137333;
+          }
+          &.method-post {
+            background: #E8F0FE;
+            color: #1967D2;
+          }
+          &.method-put {
+            background: #FEF7E0;
+            color: #B06000;
+          }
+          &.method-delete {
+            background: #FCE8E6;
+            color: #C5221F;
+          }
+        }
+
+        .badge-confirm {
+          font-size: 10px;
+          font-weight: 600;
+          color: #C5221F;
+          background: #FCE8E6;
+          border: 1px solid #F9D0CE;
+          padding: 1px 5px;
+          border-radius: 3px;
+        }
+      }
+
+      .tool-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.15rem;
+
+        .tool-code {
+          font-size: 11px;
+          color: #637282;
+          background: #F7F5F2;
+          padding: 1px 4px;
+          border-radius: 3px;
+        }
+
+        .tool-endpoint {
+          font-size: 11px;
+          color: #637282;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 250px;
+        }
+      }
+
+      .tool-desc {
+        font-size: 11px;
+        color: #637282;
+        margin: 0.25rem 0 0 0;
+        line-height: 1.35;
+      }
+    }
+  }
 }

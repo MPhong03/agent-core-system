@@ -36,6 +36,15 @@ export enum ModelProviderType {
   Ollama = 4,
 }
 
+/**
+ * Chế độ thực thi công cụ (Tool Execution Mode) dành cho Agent Profile.
+ */
+export enum ToolExecutionMode {
+  Auto = 0,
+  SemiAuto = 1,
+  NeedApprove = 2,
+}
+
 // ── Entity Models (Khớp BE Schema 'organization') ──
 
 /**
@@ -86,6 +95,7 @@ export interface AgentProfile {
   systemPrompt: string;
   temperature: number;
   privateMemoryNotes?: string;
+  toolExecutionMode?: ToolExecutionMode;
   createdDate: string;
 }
 
@@ -118,6 +128,7 @@ export interface CreateAgentProfileRequest {
   systemPrompt: string;
   temperature: number;
   privateMemoryNotes?: string;
+  toolExecutionMode?: ToolExecutionMode;
 }
 
 /**

@@ -323,4 +323,43 @@ describe('ToolsService', () => {
     service.setSelectedTool(null);
     expect(service.selectedTool()).toBeNull();
   });
+
+  it('should get agent tools', () => {
+    const agentId = '018dc3f9-7d00-7b23-a7bb-69a31a980099';
+    const mockResponse: ApiResponse<ToolDefinitionDto[]> = {
+      success: true,
+      message: 'OK',
+      data: [mockTool],
+      timestamp: '2026-11-21T10:00:00Z',
+    };
+
+    service.getAgentTools(agentId).subscribe((res) => {
+      expect(res.success).toBe(true);
+      expect(res.data.length).toBe(1);
+    });
+
+    const req = httpTestingController.expectOne(`${environment.apiUrl}/agents/profiles/${agentId}/tools`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockResponse);
+  });
+
+  it('should assign agent tools', () => {
+    const agentId = '018dc3f9-7d00-7b23-a7bb-69a31a980099';
+    const toolIds = [mockTool.id];
+    const mockResponse: ApiResponse<string> = {
+      success: true,
+      message: 'OK',
+      data: 'Success',
+      timestamp: '2026-11-21T10:00:00Z',
+    };
+
+    service.assignAgentTools(agentId, toolIds).subscribe((res) => {
+      expect(res.success).toBe(true);
+    });
+
+    const req = httpTestingController.expectOne(`${environment.apiUrl}/agents/profiles/${agentId}/tools`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ toolDefinitionIds: toolIds });
+    req.flush(mockResponse);
+  });
 });

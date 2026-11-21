@@ -549,4 +549,41 @@
       }
     }
   }
+
+  .member-actions {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    flex-shrink: 0;
+
+    .btn-config-tools {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.6rem;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #0061FF;
+      background: #F0F5FF;
+      border: 1px solid #B4D1FF;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #0061FF;
+        color: #FFFFFF;
+        border-color: #0061FF;
+
+        svg {
+          stroke: #FFFFFF;
+        }
+      }
+
+      svg {
+        stroke: #0061FF;
+        flex-shrink: 0;
+      }
+    }
+  }
 }

@@ -33,7 +33,9 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angu
 import {
   Department,
   TeamChannel,
+  Member,
   MemberType,
+  AgentProfile,
   CreateDepartmentRequest,
   CreateChannelRequest,
   AssignMemberRequest,
@@ -81,6 +83,8 @@ export class OrganizationShellComponent implements OnInit {
 
   // Trạng thái bật/tắt các modal
   readonly isAgentModalOpen = signal<boolean>(false);
+  readonly selectedAgentForConfig = signal<AgentProfile | null>(null);
+  readonly selectedAgentIdForConfig = signal<string | undefined>(undefined);
   readonly isCreateDeptModalOpen = signal<boolean>(false);
   readonly isCreateChannelModalOpen = signal<boolean>(false);
   readonly isAssignMemberModalOpen = signal<boolean>(false);
@@ -281,15 +285,32 @@ export class OrganizationShellComponent implements OnInit {
   // ── Modal Cấu Hình Agent AI ──
 
   openAgentModal(): void {
+    this.selectedAgentForConfig.set(null);
+    this.selectedAgentIdForConfig.set(undefined);
+    this.isAgentModalOpen.set(true);
+  }
+
+  configureAgentTools(member: Member): void {
+    const profileId = member.agentProfileId;
+    const profile = this.store.agentProfiles().find((p) => p.id === profileId) ?? null;
+    this.selectedAgentForConfig.set(profile);
+    this.selectedAgentIdForConfig.set(profileId);
     this.isAgentModalOpen.set(true);
   }
 
   closeAgentModal(): void {
     this.isAgentModalOpen.set(false);
+    this.selectedAgentForConfig.set(null);
+    this.selectedAgentIdForConfig.set(undefined);
   }
 
   onAgentCreated(): void {
-    this.showToast('Hồ sơ Agent AI đã được khởi tạo thành công!');
+    const isEdit = !!this.selectedAgentIdForConfig();
+    this.showToast(
+      isEdit
+        ? 'Cấu hình công cụ cho Agent đã được cập nhật thành công!'
+        : 'Hồ sơ Agent AI đã được khởi tạo thành công!',
+    );
   }
 
   // ── Tiện Ích Thông Báo (Toast) ──

@@ -322,6 +322,22 @@
                           <span class="join-date">Tham gia: {{ member.createdDate | date: 'dd/MM/yyyy HH:mm' }}</span>
                         </div>
                       </div>
+
+                      @if (member.type === MemberType.Agent) {
+                        <div class="member-actions">
+                          <button
+                            type="button"
+                            class="btn-config-tools"
+                            title="Cấu hình chế độ thực thi và phân quyền công cụ"
+                            (click)="configureAgentTools(member); $event.stopPropagation()"
+                          >
+                            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
+                              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                            </svg>
+                            <span>Cấu hình Tools</span>
+                          </button>
+                        </div>
+                      }
                     </div>
                   } @empty {
                     <div class="empty-state">
@@ -669,9 +685,11 @@
   </div>
 }
 
-<!-- Modal Tạo Hồ Sơ Agent AI Tự Chủ -->
+<!-- Modal Tạo & Cấu Hình Hồ Sơ Agent AI Tự Chủ -->
 <app-agent-profile-modal
   [isOpen]="isAgentModalOpen()"
+  [agentProfileId]="selectedAgentIdForConfig()"
+  [agentProfile]="selectedAgentForConfig()"
   (closed)="closeAgentModal()"
   (created)="onAgentCreated()"
 ></app-agent-profile-modal>

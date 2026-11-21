@@ -1,4 +1,4 @@
-﻿<!-- Modal Tạo Hồ Sơ Agent AI Tự Chủ (PBI-ORG-02)
+﻿<!-- Modal Tạo & Cấu Hình Hồ Sơ Agent AI Tự Chủ (PBI-TOOL-02)
      🔴 Lưu ý: Click vào backdrop ngoài để đóng, click vào modal-card cần stopPropagation để không bị tắt nhầm -->
 @if (isOpen) {
   <div class="modal-backdrop" (click)="close()">
@@ -14,8 +14,10 @@
             </svg>
           </div>
           <div>
-            <h3>Tạo Hồ Sơ Agent Mới</h3>
-            <p class="subtitle">Thiết lập nhân viên AI tự chủ tham gia vào kênh nhóm</p>
+            <h3>{{ isEditMode ? 'Cấu Hình Công Cụ & Quyền Thực Thi' : 'Tạo Hồ Sơ Agent Mới' }}</h3>
+            <p class="subtitle">
+              {{ isEditMode ? 'Điều chỉnh mức độ tự chủ và công cụ được cấp quyền cho Agent' : 'Thiết lập nhân viên AI tự chủ tham gia vào kênh nhóm' }}
+            </p>
           </div>
         </div>
         <button type="button" class="btn-close" (click)="close()" aria-label="Đóng">✕</button>
@@ -23,7 +25,7 @@
 
       <!-- Modal Body: Biểu mẫu cấu hình chi tiết thông số Agent AI -->
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal-body">
-        <!-- Khối hiển thị thông báo lỗi khi API tạo Agent thất bại (RULE-06: Không nuốt lỗi) -->
+        <!-- Khối hiển thị thông báo lỗi khi API thất bại (RULE-06: Không nuốt lỗi) -->
         @if (submitError()) {
           <div class="alert-danger">
             {{ submitError() }}
@@ -85,8 +87,7 @@
           }
         </div>
 
-        <!-- Trường 4: Nhiệt độ sáng tạo (Temperature Slider 0.0 - 2.0)
-             🔴 Lưu ý: Dùng getter temperatureValue nhẹ nhàng, không bọc hàm tính toán nặng trong template -->
+        <!-- Trường 4: Nhiệt độ sáng tạo (Temperature Slider 0.0 - 2.0) -->
         <div class="form-group">
           <div class="slider-header">
             <label for="temperature" class="form-label">
@@ -117,7 +118,7 @@
           </label>
           <textarea
             id="systemPrompt"
-            rows="4"
+            rows="3"
             class="form-control"
             formControlName="systemPrompt"
             placeholder="Định nghĩa vai trò, nhiệm vụ và phong cách phản hồi của Agent..."
@@ -141,6 +142,106 @@
           ></textarea>
         </div>
 
+        <!-- PHẦN MỚI 1: Chế độ thực thi công cụ (Tool Execution Mode) -->
+        <div class="form-group">
+          <div class="section-header-label">
+            <label class="form-label mb-0">
+              Chế độ thực thi công cụ (Tool Execution Mode) <span class="required">*</span>
+            </label>
+            <span class="section-hint">Quyết định mức độ tự chủ khi Agent gọi công cụ Function Calling</span>
+          </div>
+
+          <div class="execution-mode-grid">
+            @for (m of executionModes; track m.mode) {
+              <div
+                class="execution-mode-card"
+                [class.selected]="form.get('toolExecutionMode')?.value === m.mode"
+                (click)="onModeChange(m.mode)"
+              >
+                <div class="mode-header">
+                  <div class="mode-radio-wrap">
+                    <input
+                      type="radio"
+                      [id]="'mode-' + m.mode"
+                      [value]="m.mode"
+                      formControlName="toolExecutionMode"
+                      class="mode-radio"
+                    />
+                    <label [for]="'mode-' + m.mode" class="mode-name">{{ m.name }}</label>
+                  </div>
+                  @if (m.isRecommended) {
+                    <span class="badge-recommended">{{ m.tag }}</span>
+                  } @else {
+                    <span class="mode-tag">{{ m.tag }}</span>
+                  }
+                </div>
+                <p class="mode-desc">{{ m.description }}</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- PHẦN MỚI 2: Phân quyền Công cụ (Assigned Tools) -->
+        <div class="form-group">
+          <div class="tools-header-row">
+            <div>
+              <label class="form-label mb-0">Phân quyền Công cụ (Assigned Tools)</label>
+              <p class="section-subtitle">Chọn các công cụ mà Agent được phép gọi trong quá trình hội thoại</p>
+            </div>
+            <span class="tools-count-pill">{{ form.get('selectedToolIds')?.value?.length || 0 }} đã chọn</span>
+          </div>
+
+          @if (toolsService.isLoading() && toolsService.tools().length === 0) {
+            <div class="tools-loading">
+              <span class="spinner"></span>
+              <span>Đang tải danh sách công cụ...</span>
+            </div>
+          } @else if (toolsService.tools().length === 0) {
+            <div class="tools-empty">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+              <p>Chưa có công cụ nào khả dụng trong hệ thống. Hãy tạo công cụ tại phân hệ Quản lý Tools.</p>
+            </div>
+          } @else {
+            <div class="tools-list">
+              @for (tool of toolsService.tools(); track tool.id) {
+                <div
+                  class="tool-item"
+                  [class.checked]="isToolSelected(tool.id)"
+                  (click)="toggleTool(tool.id)"
+                >
+                  <div class="tool-checkbox-wrap">
+                    <input
+                      type="checkbox"
+                      [id]="'tool-' + tool.id"
+                      [checked]="isToolSelected(tool.id)"
+                      (change)="toggleTool(tool.id); $event.stopPropagation()"
+                      class="tool-checkbox"
+                    />
+                  </div>
+                  <div class="tool-content">
+                    <div class="tool-title-row">
+                      <label [for]="'tool-' + tool.id" class="tool-name">{{ tool.displayName || tool.name }}</label>
+                      <span class="http-badge" [class]="'method-' + tool.httpMethod.toLowerCase()">{{ tool.httpMethod }}</span>
+                      @if (tool.requiresConfirmation) {
+                        <span class="badge-confirm" title="Yêu cầu người dùng xác nhận trước khi thực thi">Xác nhận</span>
+                      }
+                    </div>
+                    <div class="tool-meta-row">
+                      <code class="tool-code">{{ tool.name }}</code>
+                      <span class="tool-endpoint" [title]="tool.endpointUrl">{{ tool.endpointUrl }}</span>
+                    </div>
+                    @if (tool.description) {
+                      <p class="tool-desc">{{ tool.description }}</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
         <!-- Modal Footer: Nút Hủy và Nút Lưu -->
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="close()">
@@ -149,12 +250,12 @@
           <button
             type="submit"
             class="btn btn-primary"
-            [disabled]="submitting() || form.invalid"
+            [disabled]="submitting() || (!isEditMode && form.invalid)"
           >
             @if (submitting()) {
               <span class="spinner"></span> Đang Lưu...
             } @else {
-              Tạo Hồ Sơ Agent
+              {{ isEditMode ? 'Lưu Cấu Hình' : 'Tạo Hồ Sơ Agent' }}
             }
           </button>
         </div>

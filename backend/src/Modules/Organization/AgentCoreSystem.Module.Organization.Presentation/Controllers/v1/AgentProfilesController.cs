@@ -63,7 +63,8 @@ namespace AgentCoreSystem.Module.Organization.Presentation.Controllers.v1
                 request.ModelName,
                 request.SystemPrompt,
                 request.Temperature,
-                request.PrivateMemoryNotes);
+                request.PrivateMemoryNotes,
+                request.ToolExecutionMode);
 
             var result = await mediator.Send(command, cancellationToken);
 
