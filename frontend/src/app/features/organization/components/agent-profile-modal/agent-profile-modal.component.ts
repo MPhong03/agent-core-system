@@ -159,6 +159,8 @@ export class AgentProfileModalComponent implements OnInit, OnChanges {
 
     const activeId = this.activeAgentId;
     if (activeId) {
+      this.form.get('toolExecutionMode')?.disable();
+
       if (this.agentProfile) {
         this.form.patchValue({
           name: this.agentProfile.name,
@@ -181,6 +183,8 @@ export class AgentProfileModalComponent implements OnInit, OnChanges {
           }
         },
       });
+    } else {
+      this.form.get('toolExecutionMode')?.enable();
     }
   }
 
@@ -198,9 +202,12 @@ export class AgentProfileModalComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Thay đổi chế độ thực thi công cụ cho Agent.
+   * Thay đổi chế độ thực thi công cụ cho Agent (chỉ khả dụng khi tạo mới).
    */
   onModeChange(mode: ToolExecutionMode): void {
+    if (this.isEditMode) {
+      return;
+    }
     this.form.patchValue({ toolExecutionMode: mode });
   }
 
@@ -230,6 +237,7 @@ export class AgentProfileModalComponent implements OnInit, OnChanges {
    */
   close(): void {
     this.isOpen = false;
+    this.form.get('toolExecutionMode')?.enable();
     this.form.reset({
       name: '',
       provider: ModelProviderType.Gemini,

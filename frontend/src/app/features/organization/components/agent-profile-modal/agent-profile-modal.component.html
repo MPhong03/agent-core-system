@@ -148,10 +148,16 @@
             <label class="form-label mb-0">
               Chế độ thực thi công cụ (Tool Execution Mode) <span class="required">*</span>
             </label>
-            <span class="section-hint">Quyết định mức độ tự chủ khi Agent gọi công cụ Function Calling</span>
+            <span class="section-hint">
+              @if (isEditMode) {
+                <span class="hint-warning">⚠️ Chế độ tự chủ được thiết lập khi khởi tạo Agent; chỉ có thể điều chỉnh phân quyền công cụ bên dưới.</span>
+              } @else {
+                Quyết định mức độ tự chủ khi Agent gọi công cụ Function Calling
+              }
+            </span>
           </div>
 
-          <div class="execution-mode-grid">
+          <div class="execution-mode-grid" [class.disabled-mode]="isEditMode">
             @for (m of executionModes; track m.mode) {
               <div
                 class="execution-mode-card"

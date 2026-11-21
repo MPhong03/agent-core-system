@@ -223,6 +223,11 @@ describe('AgentProfileModalComponent', () => {
     // Kiểm tra đã nạp công cụ hiện tại của Agent
     expect(mockToolsService.getAgentTools).toHaveBeenCalledWith('agent-existing-123');
 
+    // Ở chế độ edit, không cho phép đổi ToolExecutionMode
+    expect(component.isEditMode).toBe(true);
+    component.onModeChange(ToolExecutionMode.Auto);
+    expect(component.form.get('toolExecutionMode')?.value).toBe(ToolExecutionMode.SemiAuto);
+
     component.toggleTool('tool-002');
     component.onSubmit();
 

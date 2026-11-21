@@ -48,7 +48,7 @@ export class ToolApprovalCardComponent {
   /**
    * Cờ xác định yêu cầu phê duyệt/từ chối đang được gửi lên server từ bên ngoài.
    */
-  readonly isSubmittingInput = input<boolean>(false, { alias: 'isSubmitting' });
+  readonly isSubmitting = input<boolean>(false);
 
   // ── Outputs (Angular 19 Output Emitted Refs) ──
 
@@ -63,18 +63,10 @@ export class ToolApprovalCardComponent {
   readonly rejected = output<{ callId: string; reason?: string }>();
 
   // ── Local State Signals ──
-  readonly isSubmittingLocal = signal<boolean>(false);
   readonly isExpanded = signal<boolean>(true);
   readonly localStatus = signal<'pending' | 'confirmed' | 'rejected' | null>(null);
 
   // ── Computed Signals ──
-
-  /**
-   * Cờ submit tổng hợp (từ component cha truyền vào hoặc thao tác click trực tiếp).
-   */
-  readonly isSubmitting = computed<boolean>(() => {
-    return this.isSubmittingInput() || this.isSubmittingLocal();
-  });
 
   /**
    * Trạng thái hiệu lực hiện tại của yêu cầu (pending | confirmed | rejected).
@@ -118,7 +110,6 @@ export class ToolApprovalCardComponent {
     }
 
     const req = this.approvalRequest();
-    this.isSubmittingLocal.set(true);
     this.confirmed.emit(req.pendingToolCallId);
   }
 
@@ -131,7 +122,6 @@ export class ToolApprovalCardComponent {
     }
 
     const req = this.approvalRequest();
-    this.isSubmittingLocal.set(true);
     this.rejected.emit({ callId: req.pendingToolCallId });
   }
 
@@ -140,13 +130,12 @@ export class ToolApprovalCardComponent {
    */
   markCompleted(status: 'confirmed' | 'rejected'): void {
     this.localStatus.set(status);
-    this.isSubmittingLocal.set(false);
   }
 
   /**
    * Reset trạng thái submit khi có lỗi từ server.
    */
   resetSubmitting(): void {
-    this.isSubmittingLocal.set(false);
+    // Được quản lý trực tiếp qua input isSubmitting từ parent
   }
 }
