@@ -3,11 +3,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // ------------------------------------------------------------------------------------------------
 
+using System.Text.Json.Serialization;
+
 namespace AgentCoreSystem.Module.Tasks.Domain.Enums
 {
     /// <summary>
     /// Trạng thái vòng đời của một tác vụ trên bảng Kanban.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum TaskItemStatus
     {
         /// <summary>

@@ -3,11 +3,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // ------------------------------------------------------------------------------------------------
 
+using System.Text.Json.Serialization;
+
 namespace AgentCoreSystem.Module.Tasks.Domain.Enums
 {
     /// <summary>
     /// Mức độ ưu tiên của tác vụ.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum TaskPriority
     {
         /// <summary>
