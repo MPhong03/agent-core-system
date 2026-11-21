@@ -24,6 +24,7 @@ namespace AgentCoreSystem.Module.Organization.Application.AgentProfiles.DTOs
     /// <param name="Temperature">Mức độ sáng tạo của mô hình.</param>
     /// <param name="PrivateMemoryNotes">Ghi chú bộ nhớ riêng.</param>
     /// <param name="CreatedDate">Thời điểm khởi tạo.</param>
+    /// <param name="ToolExecutionMode">Chế độ thực thi công cụ (Auto, SemiAuto, NeedApprove).</param>
     public record AgentProfileDto(
         Guid Id,
         string Name,
@@ -33,5 +34,6 @@ namespace AgentCoreSystem.Module.Organization.Application.AgentProfiles.DTOs
         string SystemPrompt,
         decimal Temperature,
         string? PrivateMemoryNotes,
-        DateTimeOffset CreatedDate);
+        DateTimeOffset CreatedDate,
+        ToolExecutionMode ToolExecutionMode = ToolExecutionMode.SemiAuto);
 }

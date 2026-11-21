@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Asp.Versioning;
 using AgentCoreSystem.Module.Chat.Application.Messages.DTOs;
 using AgentCoreSystem.Module.Chat.Application.Messages.Queries;
+using AgentCoreSystem.Module.Chat.Application.Tools.Commands;
+using AgentCoreSystem.Module.Chat.Application.Tools.DTOs;
 using AgentCoreSystem.Module.Chat.Presentation.Extensions;
 using AgentCoreSystem.Shared.Kernel.Responses;
 using MediatR;
@@ -69,6 +71,70 @@ namespace AgentCoreSystem.Module.Chat.Presentation.Controllers.v1
 
             return result.IsSuccess
                 ? Ok(ApiResponse<IReadOnlyList<ChatMessageDto>>.Ok(result.Value, "Truy vấn lịch sử tin nhắn kênh thành công."))
+                : result.ToProblemDetails(this);
+        }
+
+        // ── Tool Call Approvals ──
+
+        /// <summary>
+        /// Phê duyệt và thực thi yêu cầu gọi công cụ đang chờ duyệt trong kênh trò chuyện.
+        /// </summary>
+        /// <param name="callId">Mã định danh yêu cầu gọi công cụ (PendingToolCallId).</param>
+        /// <param name="cancellationToken">CancellationToken.</param>
+        /// <response code="200">Xác nhận và kích hoạt thực thi công cụ thành công.</response>
+        /// <response code="400">Yêu cầu không hợp lệ hoặc đã hết hạn.</response>
+        /// <response code="401">Chưa xác thực thông tin đăng nhập.</response>
+        /// <response code="404">Không tìm thấy yêu cầu gọi công cụ.</response>
+        /// <response code="409">Yêu cầu gọi công cụ không ở trạng thái chờ duyệt.</response>
+        /// <response code="500">Lỗi máy chủ nội bộ.</response>
+        [HttpPost("~/api/v{version:apiVersion}/chat/tool-calls/{callId:guid}/confirm")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ConfirmToolCall(
+            [FromRoute] Guid callId,
+            CancellationToken cancellationToken = default)
+        {
+            var command = new ConfirmToolCallCommand(callId);
+            var result = await mediator.Send(command, cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(ApiResponse<bool>.Ok(result.Value, "Xác nhận thực thi công cụ thành công."))
+                : result.ToProblemDetails(this);
+        }
+
+        /// <summary>
+        /// Từ chối yêu cầu thực thi công cụ đang chờ duyệt trong kênh trò chuyện.
+        /// </summary>
+        /// <param name="callId">Mã định danh yêu cầu gọi công cụ (PendingToolCallId).</param>
+        /// <param name="request">Thông tin lý do từ chối (tùy chọn).</param>
+        /// <param name="cancellationToken">CancellationToken.</param>
+        /// <response code="200">Từ chối thực thi công cụ thành công.</response>
+        /// <response code="400">Yêu cầu không hợp lệ hoặc đã hết hạn.</response>
+        /// <response code="401">Chưa xác thực thông tin đăng nhập.</response>
+        /// <response code="404">Không tìm thấy yêu cầu gọi công cụ.</response>
+        /// <response code="409">Yêu cầu gọi công cụ không ở trạng thái chờ duyệt.</response>
+        /// <response code="500">Lỗi máy chủ nội bộ.</response>
+        [HttpPost("~/api/v{version:apiVersion}/chat/tool-calls/{callId:guid}/reject")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RejectToolCall(
+            [FromRoute] Guid callId,
+            [FromBody] RejectToolCallRequest? request = null,
+            CancellationToken cancellationToken = default)
+        {
+            var command = new RejectToolCallCommand(callId, request?.Reason);
+            var result = await mediator.Send(command, cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(ApiResponse<bool>.Ok(result.Value, "Từ chối thực thi công cụ thành công."))
                 : result.ToProblemDetails(this);
         }
     }

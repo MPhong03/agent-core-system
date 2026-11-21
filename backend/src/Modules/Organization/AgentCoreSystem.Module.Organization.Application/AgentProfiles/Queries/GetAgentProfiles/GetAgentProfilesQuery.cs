@@ -51,7 +51,8 @@ namespace AgentCoreSystem.Module.Organization.Application.AgentProfiles.Queries.
                     a.SystemPrompt,
                     a.Temperature,
                     a.PrivateMemoryNotes,
-                    a.CreatedDate))
+                    a.CreatedDate,
+                    a.ToolExecutionMode))
                 .ToListAsync(cancellationToken);
 
             return Result.Success<IReadOnlyList<AgentProfileDto>>(profiles);

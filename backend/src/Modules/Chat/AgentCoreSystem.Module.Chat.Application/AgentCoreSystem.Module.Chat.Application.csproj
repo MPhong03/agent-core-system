@@ -2,7 +2,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AgentCoreSystem.Module.Chat.Domain\AgentCoreSystem.Module.Chat.Domain.csproj" />
+    <ProjectReference Include="..\..\Agents\AgentCoreSystem.Module.Agents.Application\AgentCoreSystem.Module.Agents.Application.csproj" />
     <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Application\AgentCoreSystem.Shared.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\AgentCoreSystem.Shared.Infrastructure\AgentCoreSystem.Shared.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

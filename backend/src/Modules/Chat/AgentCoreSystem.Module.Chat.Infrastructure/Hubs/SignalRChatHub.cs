@@ -44,6 +44,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Hubs
         {
             var groupName = $"channel_{channelId}";
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
         }
 
         /// <summary>
@@ -55,6 +56,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Hubs
         {
             var groupName = $"channel_{channelId}";
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, channelId.ToString());
         }
 
         // ── Real-time Messaging ──
