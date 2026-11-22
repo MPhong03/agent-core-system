@@ -81,6 +81,10 @@ test-e2e-kanban:
 test-e2e-tools:
     cd frontend; npx playwright test e2e/specs/sprint-3-tools-realtime.spec.ts
 
+# Chạy End-to-End Tests cho Python Workspace & Sandbox (Sprint 4)
+test-e2e-workspace:
+    cd frontend; npx playwright test e2e/specs/sprint-4-python-workspace.spec.ts
+
 # -----------------------------------------------------------------------------
 # 4. EF Core Migrations (Hỗ trợ Kiến trúc Schema-per-module)
 # -----------------------------------------------------------------------------

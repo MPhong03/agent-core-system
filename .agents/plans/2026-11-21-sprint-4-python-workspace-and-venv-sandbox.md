@@ -47,19 +47,19 @@
 **Interfaces:**
 - Produces: `IWorkspaceManager` với các phương thức quản lý workspace, canonical path validation, đọc danh sách file, stream file và tính dung lượng.
 
-- [ ] **Step 1: Write failing tests for WorkspaceManager**
+- [x] **Step 1: Write failing tests for WorkspaceManager**
   - Test canonical path checking (chặn `../../`).
   - Test tạo đầy đủ 4 thư mục chuẩn (`.venv`, `scripts`, `artifacts`, `logs`).
   - Test liệt kê file và tính toán dung lượng.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~WorkspaceManagerTests"`
   - Expected: FAIL (Types not found).
-- [ ] **Step 3: Implement IWorkspaceManager & WorkspaceManager**
+- [x] **Step 3: Implement IWorkspaceManager & WorkspaceManager**
   - Đảm bảo kiểm tra path traversal nghiêm ngặt bằng `Path.GetFullPath`.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~WorkspaceManagerTests"`
   - Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - `git commit -m "feat(agents): implement WorkspaceManager and file path traversal guard"`
 
 ---
@@ -77,19 +77,19 @@
 - Consumes: `IWorkspaceManager`
 - Produces: `IPythonSandboxRunner` (`EnsureVenvInitializedAsync`, `InstallPackagesAsync`, `ListInstalledPackagesAsync`, `ExecuteScriptAsync`)
 
-- [ ] **Step 1: Write failing tests for PythonVenvRunner**
+- [x] **Step 1: Write failing tests for PythonVenvRunner**
   - Test cơ chế lọc biến môi trường (Environment Variable Stripping).
   - Test snapshot artifact so sánh trước/sau khi chạy.
   - Test timeout detection và cancellation.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~PythonVenvRunnerTests"`
   - Expected: FAIL.
-- [ ] **Step 3: Implement IPythonSandboxRunner & PythonVenvRunner**
+- [x] **Step 3: Implement IPythonSandboxRunner & PythonVenvRunner**
   - Triển khai Process start với `RedirectStandardOutput`, `RedirectStandardError`, xóa biến môi trường nhạy cảm, xử lý timeout với `Kill(entireProcessTree: true)`.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~PythonVenvRunnerTests"`
   - Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - `git commit -m "feat(agents): implement PythonVenvRunner with environment stripping and timeout guard"`
 
 ---
@@ -108,17 +108,17 @@
 **Interfaces:**
 - Produces: DbSets `AgentWorkspaceConfigs`, `ScriptExecutionHistories` trên schema `agent`.
 
-- [ ] **Step 1: Write failing tests for AgentWorkspaceConfig and ScriptExecutionHistory**
+- [x] **Step 1: Write failing tests for AgentWorkspaceConfig and ScriptExecutionHistory**
   - Test UUIDv7 id generation, validation rules.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~AgentWorkspaceEntitiesTests"`
   - Expected: FAIL.
-- [ ] **Step 3: Implement Entities, Configurations, and EF Migration**
+- [x] **Step 3: Implement Entities, Configurations, and EF Migration**
   - Khai báo Entities kế thừa `BaseEntity<Guid>`, config EF Core schema `agent`, sinh migration.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~AgentWorkspaceEntitiesTests"`
   - Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - `git commit -m "feat(agents): add AgentWorkspaceConfig and ScriptExecutionHistory schema and migrations"`
 
 ---
@@ -138,18 +138,18 @@
 - Consumes: `IWorkspaceManager`, `IPythonSandboxRunner`, `IAgentsDbContext`
 - Produces: MediatR Request Handlers xử lý trọn gói use cases.
 
-- [ ] **Step 1: Write failing tests for CQRS Handlers**
+- [x] **Step 1: Write failing tests for CQRS Handlers**
   - Test `GetAgentWorkspaceQueryHandler`.
   - Test `ExecuteScriptCommandHandler` lưu history và trả kết quả.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~WorkspaceCqrsTests"`
   - Expected: FAIL.
-- [ ] **Step 3: Implement CQRS Handlers**
+- [x] **Step 3: Implement CQRS Handlers**
   - Triển khai MediatR handlers theo chuẩn Result Pattern.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~WorkspaceCqrsTests"`
   - Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - `git commit -m "feat(agents): implement workspace and script execution CQRS commands and queries"`
 
 ---
@@ -172,17 +172,17 @@
   - `POST /api/v1/agents/{id}/workspace/execute`
   - `GET /api/v1/agents/{id}/workspace/history`
 
-- [ ] **Step 1: Write failing tests for AgentWorkspaceController**
+- [x] **Step 1: Write failing tests for AgentWorkspaceController**
   - Test endpoint mapping và ProblemDetails status codes.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~AgentWorkspaceControllerTests"`
   - Expected: FAIL.
-- [ ] **Step 3: Implement AgentWorkspaceController**
+- [x] **Step 3: Implement AgentWorkspaceController**
   - Sử dụng Primary Constructors, `ToProblemDetails()`, XML docs và ProducesResponseType.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~AgentWorkspaceControllerTests"`
   - Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - `git commit -m "feat(agents): expose AgentWorkspace Web API controller"`
 
 ---
@@ -199,17 +199,17 @@
 - Produces: Định nghĩa công cụ `execute_python_code`, `install_python_packages`, `list_workspace_files`.
 - Tích hợp vòng lặp Tool Calling trong Chat và Hangfire Task.
 
-- [ ] **Step 1: Write failing tests for SystemBuiltInTools resolution**
+- [x] **Step 1: Write failing tests for SystemBuiltInTools resolution**
   - Test nhận diện tool `execute_python_code` và thực thi qua `IPythonSandboxRunner`.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~SystemBuiltInToolsTests"`
   - Expected: FAIL.
-- [ ] **Step 3: Implement SystemBuiltInTools and wiring in Chat/Tasks**
+- [x] **Step 3: Implement SystemBuiltInTools and wiring in Chat/Tasks**
   - Wireup thực thi code khi tool call được xác nhận trong Chat hoặc kích hoạt từ Hangfire.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `dotnet test backend/tests/AgentCoreSystem.UnitTests --filter "FullyQualifiedName~SystemBuiltInToolsTests"`
   - Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - `git commit -m "feat(chat): integrate execute_python_code into LLM function calling loop"`
 
 ---
@@ -228,17 +228,17 @@
 **Interfaces:**
 - Produces: UI quản lý Workspace, File Explorer, Package Manager và Modal preview ảnh/dữ liệu/code.
 
-- [ ] **Step 1: Write failing unit test for AgentWorkspaceComponent**
+- [x] **Step 1: Write failing unit test for AgentWorkspaceComponent**
   - Test render thông tin venv và danh sách files.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `cd frontend; npm run test -- --include src/app/features/agents/components/agent-workspace/agent-workspace.component.spec.ts`
   - Expected: FAIL.
-- [ ] **Step 3: Implement Workspace Service, Components and Modals**
+- [x] **Step 3: Implement Workspace Service, Components and Modals**
   - Viết component dạng Standalone, OnPush, dùng Signals.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `cd frontend; npm run test -- --include src/app/features/agents/components/agent-workspace/agent-workspace.component.spec.ts`
   - Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - `git commit -m "feat(ui): add Agent Workspace explorer, package manager, and artifact preview modal"`
 
 ---
@@ -254,17 +254,17 @@
 **Interfaces:**
 - Produces: Action Card hiển thị khối mã Python đẹp mắt và pill artifacts có thể bấm mở preview.
 
-- [ ] **Step 1: Write failing test for enhanced ChatToolApprovalCard**
+- [x] **Step 1: Write failing test for enhanced ChatToolApprovalCard**
   - Test nhận diện tool `execute_python_code` và hiển thị syntax code block.
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
   - Run: `cd frontend; npm run test -- --include src/app/features/chat/components/chat-tool-approval-card/chat-tool-approval-card.component.spec.ts`
   - Expected: FAIL.
-- [ ] **Step 3: Implement Python code highlight & artifact attachment pills**
+- [x] **Step 3: Implement Python code highlight & artifact attachment pills**
   - Tối ưu UI Action Card theo chuẩn Hallmark & Minimalist UI.
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
   - Run: `cd frontend; npm run test -- --include src/app/features/chat/components/chat-tool-approval-card/chat-tool-approval-card.component.spec.ts`
   - Expected: PASS.
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
   - `git commit -m "feat(ui): enhance Chat Action Card with Python code block and artifact preview pills"`
 
 ---
@@ -274,12 +274,12 @@
 **Files:**
 - Create: `frontend/e2e/specs/sprint-4-python-workspace.spec.ts`
 
-- [ ] **Step 1: Write comprehensive Playwright E2E spec**
+- [x] **Step 1: Write comprehensive Playwright E2E spec**
   - Test mở Workspace tab, kiểm tra trạng thái venv.
   - Test gửi tin nhắn chat kích hoạt tool `execute_python_code`.
   - Test Action Card duyệt chạy script, xác nhận kết quả stdout và mở modal preview artifact.
-- [ ] **Step 2: Run E2E test**
+- [x] **Step 2: Run E2E test**
   - Run: `cd frontend; npx playwright test e2e/specs/sprint-4-python-workspace.spec.ts --project=chromium`
   - Expected: PASS.
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
   - `git commit -m "test(e2e): add Playwright test suite for Sprint 4 Python workspace and artifacts"`
