@@ -1,0 +1,428 @@
+<!-- Agent Workspace & Python Sandbox Management Container -->
+<div class="workspace-container">
+  <!-- Feedback Notification Toast/Alert -->
+  @if (feedbackMessage()) {
+    <div class="alert" [class.alert-success]="feedbackMessage()?.type === 'success'" [class.alert-danger]="feedbackMessage()?.type === 'error'">
+      <span>{{ feedbackMessage()?.text }}</span>
+      <button type="button" class="btn-close-sm" (click)="feedbackMessage.set(null)">✕</button>
+    </div>
+  }
+
+  <!-- Header Overview Cards: Virtualenv Status, Files Count, Storage -->
+  @if (workspaceService.workspace(); as ws) {
+    <div class="overview-grid">
+      <!-- Card 1: Virtualenv Status -->
+      <div class="stat-card">
+        <div class="stat-icon" [class.ready]="ws.isVenvReady">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Môi Trường Sandbox (.venv)</span>
+          <div class="stat-status-row">
+            @if (ws.isVenvReady) {
+              <span class="badge-status badge-ready">● Sẵn sàng</span>
+            } @else {
+              <span class="badge-status badge-pending">○ Chưa khởi tạo</span>
+            }
+            <span class="python-version">{{ ws.pythonVersion || 'Python Host' }}</span>
+          </div>
+        </div>
+        @if (!ws.isVenvReady) {
+          <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            [disabled]="workspaceService.isInitializingVenv()"
+            (click)="onInitVenv()"
+          >
+            @if (workspaceService.isInitializingVenv()) {
+              <span class="spinner-sm"></span> Khởi tạo...
+            } @else {
+              Khởi tạo .venv
+            }
+          </button>
+        }
+      </div>
+
+      <!-- Card 2: Dung lượng & Giới hạn Timeout -->
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+          </svg>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Dung Lượng Sử Dụng</span>
+          <span class="stat-value">{{ formatBytes(ws.storageUsedBytes) }}</span>
+          <span class="stat-sub">Timeout tối đa: {{ ws.maxTimeoutSeconds }}s</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Thống kê tệp tin -->
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Tập Tin & Artifacts</span>
+          <span class="stat-value">{{ ws.totalFilesCount }} tệp</span>
+          <span class="stat-sub">{{ ws.artifactsCount }} artifacts / {{ ws.scriptsCount }} scripts</span>
+        </div>
+      </div>
+    </div>
+  } @else if (workspaceService.isLoading()) {
+    <div class="loading-panel">
+      <span class="spinner"></span>
+      <span>Đang tải thông tin Workspace...</span>
+    </div>
+  }
+
+  <!-- Workspace Sub-tabs Navigation -->
+  <div class="workspace-tabs-nav">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'files'"
+      (click)="setActiveTab('files')"
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      </svg>
+      Tập Tin & Artifacts ({{ workspaceService.files().length }})
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'packages'"
+      (click)="setActiveTab('packages')"
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/>
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+        <line x1="12" y1="22.08" x2="12" y2="12"/>
+      </svg>
+      Gói Cài Đặt Pip ({{ workspaceService.packages().length }})
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'runner'"
+      (click)="setActiveTab('runner')"
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+      Thử Nghiệm Script
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'history'"
+      (click)="setActiveTab('history')"
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 14 14"/>
+      </svg>
+      Lịch Sử Chạy ({{ workspaceService.history().length }})
+    </button>
+  </div>
+
+  <!-- TAB CONTENT 1: File Explorer -->
+  @if (activeTab() === 'files') {
+    <div class="tab-pane">
+      <div class="filter-bar">
+        <div class="category-filters">
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="selectedCategory() === 'all'"
+            (click)="setCategory('all')"
+          >
+            Tất cả
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="selectedCategory() === 'artifacts'"
+            (click)="setCategory('artifacts')"
+          >
+            Artifacts (Kết quả)
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="selectedCategory() === 'scripts'"
+            (click)="setCategory('scripts')"
+          >
+            Mã nguồn Python
+          </button>
+          <button
+            type="button"
+            class="filter-pill"
+            [class.active]="selectedCategory() === 'logs'"
+            (click)="setCategory('logs')"
+          >
+            Nhật ký Logs
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-sm btn-secondary"
+          (click)="loadAllWorkspaceData()"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Làm mới
+        </button>
+      </div>
+
+      @if (filteredFiles().length === 0) {
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1.5" fill="none">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+            <polyline points="13 2 13 9 20 9"/>
+          </svg>
+          <p class="empty-title">Thư mục chưa có tệp tin nào</p>
+          <p class="empty-desc">Khi Agent chạy script Python và tạo ra kết quả, các tệp tin sẽ xuất hiện tại đây.</p>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tên Tệp Tin</th>
+                <th>Phân Loại</th>
+                <th>Kích Thước</th>
+                <th>Thời Gian Sửa Đổi</th>
+                <th class="text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (file of filteredFiles(); track file.relativePath) {
+                <tr>
+                  <td>
+                    <div class="file-cell">
+                      <span class="file-ext-tag">{{ file.extension.replace('.', '') || 'file' }}</span>
+                      <span class="file-name" [title]="file.relativePath">{{ file.name }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="category-badge" [class]="'cat-' + file.category">{{ file.category }}</span>
+                  </td>
+                  <td>{{ formatBytes(file.sizeBytes) }}</td>
+                  <td>{{ file.lastModifiedUtc | date:'short' }}</td>
+                  <td class="text-right">
+                    <button
+                      type="button"
+                      class="action-link"
+                      (click)="openPreview(file)"
+                    >
+                      Xem
+                    </button>
+                    <a
+                      [href]="workspaceService.getDownloadUrl(agentProfileId, file.relativePath)"
+                      target="_blank"
+                      download
+                      class="action-link"
+                    >
+                      Tải về
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- TAB CONTENT 2: Pip Packages -->
+  @if (activeTab() === 'packages') {
+    <div class="tab-pane">
+      <!-- Cài đặt package mới -->
+      <div class="package-install-box">
+        <label for="pkgInput" class="form-label">Cài đặt thêm gói thư viện Python (pip)</label>
+        <div class="input-action-row">
+          <input
+            id="pkgInput"
+            type="text"
+            class="form-control"
+            placeholder="Ví dụ: pandas openpyxl matplotlib scikit-learn..."
+            [ngModel]="newPackageInput()"
+            (ngModelChange)="newPackageInput.set($event)"
+            [disabled]="workspaceService.isLoading()"
+          />
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="workspaceService.isLoading() || !newPackageInput().trim()"
+            (click)="onInstallPackage()"
+          >
+            @if (workspaceService.isLoading()) {
+              <span class="spinner-sm"></span> Đang cài...
+            } @else {
+              Cài Đặt
+            }
+          </button>
+        </div>
+        <p class="input-hint">Có thể nhập nhiều tên gói cách nhau bởi dấu cách. Quá trình cài đặt diễn ra trong sandbox cách ly.</p>
+      </div>
+
+      <!-- Danh sách gói đã cài -->
+      <div class="packages-list-section">
+        <h4 class="section-title">Danh Sách Gói Đã Cài Đặt ({{ workspaceService.packages().length }})</h4>
+        @if (workspaceService.packages().length === 0) {
+          <p class="text-muted">Chưa nạp hoặc chưa có gói nào được cài đặt riêng trong virtualenv.</p>
+        } @else {
+          <div class="packages-grid">
+            @for (pkg of workspaceService.packages(); track pkg) {
+              <div class="pkg-chip">
+                <code>{{ pkg }}</code>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- TAB CONTENT 3: Script Runner -->
+  @if (activeTab() === 'runner') {
+    <div class="tab-pane">
+      <div class="runner-layout">
+        <!-- Editor Box -->
+        <div class="runner-editor-box">
+          <div class="editor-header">
+            <span class="editor-title">interactive_test.py</span>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="workspaceService.isExecuting()"
+              (click)="onRunScript()"
+            >
+              @if (workspaceService.isExecuting()) {
+                <span class="spinner-sm"></span> Đang chạy...
+              } @else {
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                Chạy Script
+              }
+            </button>
+          </div>
+          <textarea
+            class="code-editor-input"
+            rows="10"
+            [ngModel]="testScriptCode()"
+            (ngModelChange)="testScriptCode.set($event)"
+            spellcheck="false"
+          ></textarea>
+        </div>
+
+        <!-- Terminal Output -->
+        @if (workspaceService.lastExecutionResult(); as res) {
+          <div class="terminal-box">
+            <div class="terminal-header">
+              <span class="terminal-title">Kết Quả Thực Thi (Exit Code: {{ res.exitCode }})</span>
+              <span class="terminal-meta">{{ res.durationMs }}ms</span>
+            </div>
+
+            @if (res.stdout) {
+              <div class="output-stream stdout">
+                <span class="stream-label">STDOUT:</span>
+                <pre>{{ res.stdout }}</pre>
+              </div>
+            }
+
+            @if (res.stderr) {
+              <div class="output-stream stderr">
+                <span class="stream-label">STDERR:</span>
+                <pre>{{ res.stderr }}</pre>
+              </div>
+            }
+
+            @if (res.generatedArtifacts && res.generatedArtifacts.length > 0) {
+              <div class="artifacts-generated-row">
+                <span class="stream-label">Artifacts đã sinh ra:</span>
+                <div class="artifacts-pills">
+                  @for (art of res.generatedArtifacts; track art.relativePath) {
+                    <span class="art-pill">
+                      📁 {{ art.fileName }} ({{ formatBytes(art.sizeBytes) }})
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- TAB CONTENT 4: Execution History -->
+  @if (activeTab() === 'history') {
+    <div class="tab-pane">
+      @if (workspaceService.history().length === 0) {
+        <div class="empty-state">
+          <p class="empty-title">Chưa có lịch sử thực thi nào</p>
+          <p class="empty-desc">Các phiên chạy script của Agent từ Chat hoặc Task Scheduler sẽ được ghi nhận tại đây.</p>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Thời Gian</th>
+                <th>Tên Script</th>
+                <th>Nguồn Gọi (Caller)</th>
+                <th>Exit Code</th>
+                <th>Thời Gian Chạy</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of workspaceService.history(); track h.id) {
+                <tr>
+                  <td>{{ h.createdDate | date:'short' }}</td>
+                  <td><code>{{ h.scriptName }}</code></td>
+                  <td><span class="caller-badge">{{ h.callerType }}</span></td>
+                  <td>
+                    <span class="status-code-badge" [class.success]="h.exitCode === 0" [class.fail]="h.exitCode !== 0">
+                      {{ h.exitCode === 0 ? 'Thành công (0)' : 'Lỗi (' + h.exitCode + ')' }}
+                    </span>
+                  </td>
+                  <td>{{ h.durationMs }}ms</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal xem trước Artifacts đính kèm -->
+<app-artifact-preview-modal
+  [isOpen]="isPreviewOpen()"
+  [file]="previewFile()"
+  [agentProfileId]="agentProfileId"
+  (closed)="closePreview()"
+/>

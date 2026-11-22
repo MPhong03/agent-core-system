@@ -43,11 +43,12 @@ import {
 } from '../../models/organization.models';
 import { OrganizationStore } from '../../store/organization.store';
 import { ToolsService } from '../../../agents/tools/services/tools.service';
+import { AgentWorkspaceComponent } from '../../../agents/components/agent-workspace/agent-workspace.component';
 
 @Component({
   selector: 'app-agent-profile-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AgentWorkspaceComponent],
   templateUrl: './agent-profile-modal.component.html',
   styleUrls: ['./agent-profile-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,6 +71,11 @@ export class AgentProfileModalComponent implements OnInit, OnChanges {
   readonly ToolExecutionMode = ToolExecutionMode;
   readonly submitting = signal<boolean>(false);
   readonly submitError = signal<string | null>(null);
+  readonly modalTab = signal<'config' | 'workspace'>('config');
+
+  setModalTab(tab: 'config' | 'workspace'): void {
+    this.modalTab.set(tab);
+  }
 
   // ── Providers Danh Mục ──
   readonly providers = [
@@ -155,6 +161,7 @@ export class AgentProfileModalComponent implements OnInit, OnChanges {
   }
 
   private initModalData(): void {
+    this.modalTab.set('config');
     this.toolsService.loadTools().subscribe();
 
     const activeId = this.activeAgentId;

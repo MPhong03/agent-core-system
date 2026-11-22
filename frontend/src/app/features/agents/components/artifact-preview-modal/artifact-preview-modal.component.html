@@ -1,0 +1,79 @@
+<!-- Modal Xem trước Tập tin & Artifacts (.csv, .json, .txt, .py, ảnh .png, .jpg)
+     🔴 Tuân thủ OnPush và Minimalist Canvas #F7F5F2, 1px border, backdrop click để đóng -->
+@if (isOpen && file) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="modal-header">
+        <div class="header-info">
+          <div class="file-icon-badge" [attr.data-ext]="file.extension.replace('.', '')">
+            {{ file.extension.toUpperCase().replace('.', '') || 'FILE' }}
+          </div>
+          <div>
+            <h3 class="file-title">{{ file.name }}</h3>
+            <p class="file-meta">
+              <span>{{ formatBytes(file.sizeBytes) }}</span>
+              <span class="dot">•</span>
+              <span>Đường dẫn: <code>{{ file.relativePath }}</code></span>
+            </p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <a
+            [href]="getDownloadUrl()"
+            target="_blank"
+            download
+            class="btn btn-secondary btn-sm"
+            title="Tải về tệp tin"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Tải về
+          </a>
+          <button type="button" class="btn-close" (click)="close()" aria-label="Đóng">✕</button>
+        </div>
+      </div>
+
+      <!-- Body: Content Preview -->
+      <div class="modal-body">
+        @if (isLoadingContent()) {
+          <div class="preview-loading">
+            <span class="spinner"></span>
+            <span>Đang tải nội dung tệp...</span>
+          </div>
+        } @else if (isImage(file.extension)) {
+          <div class="image-preview-container">
+            <img [src]="getDownloadUrl()" [alt]="file.name" class="preview-img" />
+          </div>
+        } @else if (isTextBased(file.extension)) {
+          <div class="text-preview-container">
+            <pre class="code-preview"><code>{{ textContent() }}</code></pre>
+          </div>
+        } @else {
+          <div class="unsupported-preview">
+            <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+              <polyline points="13 2 13 9 20 9"/>
+            </svg>
+            <p class="unsupported-title">Định dạng tập tin không hỗ trợ xem trực tiếp</p>
+            <p class="unsupported-desc">Vui lòng tải tập tin về máy để xem nội dung đầy đủ.</p>
+            <a [href]="getDownloadUrl()" target="_blank" download class="btn btn-primary mt-3">
+              Tải tập tin về máy
+            </a>
+          </div>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="close()">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -23,7 +23,36 @@
         <button type="button" class="btn-close" (click)="close()" aria-label="Đóng">✕</button>
       </div>
 
+      <!-- Navigation Tabs khi đang ở chế độ Chỉnh sửa hồ sơ Agent -->
+      @if (isEditMode) {
+        <div class="modal-nav-tabs">
+          <button
+            type="button"
+            class="nav-tab-item"
+            [class.active]="modalTab() === 'config'"
+            (click)="setModalTab('config')"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+              <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            Cấu Hình & Công Cụ
+          </button>
+          <button
+            type="button"
+            class="nav-tab-item"
+            [class.active]="modalTab() === 'workspace'"
+            (click)="setModalTab('workspace')"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            Python Workspace & Sandbox
+          </button>
+        </div>
+      }
+
       <!-- Modal Body: Biểu mẫu cấu hình chi tiết thông số Agent AI -->
+      @if (!isEditMode || modalTab() === 'config') {
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal-body">
         <!-- Khối hiển thị thông báo lỗi khi API thất bại (RULE-06: Không nuốt lỗi) -->
         @if (submitError()) {
@@ -266,6 +295,16 @@
           </button>
         </div>
       </form>
+      } @else if (isEditMode && modalTab() === 'workspace') {
+        <div class="modal-body workspace-modal-body">
+          <app-agent-workspace [agentProfileId]="activeAgentId!" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="close()">
+            Đóng
+          </button>
+        </div>
+      }
     </div>
   </div>
 }
