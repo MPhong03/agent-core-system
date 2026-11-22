@@ -126,7 +126,21 @@ Thị trường AI Automation hiện nay phân hóa thành 3 nhóm đối thủ 
   - Dựng `Module.Agents` (Phần 1, schema `agent`): `ToolDefinition`, `AgentToolAccess`.
   - Xây dựng `RestApiToolExecutor` và kết nối Function Calling với LLM Provider.
   - Giao diện Angular: Màn hình tạo No-Code Tool (nhập URL, method, headers, schema).
-- **Sprint 4: Agent Python Workspace & Môi trường Cách ly (.venv Sandbox)**
+- **Sprint 4: Agent Python Workspace & Môi trường Cách ly (.venv Sandbox)** [HOÀN THÀNH]
   - Dựng `Module.Agents` (Phần 2): `WorkspaceManager` và `PythonVenvRunner`.
   - Tạo workspace riêng cho từng Agent, hỗ trợ tự sinh script và chạy trong `.venv` độc lập.
   - Giao diện Angular: Quản lý Workspace của Agent, xem kết quả đầu ra (Artifacts).
+- **Sprint 5: Tri thức & Bộ nhớ Dài hạn (Long-Term Memory & Knowledge / KAG & RAG)** [ĐANG TRIỂN KHAI]
+  - Dựng `Module.Knowledge` (schema `knowledge`): `KnowledgeDocument`, `DocumentChunk`, `AgentMemoryNote`.
+  - In-process / Local Vector Store với Cosine Similarity, tích hợp Embedding qua 9router / Ollama.
+  - Giao diện Angular: Upload & quản lý tài liệu theo Kênh / Agent, xem danh sách tri thức được kích hoạt trong hội thoại.
+- **Sprint 6: Nghiệm thu & Giám sát Tác vụ (Human-in-the-Loop & Feedback Loop)**
+  - Vòng đời nghiệm thu TaskItem: Review Gate (Approve / Request Revision kèm nhận xét).
+  - Tự động nạp nhận xét nghiệm thu vào Private Memory của Agent để cải thiện hiệu suất.
+  - Cơ chế Escalation: Agent chủ động tag `@Manager` khi gặp sự cố, lỗi API hoặc bế tắc.
+- **Sprint 7: Mẫu Biệt đội & Chợ Công cụ (Squad Recipes & Connectors Catalog)**
+  - Quản lý Squad Templates: Đóng gói và Import / Export cấu hình Biệt đội (Department, Channel, Agents, Prompts, Tools).
+  - Thư viện mẫu dựng sẵn: Inbox Zero Squad, Tech Research Squad, Web Scraper Squad.
+- **Sprint 8: Đóng gói Triển khai & Tự lưu trữ (Production Packaging & Self-Hosted Installer)**
+  - Containerization toàn diện qua Docker Compose (.NET API Host, Angular Client, SQL Server, MongoDB, Python venv runtime).
+  - Script cài đặt 1-click tự động hóa khởi tạo cơ sở dữ liệu và biến môi trường cho môi trường VPS / On-Premise.
