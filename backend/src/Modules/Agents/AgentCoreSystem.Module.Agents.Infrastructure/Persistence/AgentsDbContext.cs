@@ -42,6 +42,12 @@ namespace AgentCoreSystem.Module.Agents.Infrastructure.Persistence
         /// <inheritdoc />
         public DbSet<ToolExecutionLog> ToolExecutionLogs => Set<ToolExecutionLog>();
 
+        /// <inheritdoc />
+        public DbSet<AgentWorkspaceConfig> AgentWorkspaceConfigs => Set<AgentWorkspaceConfig>();
+
+        /// <inheritdoc />
+        public DbSet<ScriptExecutionHistory> ScriptExecutionHistories => Set<ScriptExecutionHistory>();
+
         // ── Model Configuration ──
 
         /// <inheritdoc />
