@@ -90,6 +90,25 @@ export class ChatBubbleComponent {
   });
 
   /**
+   * Phát hiện các artifact xuất hiện trong tin nhắn (dạng artifacts/tên-file.ext hoặc [artifact:tên-file.ext]).
+   */
+  readonly detectedArtifacts = computed<string[]>(() => {
+    const raw = this.rawText();
+    if (!raw) return [];
+
+    const artifacts: string[] = [];
+    const regex = /(?:\[artifact:([^\]]+)\])|(?:artifacts\/([a-zA-Z0-9_\-\.]+\.[a-zA-Z0-9]+))/g;
+    let match;
+    while ((match = regex.exec(raw)) !== null) {
+      const art = match[1] || match[2];
+      if (art && !artifacts.includes(art)) {
+        artifacts.push(art);
+      }
+    }
+    return artifacts;
+  });
+
+  /**
    * Nội dung tin nhắn đã được parse Markdown và sanitize an toàn chống XSS.
    */
   readonly renderedContent = computed<SafeHtml>(() => {

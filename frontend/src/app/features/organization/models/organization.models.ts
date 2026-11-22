@@ -34,6 +34,7 @@ export enum ModelProviderType {
   OpenAI = 2,
   Claude = 3,
   Ollama = 4,
+  NineRouter = 5,
 }
 
 /**

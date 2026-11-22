@@ -61,6 +61,129 @@ namespace AgentCoreSystem.Module.Agents.Infrastructure.Persistence.Migrations
                     b.ToTable("AgentToolAccesses", "agent");
                 });
 
+            modelBuilder.Entity("AgentCoreSystem.Module.Agents.Domain.Entities.AgentWorkspaceConfig", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AgentProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVenvReady")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastActiveAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MaxTimeoutSeconds")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(60);
+
+                    b.Property<string>("PythonVersion")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<long>("StorageUsedBytes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
+                    b.Property<DateTimeOffset?>("UpdatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgentProfileId")
+                        .IsUnique();
+
+                    b.ToTable("AgentWorkspaceConfigs", "agent");
+                });
+
+            modelBuilder.Entity("AgentCoreSystem.Module.Agents.Domain.Entities.ScriptExecutionHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AgentProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ArtifactsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CallerType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("ExecutionSourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ExitCode")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsTimeout")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("ScriptContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ScriptName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Stderr")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Stdout")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("UpdatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgentProfileId");
+
+                    b.HasIndex("ExecutionSourceId");
+
+                    b.ToTable("ScriptExecutionHistories", "agent");
+                });
+
             modelBuilder.Entity("AgentCoreSystem.Module.Agents.Domain.Entities.ToolDefinition", b =>
                 {
                     b.Property<Guid>("Id")

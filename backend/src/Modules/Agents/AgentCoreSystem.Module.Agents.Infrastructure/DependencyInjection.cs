@@ -5,7 +5,11 @@
 
 using System;
 using AgentCoreSystem.Module.Agents.Application.Contracts;
+using AgentCoreSystem.Module.Agents.Application.Services.Python;
+using AgentCoreSystem.Module.Agents.Application.Services.Workspace;
 using AgentCoreSystem.Module.Agents.Infrastructure.Persistence;
+using AgentCoreSystem.Module.Agents.Infrastructure.Services.Python;
+using AgentCoreSystem.Module.Agents.Infrastructure.Services.Workspace;
 using AgentCoreSystem.Shared.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -39,6 +43,9 @@ namespace AgentCoreSystem.Module.Agents.Infrastructure
 
             services.AddScoped<IAgentsDbContext>(sp =>
                 sp.GetRequiredService<AgentsDbContext>());
+
+            services.AddSingleton<IWorkspaceManager, WorkspaceManager>();
+            services.AddSingleton<IPythonSandboxRunner, PythonVenvRunner>();
 
             return services;
         }

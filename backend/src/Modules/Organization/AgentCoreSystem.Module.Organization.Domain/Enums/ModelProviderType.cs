@@ -36,6 +36,12 @@ namespace AgentCoreSystem.Module.Organization.Domain.Enums
         /// Mô hình Local mã nguồn mở chạy qua Ollama.
         /// </summary>
         /// <remarks>⇒ Không tốn chi phí token bên ngoài, bảo mật dữ liệu tuyệt đối trong mạng nội bộ.</remarks>
-        Ollama = 4
+        Ollama = 4,
+
+        /// <summary>
+        /// Cổng định tuyến cục bộ 9router (OpenAI-compatible đa mô hình).
+        /// </summary>
+        /// <remarks>⇒ Kết nối tới 9router gateway cục bộ tại localhost.</remarks>
+        NineRouter = 5
     }
 }

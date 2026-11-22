@@ -41,6 +41,16 @@ namespace AgentCoreSystem.Module.Agents.Application.Contracts
         /// </summary>
         DbSet<ToolExecutionLog> ToolExecutionLogs { get; }
 
+        /// <summary>
+        /// Tập hợp cấu hình không gian làm việc của Agent.
+        /// </summary>
+        DbSet<AgentWorkspaceConfig> AgentWorkspaceConfigs { get; }
+
+        /// <summary>
+        /// Tập hợp lịch sử thực thi mã nguồn Python của Agent.
+        /// </summary>
+        DbSet<ScriptExecutionHistory> ScriptExecutionHistories { get; }
+
         // ── Persistence Operations ──
 
         /// <summary>

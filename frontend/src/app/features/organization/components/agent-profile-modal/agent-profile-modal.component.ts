@@ -43,11 +43,12 @@ import {
 } from '../../models/organization.models';
 import { OrganizationStore } from '../../store/organization.store';
 import { ToolsService } from '../../../agents/tools/services/tools.service';
+import { AgentWorkspaceComponent } from '../../../agents/components/agent-workspace/agent-workspace.component';
 
 @Component({
   selector: 'app-agent-profile-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AgentWorkspaceComponent],
   templateUrl: './agent-profile-modal.component.html',
   styleUrls: ['./agent-profile-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,10 +71,16 @@ export class AgentProfileModalComponent implements OnInit, OnChanges {
   readonly ToolExecutionMode = ToolExecutionMode;
   readonly submitting = signal<boolean>(false);
   readonly submitError = signal<string | null>(null);
+  readonly modalTab = signal<'config' | 'workspace'>('config');
+
+  setModalTab(tab: 'config' | 'workspace'): void {
+    this.modalTab.set(tab);
+  }
 
   // ── Providers Danh Mục ──
   readonly providers = [
-    { type: ModelProviderType.Gemini, name: 'Google Gemini', tag: 'Gemini', defaultModel: 'gemini-2.5-flash' },
+    { type: ModelProviderType.NineRouter, name: '9router Gateway', tag: '9router', defaultModel: 'ag/gemini-3.8-flash-low' },
+    { type: ModelProviderType.Gemini, name: 'Google Gemini', tag: 'Gemini', defaultModel: 'ag/gemini-3.8-flash-low' },
     { type: ModelProviderType.OpenAI, name: 'OpenAI GPT', tag: 'OpenAI', defaultModel: 'gpt-4o' },
     { type: ModelProviderType.Claude, name: 'Anthropic Claude', tag: 'Claude', defaultModel: 'claude-3-7-sonnet' },
     { type: ModelProviderType.Ollama, name: 'Ollama Local', tag: 'Ollama', defaultModel: 'deepseek-r1:7b' },
@@ -155,6 +162,7 @@ export class AgentProfileModalComponent implements OnInit, OnChanges {
   }
 
   private initModalData(): void {
+    this.modalTab.set('config');
     this.toolsService.loadTools().subscribe();
 
     const activeId = this.activeAgentId;

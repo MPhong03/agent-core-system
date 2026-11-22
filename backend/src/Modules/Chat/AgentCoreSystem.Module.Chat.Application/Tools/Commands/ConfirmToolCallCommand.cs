@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AgentCoreSystem.Module.Agents.Application.Common;
+using AgentCoreSystem.Module.Agents.Application.Services.Tools;
 using AgentCoreSystem.Module.Agents.Application.Tools.Commands;
 using AgentCoreSystem.Module.Agents.Application.Tools.Queries;
 using AgentCoreSystem.Module.Agents.Domain.Enums;
@@ -97,7 +98,7 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
             }
 
             // 2. Tìm thông tin định nghĩa công cụ để thực thi
-            var toolsResult = await sender.Send(new GetToolDefinitionsQuery(MaskSecrets: false), cancellationToken);
+            var toolsResult = await sender.Send(new GetToolDefinitionsQuery(MaskSecrets: false, IncludeBuiltInTools: true), cancellationToken);
             var toolDef = toolsResult.Value?.FirstOrDefault(t => t.Name.Equals(pendingCall.ToolName, StringComparison.OrdinalIgnoreCase));
 
             if (toolDef == null)
@@ -122,28 +123,74 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
                 }
             }
 
-            // 4. Thực thi công cụ qua IRestApiExecutor
-            var execRequest = new RestApiExecutionRequest
-            {
-                Url = toolDef.EndpointUrl,
-                Method = toolDef.HttpMethod,
-                Headers = headers,
-                Arguments = arguments,
-                TimeoutSeconds = toolDef.TimeoutSeconds
-            };
+            // 4. Thực thi công cụ qua IRestApiExecutor hoặc SystemBuiltInTools
+            string toolOutput;
+            string responsePayload = string.Empty;
+            int? statusCode = null;
+            long durationMs = 0;
+            bool isSuccess = false;
+            string? errorMessage = null;
 
-            var execResult = await restApiExecutor.ExecuteAsync(execRequest, cancellationToken);
-            var toolOutput = execResult.IsSuccess
-                ? execResult.ResponsePayload
-                : (execResult.ErrorMessage ?? "Thực thi công cụ thất bại.");
+            var originalAssistantMsg = await dbContext.Messages
+                .FirstOrDefaultAsync(m => m.Id == pendingCall.ChatMessageId, cancellationToken);
+
+            Guid agentProfileId = Guid.Empty;
+            try
+            {
+                var channelMembers = await sender.Send(new GetChannelMembersQuery(pendingCall.ChannelId), cancellationToken);
+                var agentMember = channelMembers.Value?.FirstOrDefault(m => m.Id == originalAssistantMsg?.SenderMemberId);
+                agentProfileId = agentMember?.AgentProfileId ?? Guid.Empty;
+            }
+            catch
+            {
+                // Ignore
+            }
+
+            if (SystemBuiltInTools.IsBuiltInTool(pendingCall.ToolName))
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var sysResult = await sender.Send(new ExecuteSystemToolCommand(
+                    AgentProfileId: agentProfileId,
+                    ToolName: pendingCall.ToolName,
+                    ArgumentsJson: pendingCall.ArgumentsJson,
+                    CallerType: "Chat",
+                    ExecutionSourceId: pendingCall.ChatMessageId
+                ), cancellationToken);
+                sw.Stop();
+
+                durationMs = sw.ElapsedMilliseconds;
+                isSuccess = sysResult.IsSuccess;
+                toolOutput = isSuccess ? sysResult.Value : (sysResult.Error.Description ?? "Thực thi công cụ thất bại.");
+                responsePayload = toolOutput;
+                statusCode = isSuccess ? 200 : 500;
+                errorMessage = isSuccess ? null : sysResult.Error.Description;
+            }
+            else
+            {
+                var execRequest = new RestApiExecutionRequest
+                {
+                    Url = toolDef.EndpointUrl,
+                    Method = toolDef.HttpMethod,
+                    Headers = headers,
+                    Arguments = arguments,
+                    TimeoutSeconds = toolDef.TimeoutSeconds
+                };
+
+                var execResult = await restApiExecutor.ExecuteAsync(execRequest, cancellationToken);
+                isSuccess = execResult.IsSuccess;
+                toolOutput = isSuccess
+                    ? execResult.ResponsePayload
+                    : (execResult.ErrorMessage ?? "Thực thi công cụ thất bại.");
+                responsePayload = execResult.ResponsePayload;
+                statusCode = execResult.StatusCode;
+                durationMs = execResult.DurationMs;
+                errorMessage = execResult.ErrorMessage;
+            }
 
             // 5. Đánh dấu đã phê duyệt
             pendingCall.Confirm();
 
             // 6. Lưu tin nhắn kết quả của tool vào DB
-            var originalAssistantMsg = await dbContext.Messages
-                .FirstOrDefaultAsync(m => m.Id == pendingCall.ChatMessageId, cancellationToken);
-
             var toolMessage = new ChatMessage(
                 channelId: pendingCall.ChannelId,
                 senderMemberId: originalAssistantMsg?.SenderMemberId ?? Guid.Empty,
@@ -159,21 +206,20 @@ namespace AgentCoreSystem.Module.Chat.Application.Tools.Commands
             // 7. Ghi nhật ký thực thi công cụ (ToolExecutionLog)
             try
             {
-                var channelMembers = await sender.Send(new GetChannelMembersQuery(pendingCall.ChannelId), cancellationToken);
-                var agentMember = channelMembers.Value?.FirstOrDefault(m => m.Id == originalAssistantMsg?.SenderMemberId);
-                var agentProfileId = agentMember?.AgentProfileId ?? Guid.Empty;
-
-                await sender.Send(new RecordToolExecutionCommand(
-                    ToolDefinitionId: toolDef.Id,
-                    AgentProfileId: agentProfileId,
-                    CallerType: ToolCallerType.Chat,
-                    ExecutionSourceId: pendingCall.ChatMessageId,
-                    InputArguments: pendingCall.ArgumentsJson,
-                    ResponsePayload: execResult.ResponsePayload,
-                    StatusCode: execResult.StatusCode,
-                    DurationMs: execResult.DurationMs,
-                    IsSuccess: execResult.IsSuccess,
-                    ErrorMessage: execResult.ErrorMessage), cancellationToken);
+                if (agentProfileId != Guid.Empty)
+                {
+                    await sender.Send(new RecordToolExecutionCommand(
+                        ToolDefinitionId: toolDef.Id,
+                        AgentProfileId: agentProfileId,
+                        CallerType: ToolCallerType.Chat,
+                        ExecutionSourceId: pendingCall.ChatMessageId,
+                        InputArguments: pendingCall.ArgumentsJson,
+                        ResponsePayload: responsePayload,
+                        StatusCode: statusCode,
+                        DurationMs: durationMs,
+                        IsSuccess: isSuccess,
+                        ErrorMessage: errorMessage), cancellationToken);
+                }
             }
             catch
             {

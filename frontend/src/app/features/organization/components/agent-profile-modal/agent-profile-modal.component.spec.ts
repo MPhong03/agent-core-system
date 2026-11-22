@@ -236,4 +236,16 @@ describe('AgentProfileModalComponent', () => {
       expect.arrayContaining(['tool-002']),
     );
   });
+
+  it('hỗ trợ chuyển đổi giữa tab Cấu hình và tab Python Workspace khi ở chế độ edit', () => {
+    fixture.componentRef.setInput('isOpen', true);
+    fixture.componentRef.setInput('agentProfileId', 'agent-existing-123');
+    fixture.detectChanges();
+
+    expect(component.isEditMode).toBe(true);
+    expect(component.modalTab()).toBe('config');
+
+    component.setModalTab('workspace');
+    expect(component.modalTab()).toBe('workspace');
+  });
 });

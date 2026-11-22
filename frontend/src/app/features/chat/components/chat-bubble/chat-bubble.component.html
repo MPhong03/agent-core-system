@@ -54,6 +54,24 @@
       <!-- Nội dung Markdown đã được parse và sanitize an toàn chống XSS qua renderedContent() -->
       <div class="bubble-text" [innerHTML]="renderedContent()"></div>
 
+      <!-- Khối hiển thị các tệp Artifacts sinh ra từ Sandbox Python -->
+      @if (detectedArtifacts().length > 0) {
+        <div class="chat-artifacts-block">
+          <span class="artifacts-label">Tập tin tạo ra:</span>
+          <div class="artifacts-chips">
+            @for (art of detectedArtifacts(); track art) {
+              <span class="artifact-pill" title="Tệp tin được lưu trong workspace sandbox">
+                <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none">
+                  <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                  <polyline points="13 2 13 9 20 9"/>
+                </svg>
+                <span>{{ art }}</span>
+              </span>
+            }
+          </div>
+        </div>
+      }
+
       <!-- Con trỏ gõ chữ nhấp nháy thời gian thực khi đang sinh token -->
       @if (isStreaming()) {
         <span class="typing-cursor" aria-hidden="true"></span>

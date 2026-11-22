@@ -125,4 +125,20 @@ describe('ChatBubbleComponent', () => {
     expect(pre?.textContent).toContain('const _private = "*test*";');
     expect(pre?.textContent).toContain('@decorator');
   });
+
+  it('nhận diện và hiển thị artifact pill khi tin nhắn chứa đường dẫn artifacts/', () => {
+    const artifactMsg: ChatMessage = {
+      ...mockAgentMessage,
+      content: 'Tôi đã phân tích xong dữ liệu. Báo cáo được lưu tại artifacts/revenue_report.csv.',
+    };
+    fixture.componentRef.setInput('message', artifactMsg);
+    fixture.detectChanges();
+
+    expect(component.detectedArtifacts()).toContain('revenue_report.csv');
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const pill = compiled.querySelector('.artifact-pill');
+    expect(pill).toBeTruthy();
+    expect(pill?.textContent).toContain('revenue_report.csv');
+  });
 });
