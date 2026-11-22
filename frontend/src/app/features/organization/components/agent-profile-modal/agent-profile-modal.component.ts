@@ -79,7 +79,8 @@ export class AgentProfileModalComponent implements OnInit, OnChanges {
 
   // ── Providers Danh Mục ──
   readonly providers = [
-    { type: ModelProviderType.Gemini, name: 'Google Gemini', tag: 'Gemini', defaultModel: 'gemini-2.5-flash' },
+    { type: ModelProviderType.NineRouter, name: '9router Gateway', tag: '9router', defaultModel: 'ag/gemini-3.8-flash-low' },
+    { type: ModelProviderType.Gemini, name: 'Google Gemini', tag: 'Gemini', defaultModel: 'ag/gemini-3.8-flash-low' },
     { type: ModelProviderType.OpenAI, name: 'OpenAI GPT', tag: 'OpenAI', defaultModel: 'gpt-4o' },
     { type: ModelProviderType.Claude, name: 'Anthropic Claude', tag: 'Claude', defaultModel: 'claude-3-7-sonnet' },
     { type: ModelProviderType.Ollama, name: 'Ollama Local', tag: 'Ollama', defaultModel: 'deepseek-r1:7b' },
