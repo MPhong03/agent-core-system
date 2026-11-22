@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AgentCoreSystem.Module.Agents.Application.Common;
+using AgentCoreSystem.Module.Agents.Application.Services.Tools;
 using AgentCoreSystem.Module.Agents.Application.Tools.Commands;
 using AgentCoreSystem.Module.Agents.Application.Tools.DTOs;
 using AgentCoreSystem.Module.Agents.Application.Tools.Queries;
@@ -199,7 +200,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                 return;
             }
 
-            var toolsResult = await sender.Send(new GetAgentToolsQuery(profile.Id, MaskSecrets: false), ct);
+            var toolsResult = await sender.Send(new GetAgentToolsQuery(profile.Id, MaskSecrets: false, IncludeBuiltInTools: true), ct);
             var activeTools = toolsResult.IsSuccess ? toolsResult.Value : new List<ToolDefinitionDto>();
             var toolDefs = activeTools.Select(t => new LlmToolDefinitionPayload(
                 t.Name,
@@ -365,7 +366,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                 var activeTools = new List<ToolDefinitionDto>();
                 try
                 {
-                    var toolsResult = await sender.Send(new GetAgentToolsQuery(profile.Id, MaskSecrets: false), ct);
+                    var toolsResult = await sender.Send(new GetAgentToolsQuery(profile.Id, MaskSecrets: false, IncludeBuiltInTools: true), ct);
                     if (toolsResult is { IsSuccess: true, Value: not null })
                     {
                         activeTools = toolsResult.Value;
@@ -551,7 +552,7 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
                                 await hubContext.Clients.Group(channelGroup)
                                     .SendAsync("ToolExecuting", call.Id, call.Name, call.Arguments, ct);
 
-                                var execResult = await ExecuteToolCallAsync(activeTools, call, ct);
+                                var execResult = await ExecuteToolCallAsync(profile.Id, assistantMsgId, activeTools, call, ct);
                                 var toolOutput = execResult.IsSuccess
                                     ? execResult.ResponsePayload
                                     : (execResult.ErrorMessage ?? "Tool execution failed.");
@@ -703,10 +704,34 @@ namespace AgentCoreSystem.Module.Chat.Infrastructure.Services
         }
 
         private async Task<RestApiExecutionResult> ExecuteToolCallAsync(
+            Guid agentProfileId,
+            Guid executionSourceId,
             List<ToolDefinitionDto> activeTools,
             LlmToolCallPayload toolCall,
             CancellationToken ct)
         {
+            if (SystemBuiltInTools.IsBuiltInTool(toolCall.Name))
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var sysResult = await sender.Send(new ExecuteSystemToolCommand(
+                    AgentProfileId: agentProfileId,
+                    ToolName: toolCall.Name,
+                    ArgumentsJson: toolCall.Arguments,
+                    CallerType: "Chat",
+                    ExecutionSourceId: executionSourceId
+                ), ct);
+                sw.Stop();
+
+                return new RestApiExecutionResult
+                {
+                    IsSuccess = sysResult.IsSuccess,
+                    StatusCode = sysResult.IsSuccess ? 200 : 500,
+                    ResponsePayload = sysResult.IsSuccess ? sysResult.Value : (sysResult.Error.Description ?? "System tool execution failed."),
+                    ErrorMessage = sysResult.IsSuccess ? null : sysResult.Error.Description,
+                    DurationMs = sw.ElapsedMilliseconds
+                };
+            }
+
             var toolDef = activeTools.FirstOrDefault(t => t.Name.Equals(toolCall.Name, StringComparison.OrdinalIgnoreCase));
             if (toolDef == null || restApiExecutor == null)
             {

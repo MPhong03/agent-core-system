@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AgentCoreSystem.Module.Agents.Application.Contracts;
+using AgentCoreSystem.Module.Agents.Application.Services.Tools;
 using AgentCoreSystem.Module.Agents.Application.Tools.DTOs;
 using AgentCoreSystem.Shared.Application.Messaging;
 using AgentCoreSystem.Shared.Kernel.Primitives;
@@ -21,7 +22,8 @@ namespace AgentCoreSystem.Module.Agents.Application.Tools.Queries
     /// </summary>
     /// <param name="AgentProfileId">Mã định danh hồ sơ Agent.</param>
     /// <param name="MaskSecrets">Cờ yêu cầu che giấu trường Secret trong Headers (mặc định True).</param>
-    public record GetAgentToolsQuery(Guid AgentProfileId, bool MaskSecrets = true) : IQuery<List<ToolDefinitionDto>>;
+    /// <param name="IncludeBuiltInTools">Cờ yêu cầu đính kèm các công cụ hệ thống tích hợp sẵn (mặc định False).</param>
+    public record GetAgentToolsQuery(Guid AgentProfileId, bool MaskSecrets = true, bool IncludeBuiltInTools = false) : IQuery<List<ToolDefinitionDto>>;
 
     /// <summary>
     /// Handler xử lý truy vấn danh sách công cụ được phân quyền cho Agent.
@@ -46,6 +48,18 @@ namespace AgentCoreSystem.Module.Agents.Application.Tools.Queries
                 .OrderBy(t => t.Name)
                 .Select(t => ToolDefinitionDto.FromEntity(t, maskSecrets: request.MaskSecrets))
                 .ToList();
+
+            if (request.IncludeBuiltInTools)
+            {
+                // Bổ sung các System Built-In Tools (Python Sandbox, v.v.)
+                foreach (var systemTool in SystemBuiltInTools.GetAll())
+                {
+                    if (!activeTools.Any(t => t.Name.Equals(systemTool.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        activeTools.Add(systemTool);
+                    }
+                }
+            }
 
             return Result.Success(activeTools);
         }

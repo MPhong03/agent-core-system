@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AgentCoreSystem.Module.Agents.Application.Common;
+using AgentCoreSystem.Module.Agents.Application.Services.Tools;
 using AgentCoreSystem.Module.Agents.Application.Tools.Commands;
 using AgentCoreSystem.Module.Agents.Application.Tools.DTOs;
 using AgentCoreSystem.Module.Agents.Application.Tools.Queries;
@@ -139,7 +140,7 @@ namespace AgentCoreSystem.Module.Tasks.Infrastructure.Jobs
                 {
                     try
                     {
-                        var toolsResult = await mediator.Send(new GetAgentToolsQuery(profile.Id, MaskSecrets: false), cancellationToken);
+                        var toolsResult = await mediator.Send(new GetAgentToolsQuery(profile.Id, MaskSecrets: false, IncludeBuiltInTools: true), cancellationToken);
                         if (toolsResult is { IsSuccess: true, Value: not null })
                         {
                             activeTools = toolsResult.Value;
@@ -193,7 +194,7 @@ namespace AgentCoreSystem.Module.Tasks.Infrastructure.Jobs
 
                                 if (isSafe && matchedTool != null)
                                 {
-                                    var execResult = await ExecuteToolCallAsync(matchedTool, call, cancellationToken);
+                                    var execResult = await ExecuteToolCallAsync(profile.Id, task.Id, matchedTool, call, cancellationToken);
                                     var toolOutput = execResult.IsSuccess
                                         ? execResult.ResponsePayload
                                         : (execResult.ErrorMessage ?? "Tool execution failed.");
@@ -373,10 +374,34 @@ namespace AgentCoreSystem.Module.Tasks.Infrastructure.Jobs
         /// <param name="ct">Token hủy tác vụ.</param>
         /// <returns>Kết quả thực thi REST API <see cref="RestApiExecutionResult"/>.</returns>
         private async Task<RestApiExecutionResult> ExecuteToolCallAsync(
+            Guid agentProfileId,
+            Guid taskId,
             ToolDefinitionDto toolDef,
             LlmToolCallPayload toolCall,
             CancellationToken ct)
         {
+            if (SystemBuiltInTools.IsBuiltInTool(toolCall.Name))
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var sysResult = await mediator.Send(new ExecuteSystemToolCommand(
+                    AgentProfileId: agentProfileId,
+                    ToolName: toolCall.Name,
+                    ArgumentsJson: toolCall.Arguments,
+                    CallerType: "Task",
+                    ExecutionSourceId: taskId
+                ), ct);
+                sw.Stop();
+
+                return new RestApiExecutionResult
+                {
+                    IsSuccess = sysResult.IsSuccess,
+                    StatusCode = sysResult.IsSuccess ? 200 : 500,
+                    ResponsePayload = sysResult.IsSuccess ? sysResult.Value : (sysResult.Error.Description ?? "System tool execution failed."),
+                    ErrorMessage = sysResult.IsSuccess ? null : sysResult.Error.Description,
+                    DurationMs = sw.ElapsedMilliseconds
+                };
+            }
+
             var headers = SecretMaskingHelper.ParseHeaders(toolDef.HeadersConfig);
             IDictionary<string, object?>? arguments = null;
             if (!string.IsNullOrWhiteSpace(toolCall.Arguments))
