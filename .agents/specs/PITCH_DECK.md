@@ -194,17 +194,24 @@ Người dùng có thể tự do biến hóa hệ thống cho bất kỳ nhu c�
 
 ---
 
-## SLIDE 10: LỘ TRÌNH 5 SPRINTS TRIỂN KHAI (ROADMAP)
+## SLIDE 10: LỘ TRÌNH 8 SPRINTS TRIỂN KHAI (EXPANDED ROADMAP)
 
 ```text
+GIAI ĐOẠN 1: KHUNG NỀN TẢNG MVP (ĐÃ HOÀN THÀNH 100%)
 [Sprint 0] ──► [Sprint 1] ──► [Sprint 2] ──► [Sprint 3] ──► [Sprint 4]
  Tổ chức &       Kênh Chat      Bảng Kanban     No-Code Tool     Python .venv
  Danh tính       & Realtime     & Hangfire      Builder & LLM     Workspace &
    Agent        Dispatcher        Tasks       Function Calling     Sandbox
  (Schema org)   (Schema chat)  (Schema task)   (Schema agent)   (Execution)
+
+GIAI ĐOẠN 2: TRI THỨC, QUẢN TRỊ & THƯƠNG MẠI HÓA (ĐANG TRIỂN KHAI)
+[Sprint 5] ───────────────► [Sprint 6] ───────────────► [Sprint 7] ───────────────► [Sprint 8]
+ Tri thức & KAG/RAG          Nghiệm thu & Duyệt          Mẫu Biệt đội dựng sẵn        Đóng gói Docker
+ (Long-Term Memory)          (Human-in-the-Loop)         (Squad Recipes Store)        & Self-Hosted Ship
 ```
 
-- **Mục tiêu chốt chặng:** Sau 5 Sprints, hệ thống vận hành trơn tru: Người dùng tạo nhóm, thêm Agent, giao việc qua Chat, Agent tự gọi Tool hoặc chạy Python script trong `.venv` riêng và trả kết quả lên Kanban cho người dùng duyệt.
+- **Giai đoạn 1 (Sprint 0 - 4 - Đã hoàn thành):** Xây dựng bộ khung nền tảng khép kín: Tổ chức -> Chat realtime -> Kanban background tasks -> No-Code Tool Calling -> Python .venv Sandbox.
+- **Giai đoạn 2 (Sprint 5 - 8 - Mở rộng):** Nâng cấp Agent thành nhân sự số chuyên nghiệp: Đọc hiểu tài liệu nội bộ (KAG/RAG), cơ chế phê duyệt nghiệm thu tin cậy (Human-in-the-Loop), kho mẫu Biệt đội dựng sẵn (Squad Recipes) và đóng gói cài đặt trọn gói bằng Docker 1-click.
 
 ---
 
