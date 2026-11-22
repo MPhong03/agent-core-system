@@ -35,13 +35,27 @@
   <div class="card-body">
     <div class="tool-meta-row">
       <span class="tool-label">Công cụ:</span>
-      <span class="tool-name-pill">{{ approvalRequest().toolName }}</span>
+      <span class="tool-name-pill" [class.python-tool-pill]="isPythonExecution()">{{ approvalRequest().toolName }}</span>
+      @if (isPythonExecution()) {
+        <span class="python-chip">🐍 Python Sandbox</span>
+      }
     </div>
+
+    <!-- Khối mã nguồn Python nổi bật dành riêng cho execute_python_code -->
+    @if (isPythonExecution() && pythonCode()) {
+      <div class="python-code-container">
+        <div class="python-code-header">
+          <span class="script-file-name">📄 {{ scriptName() }}</span>
+          <span class="lang-tag">python</span>
+        </div>
+        <pre class="python-code-pre"><code>{{ pythonCode() }}</code></pre>
+      </div>
+    }
 
     <!-- Khung Tham Số JSON (Expandable) -->
     <div class="arguments-section">
       <div class="arguments-header" (click)="toggleExpanded()" (keydown.enter)="toggleExpanded()" tabindex="0" role="button">
-        <span class="args-title">Tham số thực thi (Arguments):</span>
+        <span class="args-title">{{ isPythonExecution() ? 'Chi tiết tham số JSON:' : 'Tham số thực thi (Arguments):' }}</span>
         <button type="button" class="btn-toggle-args" aria-label="Đóng mở tham số">
           {{ isExpanded() ? 'Thu gọn ▲' : 'Mở rộng ▼' }}
         </button>

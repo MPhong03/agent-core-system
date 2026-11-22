@@ -132,4 +132,33 @@ describe('ToolApprovalCardComponent', () => {
     expect(compiled.textContent).toContain('Đã từ chối');
     expect(compiled.querySelector('button[data-testid="reject-tool-btn"]')).toBeNull();
   });
+
+  it('nhận diện công cụ execute_python_code và hiển thị khối mã Python chuyên dụng', () => {
+    const pythonApprovalRequest: ToolApprovalRequest = {
+      pendingToolCallId: '018f2345-6789-7def-8123-python0001',
+      channelId: 'chan-001',
+      chatMessageId: 'msg-002',
+      toolCallId: 'call_py123',
+      toolName: 'execute_python_code',
+      argumentsJson: JSON.stringify({
+        code: 'import math\nprint(math.sqrt(144))',
+        script_name: 'calculate_sqrt.py',
+        timeout_seconds: 30,
+      }),
+      expiresAt: '2026-11-21T15:00:00Z',
+      status: 'pending',
+    };
+
+    fixture.componentRef.setInput('approvalRequest', pythonApprovalRequest);
+    fixture.detectChanges();
+
+    expect(component.isPythonExecution()).toBe(true);
+    expect(component.pythonCode()).toBe('import math\nprint(math.sqrt(144))');
+    expect(component.scriptName()).toBe('calculate_sqrt.py');
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Python Sandbox');
+    expect(compiled.textContent).toContain('calculate_sqrt.py');
+    expect(compiled.textContent).toContain('import math');
+  });
 });

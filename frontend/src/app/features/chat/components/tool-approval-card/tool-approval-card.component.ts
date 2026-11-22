@@ -92,6 +92,43 @@ export class ToolApprovalCardComponent {
     }
   });
 
+  /**
+   * Xác định yêu cầu phê duyệt có phải là thực thi mã Python (execute_python_code) hay không.
+   */
+  readonly isPythonExecution = computed<boolean>(() => {
+    return this.approvalRequest()?.toolName === 'execute_python_code';
+  });
+
+  /**
+   * Trích xuất mã nguồn Python từ tham số (code, scriptContent, script_content).
+   */
+  readonly pythonCode = computed<string | null>(() => {
+    if (!this.isPythonExecution()) return null;
+    const raw = this.approvalRequest()?.argumentsJson;
+    if (!raw) return null;
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      return parsed.code || parsed.scriptContent || parsed.script_content || null;
+    } catch {
+      return null;
+    }
+  });
+
+  /**
+   * Trích xuất tên tệp tin script (script_name, scriptName), mặc định là script.py.
+   */
+  readonly scriptName = computed<string>(() => {
+    if (!this.isPythonExecution()) return 'script.py';
+    const raw = this.approvalRequest()?.argumentsJson;
+    if (!raw) return 'script.py';
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      return parsed.script_name || parsed.scriptName || 'script.py';
+    } catch {
+      return 'script.py';
+    }
+  });
+
   // ── User Actions ──
 
   /**
